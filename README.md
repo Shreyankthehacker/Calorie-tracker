@@ -118,13 +118,20 @@ Install:
 
 Backend configuration is provided through environment variables.
 
-A `.env.example` file will be created during Phase 0 and will document required variables, including:
+See:
 
-- Neon pooled database URL (application runtime)
-- Neon direct database URL (Prisma migrations, when required)
-- JWT / auth secrets
-- AI provider credentials
-- CORS allowed origin(s)
+- `.env.example` (index)
+- `backend/.env.example`
+- `frontend/.env.example`
+
+Copy `backend/.env.example` → `backend/.env` and fill in database URLs.
+
+For Neon:
+
+- `DATABASE_URL` — pooled connection (application runtime)
+- `DIRECT_URL` — direct/non-pooled connection (Prisma migrations)
+
+For local development without Neon credentials, both URLs may temporarily point at the same local PostgreSQL instance.
 
 Secrets must never be committed to Git. Never commit `.env`.
 

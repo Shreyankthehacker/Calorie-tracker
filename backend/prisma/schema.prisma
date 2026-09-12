@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection for application runtime (Neon pooler recommended in production).
+  url       = env("DATABASE_URL")
+  // Direct connection for Prisma migrations (Neon non-pooled / direct host).
+  directUrl = env("DIRECT_URL")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACKS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  // IANA timezone identifier used for daily report bucketing.
+  timezone     String   @default("UTC")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  goal        Goal?
+  foodEntries FoodEntry[]
+
+  @@map("users")
+}
+
+// Current active nutrition goal only (1:1 with User). No goal history in v1.
+model Goal {
+  id                  String   @id @default(cuid())
+  userId              String   @unique @map("user_id")
+  dailyCalorieTarget  Float    @map("daily_calorie_target")
+  proteinTarget       Float    @map("protein_target")
+  carbTarget          Float    @map("carb_target")
+  fatTarget           Float    @map("fat_target")
+  weightGoal          Float?   @map("weight_goal")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+model FoodEntry {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  mealType     MealType @map("meal_type")
+  foodName     String   @map("food_name")
+  quantity     Float
+  quantityUnit String   @map("quantity_unit")
+  calories     Float
+  protein      Float
+  carbs        Float
+  fat          Float
+  // Source of truth for filtering and reporting (when the meal was eaten).
+  consumedAt   DateTime @map("consumed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nutrients FoodEntryNutrient[]
+
+  @@index([userId, consumedAt])
+  @@map("food_entries")
+}
+
+model FoodEntryNutrient {
+  id          String @id @default(cuid())
+  foodEntryId String @map("food_entry_id")
+  // Canonical key where practical (e.g. vitamin_c, iron, sodium).
+  nutrientKey String @map("nutrient_key")
+  amount      Float
+  unit        String
+
+  foodEntry FoodEntry @relation(fields: [foodEntryId], references: [id], onDelete: Cascade)
+
+  @@index([foodEntryId])
+  @@map("food_entry_nutrients")
+}

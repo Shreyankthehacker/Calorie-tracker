@@ -1,0 +1,22 @@
+{
+  "name": "calorie-tracker",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:backend": "pnpm --filter @calorie-tracker/backend dev",
+    "dev:frontend": "pnpm --filter @calorie-tracker/frontend dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @calorie-tracker/backend db:generate",
+    "db:migrate": "pnpm --filter @calorie-tracker/backend db:migrate",
+    "db:migrate:dev": "pnpm --filter @calorie-tracker/backend db:migrate:dev"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,84 @@
+:root {
+  color: #14231a;
+  background:
+    radial-gradient(circle at top left, rgba(46, 125, 80, 0.18), transparent 40%),
+    linear-gradient(160deg, #f3f7f4 0%, #e7eee9 45%, #d9e5dc 100%);
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.shell {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.brand {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2e7d50;
+}
+
+h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.15;
+}
+
+.lede {
+  margin: 0 0 2rem;
+  color: #405348;
+}
+
+.status {
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(20, 35, 26, 0.12);
+}
+
+.status h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.status dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.status div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.75rem;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}
+
+.error {
+  color: #8a1f1f;
+}
