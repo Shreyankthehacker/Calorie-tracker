@@ -100,6 +100,7 @@ model FoodEntryNutrient {
 
   foodEntry FoodEntry @relation(fields: [foodEntryId], references: [id], onDelete: Cascade)
 
+  @@unique([foodEntryId, nutrientKey])
   @@index([foodEntryId])
   @@map("food_entry_nutrients")
 }

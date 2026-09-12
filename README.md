@@ -172,13 +172,32 @@ pnpm dev:frontend
 
 # Testing
 
-Tests run throughout development, not only at the end.
+Backend tests use an **isolated** database configured in `backend/.env.test`
+(see `backend/.env.test.example`). They refuse to run against a Neon development URL.
+
+Example local test database (Docker):
+
+```bash
+docker run -d --name calorie-tracker-test-pg \
+  -e POSTGRES_USER=calorie_test \
+  -e POSTGRES_PASSWORD=calorie_test \
+  -e POSTGRES_DB=calorie_tracker_test \
+  -p 5434:5432 postgres:16-alpine
+
+cd backend
+cp .env.test.example .env.test
+# apply migrations to the test database
+set -a && source .env.test && set +a
+pnpm exec prisma migrate deploy
+```
+
+Run tests:
 
 ```bash
 pnpm test
 ```
 
-Each phase in `DEVELOPMENT_PLAN.md` lists required tests for completion.
+Frontend tests use Vitest + Testing Library with mocked API modules (no live database).
 
 ---
 
