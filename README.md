@@ -124,14 +124,21 @@ See:
 - `backend/.env.example`
 - `frontend/.env.example`
 
-Copy `backend/.env.example` → `backend/.env` and fill in database URLs.
+Copy `backend/.env.example` → `backend/.env` and fill in database URLs plus auth secrets.
 
 For Neon:
 
 - `DATABASE_URL` — pooled connection (application runtime)
 - `DIRECT_URL` — direct/non-pooled connection (Prisma migrations)
 
-For local development without Neon credentials, both URLs may temporarily point at the same local PostgreSQL instance.
+Auth (Phase 1):
+
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` (≥ 32 characters)
+- `JWT_ACCESS_EXPIRES_IN` (default `15m`)
+- `JWT_REFRESH_EXPIRES_IN` (default `7d`)
+- `AUTH_RATE_LIMIT_MAX` / `AUTH_RATE_LIMIT_TIME_WINDOW_MS`
+
+For local development without Neon credentials, both database URLs may temporarily point at the same local PostgreSQL instance.
 
 Secrets must never be committed to Git. Never commit `.env`.
 
