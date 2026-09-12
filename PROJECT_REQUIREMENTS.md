@@ -242,3 +242,25 @@ Potential functionality:
 - Family meal planning
 
 This is intentionally outside the initial implementation scope.
+
+---
+
+# 13. Implementation Assumptions
+
+These assumptions refine how the product requirements are implemented. Technical detail lives in `ARCHITECTURE.md`.
+
+1. **Authentication as core infrastructure.** Although multi-user support appears under Bonus Features (§11), the implementation treats registration, login, refresh, logout, and current-user as foundational Phase 1 work so that goals and food entries have a secure ownership boundary.
+
+2. **Single current goal.** Each user has one active goal record in v1. Goal history is not required for the initial product.
+
+3. **Meal time vs log time.** Nutrition history and reports use when the meal was consumed (`consumedAt`), not when the row was created.
+
+4. **Timezone-aware daily aggregates.** Daily report boundaries use the user's configured timezone.
+
+5. **Flexible micronutrients.** Micronutrients are stored as related nutrient records with canonical keys, amounts, and units—not as a large fixed set of columns.
+
+6. **AI review before persist.** AI extraction pre-fills editable values and must not write food entries until the user confirms.
+
+7. **Deferred work.** Conversational AI, PDF import, and the family system are out of scope until the core required product is complete and stable.
+
+8. **Assumptions document.** This section, together with `ARCHITECTURE.md` §19, satisfies the documentation requirement for recorded assumptions (§10).
