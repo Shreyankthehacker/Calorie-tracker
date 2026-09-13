@@ -240,14 +240,14 @@ describe('ReportsPage', () => {
 
   it('shows an API error', async () => {
     vi.mocked(reportsApi.getCalorieReport).mockRejectedValue(
-      new ApiError(500, 'INTERNAL_ERROR', 'boom'),
+      new ApiError(500, 'INTERNAL_SERVER_ERROR', 'boom'),
     );
     vi.mocked(reportsApi.getMacroReport).mockResolvedValue(macroReport);
     vi.mocked(reportsApi.getGoalVsActualReport).mockResolvedValue(goalReport);
     vi.mocked(reportsApi.getMicronutrientReport).mockResolvedValue(microReport);
 
     renderWithProviders(<ReportsPage />, { route: '/reports' });
-    expect(await screen.findByText(/could not load reports/i)).toBeInTheDocument();
+    expect(await screen.findByText(/unable to load reports/i)).toBeInTheDocument();
   });
 });
 
@@ -300,5 +300,15 @@ describe('DashboardPage reports', () => {
       page: 1,
       pageSize: 4,
     });
+  });
+
+  it('shows an error instead of an empty meals state when recent meals fail', async () => {
+    vi.mocked(foodEntriesApi.listFoodEntries).mockRejectedValue(
+      new ApiError(500, 'INTERNAL_SERVER_ERROR', 'Request failed'),
+    );
+
+    renderWithProviders(<DashboardPage />, { route: '/dashboard' });
+    expect(await screen.findByText(/unable to load meals/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no meals logged today/i)).not.toBeInTheDocument();
   });
 });

@@ -153,6 +153,19 @@ describe('auth API', () => {
       payload: { refreshToken: oldRefresh },
     });
     expect(replay.statusCode).toBe(401);
+    expect(replay.json().error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('rejects an invalid refresh token', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/refresh',
+      payload: { refreshToken: 'not-a-real-refresh-token' },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json().error.code).toBe('UNAUTHORIZED');
+    expect(JSON.stringify(response.json())).not.toMatch(/prisma|hash|jwt/i);
   });
 
   it('logs out and invalidates the refresh token', async () => {
@@ -170,5 +183,29 @@ describe('auth API', () => {
       payload: { refreshToken },
     });
     expect(refreshAfterLogout.statusCode).toBe(401);
+    expect(refreshAfterLogout.json().error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('rate-limits authentication endpoints', async () => {
+    const limitedEnv = loadEnv({
+      ...process.env,
+      NODE_ENV: 'test',
+      AUTH_RATE_LIMIT_MAX: '2',
+      AUTH_RATE_LIMIT_TIME_WINDOW_MS: '60000',
+    });
+    const limited = await buildApp(limitedEnv);
+    await limited.ready();
+
+    const payload = { email: 'nobody@example.com', password: 'wrong-password' };
+    const first = await limited.inject({ method: 'POST', url: '/api/v1/auth/login', payload });
+    const second = await limited.inject({ method: 'POST', url: '/api/v1/auth/login', payload });
+    const third = await limited.inject({ method: 'POST', url: '/api/v1/auth/login', payload });
+
+    expect(first.statusCode).toBe(401);
+    expect(second.statusCode).toBe(401);
+    expect(third.statusCode).toBe(429);
+    expect(third.json().error.code).toBe('RATE_LIMITED');
+
+    await limited.close();
   });
 });

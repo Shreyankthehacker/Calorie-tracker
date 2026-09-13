@@ -13,6 +13,17 @@ import {
 } from '../schemas/ai-extraction.js';
 import type { MealType } from '../schemas/food-entries.js';
 
+const PUBLIC_PROVIDER_FAILURE_MESSAGES = new Set([
+  'AI extraction is not configured',
+  'AI extraction failed',
+  'AI provider failed',
+  'AI provider returned an empty response',
+  'AI provider returned malformed output',
+  'AI provider rejected the API key',
+  'AI model is not available for this key',
+  'Could not read that image. Try another JPEG, PNG, or WebP photo.',
+]);
+
 export type PublicNutritionExtraction = {
   foodName: string;
   quantity: number;
@@ -40,10 +51,10 @@ export class AIExtractionService {
         throw new AppError(504, 'AI_PROVIDER_ERROR', 'AI provider timed out');
       }
       if (error instanceof ProviderFailureError) {
-        if (error.message === 'AI extraction is not configured') {
-          throw new AppError(502, 'AI_PROVIDER_ERROR', error.message);
-        }
-        throw new AppError(502, 'AI_PROVIDER_ERROR', error.message);
+        const message = PUBLIC_PROVIDER_FAILURE_MESSAGES.has(error.message)
+          ? error.message
+          : 'AI extraction failed';
+        throw new AppError(502, 'AI_PROVIDER_ERROR', message);
       }
       throw new AppError(502, 'AI_PROVIDER_ERROR', 'AI extraction failed');
     }

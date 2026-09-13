@@ -134,7 +134,7 @@ export function GoalsPage() {
       {goalQuery.isPending ? <p className="muted">Loading goals…</p> : null}
 
       {goalQuery.isError && !missingGoal ? (
-        <Alert tone="error">Could not load your goal.</Alert>
+        <Alert tone="error">Unable to load your goal. Please try again.</Alert>
       ) : null}
 
       {success ? <Alert tone="success">{success}</Alert> : null}

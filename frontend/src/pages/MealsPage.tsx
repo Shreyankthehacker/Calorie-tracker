@@ -163,11 +163,19 @@ export function MealsPage() {
       {success ? <Alert tone="success">{success}</Alert> : null}
 
       {mealsQuery.isPending ? <p className="muted">Loading meals…</p> : null}
-      {mealsQuery.isError ? <Alert tone="error">Could not load meals.</Alert> : null}
+      {mealsQuery.isError ? (
+        <Alert tone="error">Unable to load meals. Please try again.</Alert>
+      ) : null}
 
       {!mealsQuery.isPending && !mealsQuery.isError && entries.length === 0 ? (
         <div className="empty-panel">
-          <p>{isFiltered ? 'No meals match these filters.' : 'No meals recorded yet.'}</p>
+          <p>
+            {isFiltered
+              ? startDate && endDate && startDate === endDate && !mealType
+                ? 'No meals recorded for this day.'
+                : 'No meals match these filters.'
+              : 'No meals recorded yet.'}
+          </p>
           {!isFiltered ? (
             <button
               type="button"

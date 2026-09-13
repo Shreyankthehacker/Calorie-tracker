@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assertSafeCorsOrigins, parseCorsOrigins } from '../lib/cors.js';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -6,7 +7,19 @@ const envSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DIRECT_URL: z.string().min(1, 'DIRECT_URL is required'),
-  CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:5173')
+    .superRefine((value, ctx) => {
+      try {
+        assertSafeCorsOrigins(parseCorsOrigins(value));
+      } catch (error) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: error instanceof Error ? error.message : 'Invalid CORS_ORIGIN',
+        });
+      }
+    }),
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
   JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { MealsPage } from './MealsPage';
@@ -79,12 +79,25 @@ describe('MealsPage', () => {
     expect(screen.getByRole('button', { name: /add your first meal/i })).toBeInTheDocument();
   });
 
+  it('shows a day-specific empty state when a single date is filtered', async () => {
+    vi.mocked(foodEntriesApi.listFoodEntries).mockResolvedValue(listResponse([]));
+    renderWithProviders(<MealsPage />, { route: '/meals' });
+    await screen.findByText(/no meals recorded yet/i);
+
+    fireEvent.change(screen.getByLabelText(/start date/i), { target: { value: '2026-09-13' } });
+    fireEvent.change(screen.getByLabelText(/end date/i), { target: { value: '2026-09-13' } });
+
+    expect(await screen.findByText(/no meals recorded for this day/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no meals recorded yet/i)).not.toBeInTheDocument();
+  });
+
   it('shows an API error state', async () => {
     vi.mocked(foodEntriesApi.listFoodEntries).mockRejectedValue(
-      new ApiError(500, 'INTERNAL_ERROR', 'Request failed'),
+      new ApiError(500, 'INTERNAL_SERVER_ERROR', 'Request failed'),
     );
     renderWithProviders(<MealsPage />, { route: '/meals' });
-    expect(await screen.findByText(/could not load meals/i)).toBeInTheDocument();
+    expect(await screen.findByText(/unable to load meals/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no meals recorded/i)).not.toBeInTheDocument();
   });
 
   it('renders meals from the API response', async () => {

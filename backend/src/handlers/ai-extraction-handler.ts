@@ -26,7 +26,7 @@ export class AIExtractionHandler {
     const buffer = Buffer.concat(chunks);
 
     if (file.file.truncated || buffer.byteLength > this.maxUploadBytes) {
-      throw new AppError(400, 'VALIDATION_ERROR', 'Image exceeds the maximum upload size of 5MB');
+      throw new AppError(413, 'PAYLOAD_TOO_LARGE', 'Image exceeds the maximum upload size of 5MB');
     }
 
     if (buffer.byteLength === 0) {
@@ -36,8 +36,8 @@ export class AIExtractionHandler {
     const declared = normalizeDeclaredImageMime(file.mimetype);
     if (!declared) {
       throw new AppError(
-        400,
-        'VALIDATION_ERROR',
+        415,
+        'UNSUPPORTED_MEDIA_TYPE',
         'Unsupported image type. Upload a JPEG, PNG, or WebP file',
       );
     }
@@ -45,8 +45,8 @@ export class AIExtractionHandler {
     const sniffed = detectImageMime(buffer);
     if (!sniffed || sniffed !== declared) {
       throw new AppError(
-        400,
-        'VALIDATION_ERROR',
+        415,
+        'UNSUPPORTED_MEDIA_TYPE',
         'Unsupported image type. Upload a JPEG, PNG, or WebP file',
       );
     }

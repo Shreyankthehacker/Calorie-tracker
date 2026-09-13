@@ -153,7 +153,7 @@ export function ReportsPage() {
       ) : loading ? (
         <p className="muted">Loading reports…</p>
       ) : error ? (
-        <p className="error-text">Could not load reports.</p>
+        <p className="error-text">Unable to load reports. Please try again.</p>
       ) : (
         <div className="report-stack">
           <section className="panel">

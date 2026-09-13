@@ -25,12 +25,14 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const [bootstrapped, setBootstrapped] = useState(() => !tokenStorage.getAccessToken());
+  const [sessionVersion, setSessionVersion] = useState(0);
+  const hasAccessToken = Boolean(tokenStorage.getAccessToken());
+  const [bootstrapped, setBootstrapped] = useState(() => !hasAccessToken);
 
   const meQuery = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: authApi.getCurrentUser,
-    enabled: Boolean(tokenStorage.getAccessToken()),
+    enabled: hasAccessToken,
     retry: false,
   });
 
@@ -42,11 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!meQuery.isFetching) {
       setBootstrapped(true);
     }
-  }, [meQuery.isFetching]);
+  }, [meQuery.isFetching, sessionVersion]);
 
   useEffect(() => {
     if (meQuery.isError && meQuery.error instanceof ApiError && meQuery.error.status === 401) {
       tokenStorage.clear();
+      setSessionVersion((value) => value + 1);
     }
   }, [meQuery.isError, meQuery.error]);
 
@@ -54,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       const result = await authApi.login({ email, password });
       queryClient.setQueryData(['auth', 'me'], result.user);
+      setSessionVersion((value) => value + 1);
     },
     [queryClient],
   );
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       const result = await authApi.register({ email, password, timezone });
       queryClient.setQueryData(['auth', 'me'], result.user);
+      setSessionVersion((value) => value + 1);
     },
     [queryClient],
   );
@@ -70,21 +75,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     queryClient.clear();
+    setSessionVersion((value) => value + 1);
   }, [queryClient]);
 
-  const user = meQuery.data ?? null;
-  const isLoading = !bootstrapped || (Boolean(tokenStorage.getAccessToken()) && meQuery.isPending);
+  const user = hasAccessToken ? (meQuery.data ?? null) : null;
+  const isLoading = !bootstrapped || (hasAccessToken && meQuery.isPending);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isLoading,
-      isAuthenticated: Boolean(user),
+      isAuthenticated: Boolean(user) && hasAccessToken,
       login,
       register,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, hasAccessToken, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

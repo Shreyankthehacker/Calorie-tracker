@@ -10,13 +10,82 @@ type ErrorBody = {
   };
 };
 
-function isFastifyLikeError(
-  error: unknown,
-): error is { validation?: unknown; statusCode?: number; code?: string } {
+type FastifyLikeError = {
+  validation?: unknown;
+  statusCode?: number;
+  code?: string;
+  message?: string;
+};
+
+const GENERIC_INTERNAL_ERROR: ErrorBody = {
+  error: {
+    code: 'INTERNAL_SERVER_ERROR',
+    message: 'An unexpected error occurred',
+  },
+};
+
+const FASTIFY_CLIENT_ERRORS: Record<string, { status: number; body: ErrorBody }> = {
+  FST_ERR_CTP_INVALID_JSON_BODY: {
+    status: 400,
+    body: {
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid JSON payload',
+      },
+    },
+  },
+  FST_ERR_CTP_EMPTY_JSON_BODY: {
+    status: 400,
+    body: {
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Request body is required',
+      },
+    },
+  },
+  FST_ERR_CTP_INVALID_MEDIA_TYPE: {
+    status: 415,
+    body: {
+      error: {
+        code: 'UNSUPPORTED_MEDIA_TYPE',
+        message: 'Unsupported media type',
+      },
+    },
+  },
+  FST_REQ_FILE_TOO_LARGE: {
+    status: 413,
+    body: {
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Image exceeds the maximum upload size of 5MB',
+      },
+    },
+  },
+  FST_ERR_CTP_BODY_TOO_LARGE: {
+    status: 413,
+    body: {
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Request body is too large',
+      },
+    },
+  },
+};
+
+function isFastifyLikeError(error: unknown): error is FastifyLikeError {
   return typeof error === 'object' && error !== null;
 }
 
 export function registerErrorHandler(app: FastifyInstance): void {
+  app.setNotFoundHandler((_request, reply) => {
+    return reply.status(404).send({
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Route not found',
+      },
+    } satisfies ErrorBody);
+  });
+
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof AppError) {
       const body: ErrorBody = {
@@ -51,6 +120,13 @@ export function registerErrorHandler(app: FastifyInstance): void {
       } satisfies ErrorBody);
     }
 
+    if (isFastifyLikeError(error) && typeof error.code === 'string') {
+      const mapped = FASTIFY_CLIENT_ERRORS[error.code];
+      if (mapped) {
+        return reply.status(mapped.status).send(mapped.body);
+      }
+    }
+
     if (isFastifyLikeError(error) && error.statusCode === 429) {
       return reply.status(429).send({
         error: {
@@ -69,26 +145,34 @@ export function registerErrorHandler(app: FastifyInstance): void {
       } satisfies ErrorBody);
     }
 
-    if (
-      isFastifyLikeError(error) &&
-      (error.statusCode === 413 ||
-        (typeof error.code === 'string' &&
-          ['FST_REQ_FILE_TOO_LARGE', 'FST_ERR_CTP_BODY_TOO_LARGE'].includes(error.code)))
-    ) {
-      return reply.status(400).send({
+    if (isFastifyLikeError(error) && error.statusCode === 413) {
+      return reply.status(413).send({
         error: {
-          code: 'VALIDATION_ERROR',
+          code: 'PAYLOAD_TOO_LARGE',
           message: 'Image exceeds the maximum upload size of 5MB',
         },
       } satisfies ErrorBody);
     }
 
+    if (isFastifyLikeError(error) && error.statusCode === 415) {
+      return reply.status(415).send({
+        error: {
+          code: 'UNSUPPORTED_MEDIA_TYPE',
+          message: 'Unsupported media type',
+        },
+      } satisfies ErrorBody);
+    }
+
+    if (isFastifyLikeError(error) && error.statusCode === 400) {
+      return reply.status(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid request',
+        },
+      } satisfies ErrorBody);
+    }
+
     app.log.error(error);
-    return reply.status(500).send({
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Internal server error',
-      },
-    } satisfies ErrorBody);
+    return reply.status(500).send(GENERIC_INTERNAL_ERROR);
   });
 }

@@ -82,7 +82,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     const errorBody = payload as ApiErrorBody | null;
     throw new ApiError(
       response.status,
-      errorBody?.error.code ?? 'INTERNAL_ERROR',
+      errorBody?.error.code ?? 'INTERNAL_SERVER_ERROR',
       errorBody?.error.message ?? 'Request failed',
       errorBody?.error.details,
     );

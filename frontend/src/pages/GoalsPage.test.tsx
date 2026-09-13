@@ -46,6 +46,23 @@ describe('GoalsPage', () => {
     expect(screen.getByRole('button', { name: /set your goal/i })).toBeInTheDocument();
   });
 
+  it('shows a loading state', () => {
+    vi.mocked(goalsApi.getGoal).mockImplementation(() => new Promise(() => undefined));
+    renderWithProviders(<GoalsPage />, { route: '/goals' });
+    expect(screen.getByText(/loading goals/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no nutrition goal set yet/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an API error when the goal cannot be loaded', async () => {
+    vi.mocked(goalsApi.getGoal).mockRejectedValue(
+      new ApiError(500, 'INTERNAL_SERVER_ERROR', 'Request failed'),
+    );
+
+    renderWithProviders(<GoalsPage />, { route: '/goals' });
+    expect(await screen.findByText(/unable to load your goal/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no nutrition goal set yet/i)).not.toBeInTheDocument();
+  });
+
   it('loads and displays an existing goal', async () => {
     vi.mocked(goalsApi.getGoal).mockResolvedValue({
       id: 'g1',

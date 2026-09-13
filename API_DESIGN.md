@@ -20,11 +20,23 @@ POST /auth/logout
 GET  /auth/me
 ```
 
-Protected endpoints derive identity from the access token (or equivalent auth mechanism).
+Protected endpoints derive identity from the access token. Never accept a client-supplied `userId` as the owner of a resource.
 
-Never accept a client-supplied `userId` as the owner of a resource when an authenticated identity is available.
+Auth endpoints (register, login, refresh, logout) are rate-limited (`AUTH_RATE_LIMIT_MAX`, default 20 requests / 60s). `/auth/me` requires a Bearer access token.
 
-Auth endpoints should be rate-limited.
+Request bodies:
+
+```text
+POST /auth/register  { email, password, timezone? }   → 201 { user, accessToken, refreshToken }
+POST /auth/login     { email, password }              → 200 { user, accessToken, refreshToken }
+POST /auth/refresh   { refreshToken }                 → 200 { accessToken, refreshToken }
+POST /auth/logout    { refreshToken }                 → 204
+GET  /auth/me                                         → 200 { user }
+```
+
+`timezone` is an IANA name (default `UTC`). Duplicate email returns `409 CONFLICT`. Invalid credentials and reused/revoked refresh tokens return `401 UNAUTHORIZED`. Access tokens are short-lived JWTs (default `15m`). Refresh tokens are rotated on use and stored hashed.
+
+CORS: browsers may call these endpoints only from origins listed in `CORS_ORIGIN` (comma-separated). `*` is not allowed.
 
 ---
 
@@ -222,8 +234,11 @@ Rules:
 - If the model reports `detected: false`, respond `422` with no invented values
 - Provider timeout: `504` / `AI_PROVIDER_ERROR`
 - Provider failure: `502` / `AI_PROVIDER_ERROR` (no raw provider payload)
+- Oversized upload: `413` / `PAYLOAD_TOO_LARGE`
+- Unsupported or mismatched image type: `415` / `UNSUPPORTED_MEDIA_TYPE`
 - Validate AI response structure with Zod
 - Rate-limit this endpoint
+- User must explicitly confirm via `POST /food-entries` after review/edit
 
 ---
 
@@ -255,7 +270,18 @@ Error response:
 }
 ```
 
-Internal errors must return a generic 500 body without stack traces.
+Unknown routes return `404` with `code: "NOT_FOUND"`.
+
+Unexpected failures return a generic 500 body with **no** stack traces, Prisma messages, Gemini payloads, or secrets:
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_SERVER_ERROR",
+    "message": "An unexpected error occurred"
+  }
+}
+```
 
 ---
 
@@ -270,11 +296,13 @@ Internal errors must return a generic 500 body without stack traces.
 403 Forbidden
 404 Not Found
 409 Conflict
-  422 Unprocessable Entity
-  429 Too Many Requests
-  500 Internal Server Error
-  502 Bad Gateway
-  504 Gateway Timeout
+413 Payload Too Large
+415 Unsupported Media Type
+422 Unprocessable Entity
+429 Too Many Requests
+500 Internal Server Error
+502 Bad Gateway
+504 Gateway Timeout
 ```
 
 ---

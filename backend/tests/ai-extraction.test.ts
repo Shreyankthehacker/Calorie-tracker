@@ -162,7 +162,8 @@ describe('AI nutrition extraction API', () => {
       contentType: 'image/gif',
       body: jpegBuffer(),
     });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(415);
+    expect(response.json().error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
     expect(provider.calls).toHaveLength(0);
   });
 
@@ -172,7 +173,8 @@ describe('AI nutrition extraction API', () => {
       contentType: 'image/jpeg',
       body: Buffer.from('not-an-image'),
     });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(415);
+    expect(response.json().error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
     expect(provider.calls).toHaveLength(0);
   });
 
@@ -196,7 +198,8 @@ describe('AI nutrition extraction API', () => {
       headers: { ...form.headers, ...auth(userA) },
       payload: form.payload,
     });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(413);
+    expect(response.json().error.code).toBe('PAYLOAD_TOO_LARGE');
     await smallApp.close();
   });
 

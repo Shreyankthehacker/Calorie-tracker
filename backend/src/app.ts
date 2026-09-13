@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import type { Env } from './config/env.js';
 import type { NutritionExtractionProvider } from './ai/nutrition-provider.js';
+import { createCorsOriginDelegate, parseCorsOrigins } from './lib/cors.js';
 import { authPlugin } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { aiExtractionRoutes } from './routes/ai.js';
@@ -25,7 +26,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
   registerErrorHandler(app);
 
   await app.register(cors, {
-    origin: env.CORS_ORIGIN,
+    origin: createCorsOriginDelegate(parseCorsOrigins(env.CORS_ORIGIN)),
   });
 
   await app.register(multipart, {

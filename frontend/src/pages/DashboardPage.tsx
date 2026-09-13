@@ -69,7 +69,7 @@ export function DashboardPage() {
           {nutritionLoading ? (
             <p className="muted">Loading today&apos;s nutrition…</p>
           ) : todayReportQuery.isError ? (
-            <p className="error-text">Could not load today&apos;s nutrition.</p>
+            <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
           ) : missingGoal ? (
             <div className="empty-panel compact">
               <MacroSummary totals={totals} />
@@ -79,7 +79,7 @@ export function DashboardPage() {
               </Link>
             </div>
           ) : goalQuery.isError ? (
-            <p className="error-text">Could not load goals.</p>
+            <p className="error-text">Unable to load goals. Please try again.</p>
           ) : (
             <MacroSummary totals={totals} {...(goal ? { goal } : {})} />
           )}
@@ -90,7 +90,7 @@ export function DashboardPage() {
           {todayReportQuery.isPending ? (
             <p className="muted">Loading today&apos;s nutrition…</p>
           ) : todayReportQuery.isError ? (
-            <p className="error-text">Could not load today&apos;s nutrition.</p>
+            <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
           ) : goal ? (
             <div className="progress-stack">
               <ProgressBar
@@ -132,6 +132,8 @@ export function DashboardPage() {
           <h2>Recent Activity</h2>
           {recentMealsQuery.isPending ? (
             <p className="muted">Loading meals…</p>
+          ) : recentMealsQuery.isError ? (
+            <p className="error-text">Unable to load meals. Please try again.</p>
           ) : recentMeals.length === 0 ? (
             <div className="empty-panel compact">
               <p>No meals logged today.</p>

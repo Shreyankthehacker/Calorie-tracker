@@ -38,7 +38,7 @@
         └─────────┬──────────┘
                   ▼
         ┌────────────────────┐
-        │ Vision-capable LLM │
+        │ Gemini (or test mock)
         └────────────────────┘
 ```
 
@@ -75,7 +75,8 @@
 
 ## AI
 
-- Vision-capable LLM API behind an `AIExtractionService` abstraction
+- Gemini, used only on the backend behind a `NutritionExtractionProvider` / `AIExtractionService` abstraction
+- Tests inject a mock provider and must not call Gemini
 
 ## Explicitly out of scope for the stack
 
@@ -151,6 +152,8 @@ UserRepository
 GoalRepository
 FoodEntryRepository
 ```
+
+Centralized error handling in `registerErrorHandler` maps `AppError`, Zod failures, Fastify client errors, and unknown exceptions to `{ error: { code, message } }`. Unexpected errors are logged and returned as a generic `INTERNAL_SERVER_ERROR`.
 
 ---
 
@@ -399,13 +402,58 @@ Rules:
 
 - The AI extraction endpoint must **not** automatically create a `FoodEntry`.
 - AI output is never treated as authoritative.
-- Validate MIME type, file size, AI response structure, and nutritional value ranges.
-- Provider implementations are swappable behind `AIExtractionService`.
-- Mock the AI provider in tests.
+- Validate MIME type, file size, magic bytes, AI response structure, and nutritional value ranges.
+- Gemini credentials (`GEMINI_API_KEY`) are loaded only on the backend.
+- Provider implementations are swappable behind `NutritionExtractionProvider`.
+- Mock the AI provider in automated tests; tests must not call Gemini.
+- Images are processed in memory and are not persisted.
 
 ---
 
-# 13. Neon / Prisma Configuration
+# 13. Error Handling
+
+All API errors use a single JSON envelope:
+
+```json
+{
+  "error": {
+    "code": "SOME_ERROR_CODE",
+    "message": "Human-readable message"
+  }
+}
+```
+
+Validation failures may include a `details` object from Zod.
+
+Status mapping:
+
+- `400` invalid request / input (`VALIDATION_ERROR`)
+- `401` unauthenticated (`UNAUTHORIZED`)
+- `403` authorization failures (`FORBIDDEN`)
+- `404` missing resource or unknown route (`NOT_FOUND`)
+- `409` conflicts (`CONFLICT`)
+- `413` oversized upload (`PAYLOAD_TOO_LARGE`)
+- `415` unsupported media type (`UNSUPPORTED_MEDIA_TYPE`)
+- `429` rate limit (`RATE_LIMITED`)
+- `500` unexpected server error (`INTERNAL_SERVER_ERROR`)
+- `502` / `504` AI provider failure / timeout (`AI_PROVIDER_ERROR`)
+
+Unexpected errors are logged server-side. The client always receives:
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_SERVER_ERROR",
+    "message": "An unexpected error occurred"
+  }
+}
+```
+
+Do not expose stack traces, Prisma errors, connection strings, Gemini payloads, filesystem paths, or secrets.
+
+---
+
+# 14. Neon / Prisma Configuration
 
 Neon hosts PostgreSQL for this project.
 
@@ -420,7 +468,7 @@ Never commit `.env` or secrets.
 
 ---
 
-# 14. API Versioning
+# 15. API Versioning
 
 Initial APIs use:
 
@@ -440,7 +488,7 @@ Examples:
 
 ---
 
-# 15. Pagination
+# 16. Pagination
 
 Food entry list APIs use **offset pagination**:
 
@@ -473,23 +521,24 @@ Reports do not require pagination.
 
 ---
 
-# 16. Security
+# 17. Security
 
 Enforce:
 
 - environment-based secrets (never commit API keys, DB passwords, JWT secrets, or `.env`)
-- password hashing
-- JWT security (short-lived access tokens, strong secrets)
-- refresh token security (secure storage/handling, rotation as designed)
-- ownership checks on all user-owned resources
-- CORS allowlist for the frontend origin
-- upload validation for AI endpoints
+- Argon2id password hashing
+- JWT security (short-lived access tokens, default 15 minutes, strong secrets)
+- refresh token security: CSPRNG tokens, SHA-256 hashes at rest with `JWT_REFRESH_SECRET` as pepper, rotation on use, revocation on logout
+- ownership checks on all user-owned resources; never trust a client `userId`
+- CORS allowlist from `CORS_ORIGIN` (comma-separated origins; `*` is rejected)
+- upload validation for AI endpoints (MIME, magic bytes, 5MB cap)
 - rate limiting for authentication and AI endpoints
-- generic HTTP 500 responses without stack traces or internal details
+- generic HTTP 500 responses without stack traces, Prisma errors, Gemini payloads, or secrets
+- Gemini credentials loaded only on the backend
 
 ---
 
-# 17. Testing Strategy
+# 18. Testing Strategy
 
 Testing happens **during each implementation phase**, not only at the end.
 
@@ -508,7 +557,7 @@ Use Vitest and Fastify inject/API tests for backend-critical paths.
 
 ---
 
-# 18. Future Family Functionality
+# 19. Future Family Functionality
 
 v1 ownership is strictly per-user.
 
@@ -524,7 +573,7 @@ Required functionality comes first.
 
 ---
 
-# 19. Assumptions
+# 20. Assumptions
 
 1. Auth (register/login/refresh/logout/me) is implemented as core infrastructure despite being listed under bonus multi-user support in the product requirements.
 2. Each user has exactly one current `Goal` in v1; goal history is out of scope.

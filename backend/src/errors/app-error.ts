@@ -5,8 +5,10 @@ export type AppErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'RATE_LIMITED'
+  | 'PAYLOAD_TOO_LARGE'
+  | 'UNSUPPORTED_MEDIA_TYPE'
   | 'AI_PROVIDER_ERROR'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_SERVER_ERROR';
 
 export class AppError extends Error {
   readonly statusCode: number;

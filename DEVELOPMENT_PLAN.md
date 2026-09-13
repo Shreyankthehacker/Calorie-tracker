@@ -184,7 +184,7 @@ Implement / verify:
 - Loading and empty states on the frontend
 - CORS allowlist
 - Security checklist (secrets, JWT, refresh tokens, ownership, upload validation, rate limits)
-- OpenAPI / Swagger (or equivalent API docs) if promised in README
+- OpenAPI / Swagger is **not** used; `API_DESIGN.md` is the API contract
 - README and environment documentation synchronized with implementation
 - Architecture / API docs updated if behavior drifted
 - Gap-fill tests and regression pass
