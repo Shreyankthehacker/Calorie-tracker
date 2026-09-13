@@ -15,6 +15,7 @@ import { foodEntryRoutes } from './routes/food-entries.js';
 import { goalRoutes } from './routes/goals.js';
 import { healthRoutes } from './routes/health.js';
 import { reportRoutes } from './routes/reports.js';
+import { pdfImportRoutes } from './routes/pdf-import.js';
 
 export type AppDependencies = {
   nutritionProvider?: NutritionExtractionProvider;
@@ -23,9 +24,10 @@ export type AppDependencies = {
 };
 
 export async function buildApp(env: Env, deps: AppDependencies = {}) {
+  const maxUploadBytes = Math.max(env.AI_MAX_UPLOAD_BYTES, env.PDF_MAX_UPLOAD_BYTES);
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
-    bodyLimit: env.AI_MAX_UPLOAD_BYTES + 256 * 1024,
+    bodyLimit: maxUploadBytes + 256 * 1024,
   });
 
   registerErrorHandler(app);
@@ -36,7 +38,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
 
   await app.register(multipart, {
     limits: {
-      fileSize: env.AI_MAX_UPLOAD_BYTES,
+      fileSize: maxUploadBytes,
       files: 1,
       fields: 4,
     },
@@ -59,6 +61,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
     ...(deps.llmProvider ? { llmProvider: deps.llmProvider } : {}),
     ...(deps.foodSearchProvider ? { foodSearchProvider: deps.foodSearchProvider } : {}),
   });
+  await app.register(pdfImportRoutes, { prefix: '/api/v1', env });
 
   return app;
 }

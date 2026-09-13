@@ -61,6 +61,27 @@ export class FoodEntryService {
     return toPublicFoodEntry(created);
   }
 
+  async createMany(
+    authenticatedUserId: string,
+    bodies: FoodEntryCreateBody[],
+  ): Promise<PublicFoodEntry[]> {
+    const ownerId = resolveOwnerId(authenticatedUserId);
+    const inputs = bodies.map((body) => ({
+      mealType: body.mealType,
+      foodName: body.foodName,
+      quantity: body.quantity,
+      quantityUnit: body.quantityUnit,
+      calories: body.calories,
+      protein: body.protein,
+      carbs: body.carbs,
+      fat: body.fat,
+      consumedAt: body.consumedAt,
+      micronutrients: nutrientsFromBody(body),
+    }));
+    const created = await this.entries.createMany(ownerId, inputs);
+    return created.map(toPublicFoodEntry);
+  }
+
   async getById(
     authenticatedUserId: string,
     id: string,

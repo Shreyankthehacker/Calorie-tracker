@@ -128,6 +128,9 @@ export function DashboardPage() {
             <Link className="button button-secondary" to="/chat">
               Ask the assistant
             </Link>
+            <Link className="button button-secondary" to="/import">
+              Import PDF
+            </Link>
           </div>
         </section>
 

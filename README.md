@@ -1,8 +1,8 @@
 # Personal Calorie Tracker
 
-A full-stack personal nutrition tracker for logging meals, setting a current nutrition goal, reviewing timezone-aware reports, extracting nutrition from food photos, and chatting with an assistant that uses application tools.
+A full-stack personal nutrition tracker for logging meals, setting a current nutrition goal, reviewing timezone-aware reports, extracting nutrition from food photos, chatting with an assistant that uses application tools, and importing text-based PDF food diaries after review.
 
-Users review and edit AI-extracted values before anything is saved. Extraction never creates a food entry on its own. Conversational meal logging also requires an explicit Save meal confirmation.
+Users review and edit AI-extracted values before anything is saved. Extraction never creates a food entry on its own. Conversational meal logging also requires an explicit Save meal confirmation. PDF import never creates food entries until the user confirms the previewed meals.
 
 ---
 
@@ -55,10 +55,10 @@ Implemented:
 - Review/edit of extracted nutrition before an explicit save through `POST /food-entries`
 - Conversational AI assistant (`/chat`) that reads goals, summaries, and weekly reports through application tools
 - Explicit Save meal confirmation before chat-proposed meals are persisted
+- PDF food diary import (`/import`): structural text extraction, preview, edit/remove, then explicit confirmation
 
 Deferred (not implemented):
 
-- PDF nutrition history import
 - Family accounts / dependent accounts
 
 ---
@@ -200,6 +200,9 @@ Root `.env.example` points at package-specific examples. Application secrets liv
 | `AI_RATE_LIMIT_MAX` | AI requests per window (default `10`) |
 | `AI_RATE_LIMIT_TIME_WINDOW_MS` | AI window in ms (default `60000`) |
 | `AI_PROVIDER_TIMEOUT_MS` | Provider timeout (default `25000`) |
+| `PDF_MAX_UPLOAD_BYTES` | PDF upload cap (default `5242880` / 5MB) |
+| `PDF_RATE_LIMIT_MAX` | PDF preview requests per window (default `10`) |
+| `PDF_RATE_LIMIT_TIME_WINDOW_MS` | PDF preview window in ms (default `60000`) |
 
 The frontend must never receive `GEMINI_API_KEY`.
 
@@ -285,6 +288,19 @@ Backend AI tests inject mock `NutritionExtractionProvider` and `LlmProvider` imp
 
 ---
 
+# PDF Food Diary Import
+
+- Preview: `POST /api/v1/imports/food-diary/preview` (authenticated, multipart `file`, rate-limited)
+- Confirm: `POST /api/v1/imports/food-diary/confirm` (authenticated JSON; uses `FoodEntryService.createMany`)
+- Supported: text-based tabular, line-oriented, and mixed dash/pipe food diaries
+- Library: Mozilla `pdfjs-dist` extracts positioned text (page, x, y, width, height). Rows are grouped by Y proximity; columns are inferred from header X positions
+- Preview does **not** create `FoodEntry` rows. Confirmation is all-or-nothing
+- Scanned/image-only PDFs are **not** supported (no OCR). AI is **not** used for PDF parsing
+- Maximum upload: 5MB. Preview rate limit: 10 requests / 60s. Maximum 30 pages and 100 previewed meals
+- Possible duplicates (same food name, meal type, quantity, calories, `consumedAt`) are flagged in preview; the user chooses whether to import them
+
+---
+
 # Security
 
 - Passwords hashed with Argon2id
@@ -292,9 +308,9 @@ Backend AI tests inject mock `NutritionExtractionProvider` and `LlmProvider` imp
 - Refresh tokens generated with CSPRNG, stored hashed (SHA-256 with `JWT_REFRESH_SECRET` as pepper), rotated on use, and revoked on logout
 - Ownership is enforced server-side from the access token; client `userId` is ignored
 - Zod validation at API boundaries, including AI output
-- Rate limits on auth (default 20 / 60s) and AI extraction/chat (default 10 / 60s)
+- Rate limits on auth (default 20 / 60s), AI extraction/chat (default 10 / 60s), and PDF preview (default 10 / 60s)
 - CORS allowlist via `CORS_ORIGIN` (no `*`)
-- Upload validation for AI images; oversized uploads return 413; unsupported types return 415
+- Upload validation for AI images and PDF diaries; oversized uploads return 413; unsupported types return 415
 - Generic HTTP 500 bodies never include stack traces, Prisma errors, provider payloads, or secrets
 
 ---
@@ -309,7 +325,7 @@ The implemented HTTP contract is documented in `API_DESIGN.md`.
 
 # Architecture
 
-See `ARCHITECTURE.md` for layering, schema decisions, reporting, AI extraction, conversational AI tools, and security boundaries.
+See `ARCHITECTURE.md` for layering, schema decisions, reporting, AI extraction, conversational AI tools, PDF import, and security boundaries.
 
 ---
 
@@ -327,4 +343,4 @@ See `PROJECT_REQUIREMENTS.md`.
 
 # Development Roadmap
 
-See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI is implemented. PDF import and family accounts remain out of scope.
+See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI and PDF food diary import are implemented. Family accounts remain out of scope.

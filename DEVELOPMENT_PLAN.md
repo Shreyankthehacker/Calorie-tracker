@@ -4,7 +4,7 @@ The project will be implemented incrementally.
 
 **Testing is part of every phase.** A phase is not complete until its tests pass.
 
-Do not implement remaining bonus or family features until the core application (Phases 0–6) is stable. Conversational AI is a post-core bonus and is implemented after that bar.
+Do not implement remaining family features until the core application (Phases 0–6) is stable. Conversational AI and PDF food diary import are post-core bonuses and are implemented after that bar.
 
 Stack constraints: React, TypeScript, Vite, TanStack Query, Recharts, Node.js, Fastify, Zod, Prisma, Neon PostgreSQL, Vitest. Do not introduce Express, NestJS, FastAPI, GraphQL, Redis, or other unnecessary infrastructure.
 
@@ -230,11 +230,31 @@ The LLM never accesses the database directly.
 
 Implemented tools: `logMeal` (proposal only), `getGoals`, `getNutritionSummary`, `getWeeklyReport`, `listMeals`, `searchFood` (catalog estimates). Persist meals only via `POST /api/v1/ai/chat/confirm-meal` after explicit Save meal. Chat is stateless. Tests use a mock `LlmProvider`.
 
-### Bonus — PDF Import (not implemented)
+### Bonus 2 — PDF Food Diary Import (implemented)
 
 ```text
-PDF → extraction → table detection → normalization → validation → preview → import
+Frontend /import
+     ↓
+POST /api/v1/imports/food-diary/preview
+     ↓
+PDF Import Handler (MIME, extension, size, magic bytes)
+     ↓
+PDF Import Service
+     ↓
+pdfjs-dist extraction → normalize → row/column reconstruction → deterministic parser
+     ↓
+Preview (no FoodEntry writes)
+     ↓
+User review / edit / remove
+     ↓
+POST /api/v1/imports/food-diary/confirm
+     ↓
+FoodEntryService.createMany (transaction)
+     ↓
+PostgreSQL
 ```
+
+Supported layouts: tabular, line-oriented, mixed dash/pipe. No OCR. No LLM assistance. Preview rate limit default 10 / 60s. Upload cap 5MB. Confirmation is all-or-nothing and reuses existing FoodEntry validation and ownership.
 
 ### Future — Family System (not implemented)
 

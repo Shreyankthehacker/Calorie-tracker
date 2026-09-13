@@ -52,6 +52,18 @@ function zonedWallTimeToUtc(
   return new Date(utcGuess - (asUtc - utcGuess));
 }
 
+export function calendarWallTimeUtc(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  timeZone: string,
+): Date {
+  return zonedWallTimeToUtc(year, month, day, hour, minute, second, timeZone);
+}
+
 export function resolveTimeZone(timeZone: string | null | undefined): string {
   if (timeZone && isValidTimeZone(timeZone)) {
     return timeZone;

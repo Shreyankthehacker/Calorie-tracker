@@ -9,6 +9,7 @@ const navItems = [
   { to: '/reports', label: 'Reports' },
   { to: '/scan', label: 'Scan' },
   { to: '/chat', label: 'Chat' },
+  { to: '/import', label: 'Import' },
 ];
 
 export function AppShell() {

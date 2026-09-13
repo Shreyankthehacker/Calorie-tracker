@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
+import { Prisma } from '@prisma/client';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { AppError } from '../src/errors/app-error.js';
@@ -130,6 +131,30 @@ describe('generic 500 responses', () => {
         message: 'Resource not found',
       },
     });
+
+    await app.close();
+  });
+
+  it('maps Prisma transaction timeouts without leaking internals', async () => {
+    const app = Fastify({ logger: false });
+    registerErrorHandler(app);
+    app.get('/timeout', async () => {
+      throw new Prisma.PrismaClientKnownRequestError('Transaction already closed', {
+        code: 'P2028',
+        clientVersion: 'test',
+      });
+    });
+    await app.ready();
+
+    const response = await app.inject({ method: 'GET', url: '/timeout' });
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toEqual({
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'The request timed out and no changes were saved. Please try again.',
+      },
+    });
+    expect(JSON.stringify(response.json())).not.toMatch(/prisma|transaction was 5000/i);
 
     await app.close();
   });

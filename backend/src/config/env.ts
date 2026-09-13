@@ -32,6 +32,9 @@ const envSchema = z.object({
   AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   AI_RATE_LIMIT_TIME_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(25_000),
+  PDF_MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
+  PDF_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  PDF_RATE_LIMIT_TIME_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { AppError } from '../errors/app-error.js';
 
@@ -57,7 +58,7 @@ const FASTIFY_CLIENT_ERRORS: Record<string, { status: number; body: ErrorBody }>
     body: {
       error: {
         code: 'PAYLOAD_TOO_LARGE',
-        message: 'Image exceeds the maximum upload size of 5MB',
+        message: 'Upload exceeds the maximum size of 5MB',
       },
     },
   },
@@ -98,6 +99,15 @@ export function registerErrorHandler(app: FastifyInstance): void {
         body.error.details = error.details;
       }
       return reply.status(error.statusCode).send(body);
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2028') {
+      return reply.status(503).send({
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'The request timed out and no changes were saved. Please try again.',
+        },
+      } satisfies ErrorBody);
     }
 
     if (error instanceof ZodError) {
@@ -149,7 +159,7 @@ export function registerErrorHandler(app: FastifyInstance): void {
       return reply.status(413).send({
         error: {
           code: 'PAYLOAD_TOO_LARGE',
-          message: 'Image exceeds the maximum upload size of 5MB',
+          message: 'Upload exceeds the maximum size of 5MB',
         },
       } satisfies ErrorBody);
     }

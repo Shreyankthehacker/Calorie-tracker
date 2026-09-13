@@ -670,3 +670,50 @@ p {
   background: var(--bg);
 }
 
+.import-table-wrap {
+  overflow-x: auto;
+}
+
+.import-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.import-table th,
+.import-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.55rem 0.4rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.import-table input,
+.import-table select {
+  width: 100%;
+  min-width: 5rem;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-valid {
+  background: rgba(31, 107, 74, 0.12);
+  color: var(--brand-strong);
+}
+
+.status-warning {
+  background: rgba(155, 110, 44, 0.14);
+  color: #7a4e12;
+}
+
+.status-unparsed {
+  background: rgba(155, 44, 44, 0.12);
+  color: var(--danger);
+}
+

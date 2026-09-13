@@ -212,3 +212,40 @@ export type ConfirmMealResponse = {
 };
 
 export const AI_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const PDF_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+export type PdfImportWarning = {
+  code: string;
+  message: string;
+};
+
+export type PdfPreviewRecord = {
+  id: string;
+  foodName: string | null;
+  quantity: number | null;
+  quantityUnit: string | null;
+  mealType: MealType | null;
+  consumedAt: string | null;
+  calories: number | null;
+  protein: number | null;
+  carbs: number | null;
+  fat: number | null;
+  micronutrients: Micronutrient[];
+  status: 'valid' | 'warning' | 'unparsed';
+  confidence: number;
+  issues: string[];
+  layout: 'table' | 'line' | 'mixed' | 'unknown';
+  duplicate: boolean;
+};
+
+export type PdfPreviewResponse = {
+  filename: string;
+  pageCount: number;
+  records: PdfPreviewRecord[];
+  warnings: PdfImportWarning[];
+};
+
+export type PdfConfirmResponse = {
+  importedCount: number;
+  foodEntries: FoodEntry[];
+};

@@ -64,6 +64,7 @@
 - Fastify
 - Zod
 - Prisma
+- pdfjs-dist (PDF text extraction with coordinates; used only for food-diary import)
 
 ## Database
 
@@ -460,6 +461,58 @@ Chat is stateless: no chat-history tables. Optional `history` may be sent on the
 
 ---
 
+# 12c. PDF Food Diary Import
+
+PDF import is a post-core bonus. Parsing is deterministic and structure-aware. Preview never writes `FoodEntry` rows. Confirmation uses the existing `FoodEntryService` / repository path. Bulk confirm writes entries and nutrients in two batched `createMany` statements inside a Prisma transaction (60s timeout) so Neon round-trips do not expire the default 5s interactive transaction.
+
+```text
+PDF upload
+     ↓
+MIME + extension + magic-bytes (`%PDF-`) + size validation
+     ↓
+PdfExtractor (pdfjs-dist positioned text)
+     ↓
+Normalize text blocks (keep x/y/page)
+     ↓
+Row reconstruction (Y proximity, then X reading order)
+     ↓
+Column detection from header aliases / X positions
+     ↓
+Deterministic food-diary parser (table, then line/mixed)
+     ↓
+Zod on confirm (reuse FoodEntry create schema)
+     ↓
+Confidence + warnings + duplicate flags
+     ↓
+Preview (temporary preview-* ids)
+     ↓
+User edits / removes / unchecks
+     ↓
+POST confirm → FoodEntryService.createMany
+     ↓
+PostgreSQL
+```
+
+Library: `pdfjs-dist` 4.x. Each text item exposes `transform[4]`/`[5]` as x/y in PDF user space (origin bottom-left). Rows use a 4-point Y tolerance. Columns are not hardcoded to a single X; they are inferred from header cell centers plus a column tolerance.
+
+Supported layouts (practical, not universal):
+
+- Tabular diaries with Date / Meal / Food / Qty / Calories / Protein / Carbs / Fat headers (aliases such as kcal, Energy, Prot., CHO, Total Fat)
+- Line-oriented diaries (date and meal headings, then food name + nutrition lines)
+- Mixed dash/pipe lines (`Oatmeal - 1 bowl - 320 kcal - 12g protein`)
+
+Limitations:
+
+- Scanned/image-only PDFs are not supported (no OCR)
+- Arbitrary document layouts are not claimed; unsupported text yields warnings and no invented meals
+- Missing calories/macros stay `null` and must be filled before confirm
+- AI/LLM assistance is **not** enabled for PDF import
+- PDFs are processed in memory and discarded; there is no PDF storage table
+
+Duplicates: preview compares food name (case-insensitive), meal type, quantity, rounded calories, and `consumedAt`. Matches are marked `duplicate` and excluded from import until the user checks them. No uniqueness constraint was added to `FoodEntry`.
+
+---
+
 # 13. Error Handling
 
 All API errors use a single JSON envelope:
@@ -536,6 +589,8 @@ Examples:
 /api/v1/ai/nutrition-extract
 /api/v1/ai/chat
 /api/v1/ai/chat/confirm-meal
+/api/v1/imports/food-diary/preview
+/api/v1/imports/food-diary/confirm
 ```
 
 ---
@@ -606,6 +661,7 @@ Priority coverage:
 - report calculations
 - AI response validation (with mocked provider)
 - conversational AI tools, confirmation, ownership, and mocked LLM provider loops
+- PDF import preview/confirm, parser fixtures, ownership, and transactional confirm
 
 Use Vitest and Fastify inject/API tests for backend-critical paths.
 
@@ -619,10 +675,9 @@ Family functionality (later) must be an **additional authorization/policy layer*
 
 Do not implement in v1:
 
-- PDF import
 - family system
 
-Conversational AI is implemented as a post-core bonus. The LLM never accesses the database directly.
+Conversational AI and PDF food diary import are implemented as post-core bonuses. The LLM never accesses the database directly. PDF preview never writes food entries.
 
 Required functionality comes first.
 
@@ -637,4 +692,5 @@ Required functionality comes first.
 5. Reports are computed on read with no materialization in v1.
 6. AI extract never persists food entries; the user confirms via the food entry API.
 7. Conversational AI may propose a meal, but only explicit `confirm-meal` (Save meal) creates a `FoodEntry`.
-8. Family tables and remaining bonus features (PDF import) are deferred.
+8. PDF import may propose meals from a text-based diary, but only explicit confirm creates `FoodEntry` rows.
+9. Family tables remain deferred.

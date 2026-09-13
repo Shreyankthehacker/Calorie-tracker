@@ -305,6 +305,100 @@ Rules:
 
 ---
 
+# PDF Food Diary Import
+
+```text
+POST /imports/food-diary/preview
+POST /imports/food-diary/confirm
+```
+
+Authenticated. Identity comes from the access token. Requests must not include a `userId`.
+
+## Preview
+
+Multipart field `file`. Rate-limited (`PDF_RATE_LIMIT_MAX`, default 10 requests / 60s). Maximum upload `PDF_MAX_UPLOAD_BYTES` (default 5MB). Declared MIME must be `application/pdf`, filename must end in `.pdf`, and the buffer must start with `%PDF-`.
+
+Preview extracts positioned text with `pdfjs-dist`, reconstructs rows/columns, and returns candidate meals. It does **not** create `FoodEntry` rows. Temporary record ids look like `preview-1` and are not database ids.
+
+Success `200`:
+
+```json
+{
+  "filename": "food-diary.pdf",
+  "pageCount": 1,
+  "records": [
+    {
+      "id": "preview-1",
+      "foodName": "Oatmeal",
+      "quantity": 1,
+      "quantityUnit": "bowl",
+      "mealType": "BREAKFAST",
+      "consumedAt": "2026-09-13T08:00:00.000Z",
+      "calories": 320,
+      "protein": 12,
+      "carbs": 52,
+      "fat": 8,
+      "micronutrients": [],
+      "status": "valid",
+      "confidence": 0.95,
+      "issues": [],
+      "layout": "table",
+      "duplicate": false
+    }
+  ],
+  "warnings": []
+}
+```
+
+`status` is `valid`, `warning`, or `unparsed`. Missing calories/macros stay `null`. Scanned/empty PDFs return `200` with no records and a `NO_TEXT` warning. Unsupported layouts return `NO_RECORDS`. Possible duplicates of existing meals set `duplicate: true`.
+
+Errors:
+
+- Unauthenticated: `401`
+- Missing file: `400`
+- Oversized: `413` / `PAYLOAD_TOO_LARGE`
+- Wrong type / non-PDF magic bytes: `415` / `UNSUPPORTED_MEDIA_TYPE`
+- Malformed PDF / too many pages / too much text: `400` / `VALIDATION_ERROR` (no parser stack traces)
+- Rate limit: `429`
+
+## Confirm
+
+JSON body. Not on the PDF preview rate limiter. Maximum 100 records. Each record is validated with the existing food-entry create schema (no client `userId`).
+
+```json
+{
+  "records": [
+    {
+      "foodName": "Oatmeal",
+      "quantity": 1,
+      "quantityUnit": "bowl",
+      "mealType": "BREAKFAST",
+      "consumedAt": "2026-09-13T08:00:00.000Z",
+      "calories": 320,
+      "protein": 12,
+      "carbs": 52,
+      "fat": 8,
+      "micronutrients": []
+    }
+  ]
+}
+```
+
+Success `201`:
+
+```json
+{
+  "importedCount": 1,
+  "foodEntries": []
+}
+```
+
+`foodEntries` is the created public food-entry list. Import is transactional: all records succeed or none are written. Ownership is always the authenticated user.
+
+Invalid records: `400` / `VALIDATION_ERROR` with no partial insert.
+
+---
+
 # Common API Response Pattern
 
 Successful list response:

@@ -7,6 +7,7 @@ import { MealsPage } from '../pages/MealsPage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { ScanFoodPage } from '../pages/ScanFoodPage';
 import { ChatPage } from '../pages/ChatPage';
+import { ImportPdfPage } from '../pages/ImportPdfPage';
 import { GuestRoute, ProtectedRoute } from './guards';
 
 export function AppRouter() {
@@ -25,6 +26,7 @@ export function AppRouter() {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/scan" element={<ScanFoodPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/import" element={<ImportPdfPage />} />
         </Route>
       </Route>
 
