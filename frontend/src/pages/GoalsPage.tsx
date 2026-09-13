@@ -128,7 +128,7 @@ export function GoalsPage() {
     <section className="page">
       <header className="page-header">
         <h1>Nutrition goals</h1>
-        <p className="muted">Set daily targets used for progress and future reports.</p>
+        <p className="muted">Set daily targets used for progress and reports.</p>
       </header>
 
       {goalQuery.isPending ? <p className="muted">Loading goals…</p> : null}

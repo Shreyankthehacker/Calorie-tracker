@@ -4,6 +4,7 @@ import { LoginPage, RegisterPage } from '../pages/AuthPages';
 import { DashboardPage } from '../pages/DashboardPage';
 import { GoalsPage } from '../pages/GoalsPage';
 import { MealsPage } from '../pages/MealsPage';
+import { ReportsPage } from '../pages/ReportsPage';
 import { GuestRoute, PlaceholderPage, ProtectedRoute } from './guards';
 
 export function AppRouter() {
@@ -19,15 +20,7 @@ export function AppRouter() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/meals" element={<MealsPage />} />
-          <Route
-            path="/reports"
-            element={
-              <PlaceholderPage
-                title="Reports"
-                description="Nutrition reports and charts will arrive in a later phase."
-              />
-            }
-          />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route
             path="/scan"
             element={

@@ -114,25 +114,47 @@ Ownership: every read/update/delete by id must verify the entry belongs to the a
 
 # Reports
 
+Reports are derived at request time from persisted `FoodEntry` rows. There is no `Report` table, cache, or materialized total.
+
 ```text
-GET /reports/calories
-GET /reports/macros
-GET /reports/micros
-GET /reports/goals
+GET /reports/today
+GET /reports/calories?startDate=&endDate=
+GET /reports/macros?startDate=&endDate=
+GET /reports/micros?startDate=&endDate=
+GET /reports/micronutrients?startDate=&endDate=   (alias of /micros)
+GET /reports/goals?startDate=&endDate=
+GET /reports/goal-vs-actual?startDate=&endDate=   (alias of /goals)
 ```
 
-Reports support a time range, for example:
+Example:
 
 ```text
 GET /reports/calories?startDate=2026-09-01&endDate=2026-09-07
 ```
 
+Daily vs weekly support uses the same endpoints: pass a 1-day range for today, or a week (Monday–Sunday) for weekly charts. Calorie and macro responses include per-day `data` (zero-filled) plus period `totals`. Goal-vs-actual scales the current daily goal by the inclusive day count.
+
+Query:
+
+- `startDate` / `endDate`: required `YYYY-MM-DD` calendar dates (except `/reports/today`)
+- Inclusive range; maximum **93** days
+- Missing dates, inverted ranges, and oversized ranges return `400`
+- Client `userId` and client timezone parameters are ignored; owner and timezone come from the authenticated user
+
+Timezone:
+
+- Calendar days are computed from `FoodEntry.consumedAt` in `User.timezone` (IANA, default `UTC`)
+- Example: `2026-09-12T23:30:00Z` for `Asia/Kolkata` belongs to **2026-09-13**, not 2026-09-12
+
+`GET /reports/today` uses the current instant in the user's timezone and is **not** paginated. It is the source of dashboard daily totals (do not sum a food-entry list page).
+
 Rules:
 
-- Aggregate persisted food entries at request time
+- Aggregate persisted food entries at request time in the database
 - Bucket days using `consumedAt` in the **user's configured timezone**
-- Compare against the user's current goal for goal-vs-actual
-- Return aggregate series suitable for charts
+- Days with no entries are returned as zeros so charts stay continuous
+- Micronutrients are grouped by `nutrientKey` **and** `unit` (never mix units)
+- Compare against the user's **current** goal only; `goal` is `null` when none exists
 - **Do not paginate** report responses
 
 Required report coverage:

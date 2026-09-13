@@ -7,6 +7,7 @@ import { authRoutes } from './routes/auth.js';
 import { foodEntryRoutes } from './routes/food-entries.js';
 import { goalRoutes } from './routes/goals.js';
 import { healthRoutes } from './routes/health.js';
+import { reportRoutes } from './routes/reports.js';
 
 export async function buildApp(env: Env) {
   const app = Fastify({
@@ -24,6 +25,7 @@ export async function buildApp(env: Env) {
   await app.register(authRoutes, { prefix: '/api/v1', env });
   await app.register(goalRoutes, { prefix: '/api/v1' });
   await app.register(foodEntryRoutes, { prefix: '/api/v1' });
+  await app.register(reportRoutes, { prefix: '/api/v1' });
 
   return app;
 }

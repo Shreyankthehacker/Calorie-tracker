@@ -106,3 +106,37 @@ export function calendarDateInTimeZone(instant: Date, timeZone: string): string 
   const day = String(parts.day ?? 0).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+export function formatDateOnly(year: number, month: number, day: number): string {
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+export function addCalendarDays(dateStr: string, days: number): string {
+  const parsed = parseDateOnly(dateStr);
+  if (!parsed) {
+    throw new Error(`Invalid calendar date: ${dateStr}`);
+  }
+  const next = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day + days));
+  return formatDateOnly(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
+}
+
+export function inclusiveDayCount(startDate: string, endDate: string): number {
+  const start = parseDateOnly(startDate);
+  const end = parseDateOnly(endDate);
+  if (!start || !end) {
+    throw new Error(`Invalid calendar date range: ${startDate}..${endDate}`);
+  }
+  const ms =
+    Date.UTC(end.year, end.month - 1, end.day) - Date.UTC(start.year, start.month - 1, start.day);
+  return Math.floor(ms / 86_400_000) + 1;
+}
+
+export function eachCalendarDateInclusive(startDate: string, endDate: string): string[] {
+  const dates: string[] = [];
+  let current = startDate;
+  while (current <= endDate) {
+    dates.push(current);
+    current = addCalendarDays(current, 1);
+  }
+  return dates;
+}

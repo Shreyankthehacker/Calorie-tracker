@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { listFoodEntries } from '../api/food-entries';
 import { getGoal } from '../api/goals';
-import { ApiError, type FoodEntry, type Goal } from '../api/types';
+import { getTodayReport } from '../api/reports';
+import { ApiError, type Goal } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
 import { ProgressBar } from '../components/layout/AppShell';
 import { calendarDateInTimeZone, formatConsumedAt } from '../lib/dates';
@@ -20,18 +21,6 @@ function timeGreeting(): string {
   return 'Good evening';
 }
 
-function sumToday(entries: FoodEntry[]) {
-  return entries.reduce(
-    (acc, entry) => ({
-      calories: acc.calories + entry.calories,
-      protein: acc.protein + entry.protein,
-      carbs: acc.carbs + entry.carbs,
-      fat: acc.fat + entry.fat,
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 },
-  );
-}
-
 export function DashboardPage() {
   const { user } = useAuth();
   const today = calendarDateInTimeZone(new Date(), user?.timezone ?? 'UTC');
@@ -42,22 +31,28 @@ export function DashboardPage() {
     retry: false,
   });
 
-  const todayQuery = useQuery({
-    queryKey: ['food-entries', 'today', today],
+  const todayReportQuery = useQuery({
+    queryKey: ['reports', 'today'],
+    queryFn: getTodayReport,
+  });
+
+  const recentMealsQuery = useQuery({
+    queryKey: ['food-entries', 'today-recent', today],
     queryFn: () =>
       listFoodEntries({
         startDate: today,
         endDate: today,
         page: 1,
-        pageSize: 50,
+        pageSize: 4,
       }),
   });
 
   const missingGoal =
     goalQuery.isError && goalQuery.error instanceof ApiError && goalQuery.error.status === 404;
   const goal = goalQuery.data;
-  const todayEntries = todayQuery.data?.data ?? [];
-  const totals = sumToday(todayEntries);
+  const totals = todayReportQuery.data ?? { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  const recentMeals = recentMealsQuery.data?.data ?? [];
+  const nutritionLoading = goalQuery.isPending || todayReportQuery.isPending;
 
   return (
     <section className="page">
@@ -71,8 +66,10 @@ export function DashboardPage() {
       <div className="dashboard-grid">
         <section className="panel">
           <h2>Today&apos;s Nutrition</h2>
-          {goalQuery.isPending || todayQuery.isPending ? (
+          {nutritionLoading ? (
             <p className="muted">Loading today&apos;s nutrition…</p>
+          ) : todayReportQuery.isError ? (
+            <p className="error-text">Could not load today&apos;s nutrition.</p>
           ) : missingGoal ? (
             <div className="empty-panel compact">
               <MacroSummary totals={totals} />
@@ -90,7 +87,11 @@ export function DashboardPage() {
 
         <section className="panel">
           <h2>Today&apos;s progress</h2>
-          {goal ? (
+          {todayReportQuery.isPending ? (
+            <p className="muted">Loading today&apos;s nutrition…</p>
+          ) : todayReportQuery.isError ? (
+            <p className="error-text">Could not load today&apos;s nutrition.</p>
+          ) : goal ? (
             <div className="progress-stack">
               <ProgressBar
                 label="Calories"
@@ -129,9 +130,9 @@ export function DashboardPage() {
 
         <section className="panel">
           <h2>Recent Activity</h2>
-          {todayQuery.isPending ? (
+          {recentMealsQuery.isPending ? (
             <p className="muted">Loading meals…</p>
-          ) : todayEntries.length === 0 ? (
+          ) : recentMeals.length === 0 ? (
             <div className="empty-panel compact">
               <p>No meals logged today.</p>
               <Link className="button button-secondary" to="/meals">
@@ -140,7 +141,7 @@ export function DashboardPage() {
             </div>
           ) : (
             <ul className="meal-list compact-list">
-              {todayEntries.slice(0, 4).map((entry) => (
+              {recentMeals.map((entry) => (
                 <li key={entry.id}>
                   <p className="meal-name">{entry.foodName}</p>
                   <p className="muted small">

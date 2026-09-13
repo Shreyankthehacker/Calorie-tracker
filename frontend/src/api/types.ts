@@ -111,3 +111,53 @@ export type FoodEntryListParams = {
   page?: number;
   pageSize?: number;
 };
+
+export type MacroTotals = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+export type TodayReport = MacroTotals & {
+  date: string;
+  timezone: string;
+};
+
+export type CalorieTrendReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  data: Array<{ date: string; calories: number }>;
+  totals: { calories: number };
+};
+
+export type MacroTrendReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  data: Array<{ date: string; protein: number; carbs: number; fat: number }>;
+  totals: { protein: number; carbs: number; fat: number };
+};
+
+export type MicronutrientReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  data: Array<{ nutrientKey: string; amount: number; unit: string }>;
+};
+
+export type GoalVsActualReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  dayCount: number;
+  dailyGoal: MacroTotals | null;
+  goal: MacroTotals | null;
+  actual: MacroTotals;
+};
+
+export type ReportRangeParams = {
+  startDate: string;
+  endDate: string;
+};
