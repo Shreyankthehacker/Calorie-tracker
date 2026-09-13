@@ -6,6 +6,7 @@ export * from './goals';
 export * from './food-entries';
 export * from './reports';
 export * from './ai';
+export * from './chat';
 export * from './types';
 export { ApiError } from './types';
 export { tokenStorage } from './tokenStorage';

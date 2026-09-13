@@ -4,7 +4,7 @@ The project will be implemented incrementally.
 
 **Testing is part of every phase.** A phase is not complete until its tests pass.
 
-Do not implement bonus or family features until the core application (Phases 0–6) is stable.
+Do not implement remaining bonus or family features until the core application (Phases 0–6) is stable. Conversational AI is a post-core bonus and is implemented after that bar.
 
 Stack constraints: React, TypeScript, Vite, TanStack Query, Recharts, Node.js, Fastify, Zod, Prisma, Neon PostgreSQL, Vitest. Do not introduce Express, NestJS, FastAPI, GraphQL, Redis, or other unnecessary infrastructure.
 
@@ -202,29 +202,41 @@ Test suite green
 
 ## After Core Is Stable
 
-Only after Phases 0–6 are complete and stable:
-
-### Bonus — Conversational AI
-
-Potential tools:
+### Bonus 1 — Conversational AI (implemented)
 
 ```text
-logMeal
-getGoals
-getNutritionSummary
-getWeeklyReport
-searchFood
+Frontend
+     ↓
+POST /api/v1/ai/chat
+     ↓
+Chat Handler
+     ↓
+Chat Service
+     ↓
+LlmProvider (Gemini or mock)
+     ↓
+Allowlisted tools
+     ↓
+Existing services
+     ↓
+Repositories
+     ↓
+Prisma
+     ↓
+PostgreSQL
 ```
 
-The LLM should call application tools rather than accessing the database directly.
+The LLM never accesses the database directly.
 
-### Bonus — PDF Import
+Implemented tools: `logMeal` (proposal only), `getGoals`, `getNutritionSummary`, `getWeeklyReport`, `listMeals`, `searchFood` (catalog estimates). Persist meals only via `POST /api/v1/ai/chat/confirm-meal` after explicit Save meal. Chat is stateless. Tests use a mock `LlmProvider`.
+
+### Bonus — PDF Import (not implemented)
 
 ```text
 PDF → extraction → table detection → normalization → validation → preview → import
 ```
 
-### Future — Family System
+### Future — Family System (not implemented)
 
 Additional authorization/policy layer over existing user-owned data.
 

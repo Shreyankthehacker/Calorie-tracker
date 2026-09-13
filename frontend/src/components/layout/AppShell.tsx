@@ -8,6 +8,7 @@ const navItems = [
   { to: '/meals', label: 'Meals' },
   { to: '/reports', label: 'Reports' },
   { to: '/scan', label: 'Scan' },
+  { to: '/chat', label: 'Chat' },
 ];
 
 export function AppShell() {

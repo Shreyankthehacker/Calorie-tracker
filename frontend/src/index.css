@@ -624,3 +624,49 @@ p {
   border: 1px solid var(--line);
 }
 
+.chat-thread {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.chat-bubble {
+  max-width: min(42rem, 100%);
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.chat-bubble-user {
+  justify-self: end;
+  background: var(--brand);
+  color: #fff;
+}
+
+.chat-bubble-assistant {
+  justify-self: start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chat-composer {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.pending-meal {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.85rem;
+  background: var(--bg);
+}
+

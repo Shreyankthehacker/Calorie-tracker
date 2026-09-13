@@ -3,10 +3,13 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import type { Env } from './config/env.js';
 import type { NutritionExtractionProvider } from './ai/nutrition-provider.js';
+import type { FoodSearchProvider } from './ai/food-search-provider.js';
+import type { LlmProvider } from './ai/llm-provider.js';
 import { createCorsOriginDelegate, parseCorsOrigins } from './lib/cors.js';
 import { authPlugin } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { aiExtractionRoutes } from './routes/ai.js';
+import { chatRoutes } from './routes/chat.js';
 import { authRoutes } from './routes/auth.js';
 import { foodEntryRoutes } from './routes/food-entries.js';
 import { goalRoutes } from './routes/goals.js';
@@ -15,6 +18,8 @@ import { reportRoutes } from './routes/reports.js';
 
 export type AppDependencies = {
   nutritionProvider?: NutritionExtractionProvider;
+  llmProvider?: LlmProvider;
+  foodSearchProvider?: FoodSearchProvider;
 };
 
 export async function buildApp(env: Env, deps: AppDependencies = {}) {
@@ -47,6 +52,12 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
     prefix: '/api/v1',
     env,
     ...(deps.nutritionProvider ? { nutritionProvider: deps.nutritionProvider } : {}),
+  });
+  await app.register(chatRoutes, {
+    prefix: '/api/v1',
+    env,
+    ...(deps.llmProvider ? { llmProvider: deps.llmProvider } : {}),
+    ...(deps.foodSearchProvider ? { foodSearchProvider: deps.foodSearchProvider } : {}),
   });
 
   return app;

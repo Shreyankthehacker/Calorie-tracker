@@ -34,11 +34,13 @@
                 ▼
         ┌────────────────────┐
         │ AIExtractionService│
-        │  (provider abstraction)
+        │ ChatService        │
+        │  (provider + tools)
         └─────────┬──────────┘
                   ▼
         ┌────────────────────┐
         │ Gemini (or test mock)
+        │ Application tools only
         └────────────────────┘
 ```
 
@@ -75,8 +77,8 @@
 
 ## AI
 
-- Gemini, used only on the backend behind a `NutritionExtractionProvider` / `AIExtractionService` abstraction
-- Tests inject a mock provider and must not call Gemini
+- Gemini, used only on the backend behind `NutritionExtractionProvider` / `AIExtractionService` and `LlmProvider` / `ChatService` abstractions
+- Tests inject mock providers and must not call Gemini
 
 ## Explicitly out of scope for the stack
 
@@ -410,6 +412,54 @@ Rules:
 
 ---
 
+# 12b. Conversational AI
+
+```text
+Frontend
+     ↓
+POST /api/v1/ai/chat
+     ↓
+Chat Handler
+     ↓
+Chat Service / agent orchestrator
+     ↓
+LLM Provider (Gemini or test mock)
+     ↓
+Allowlisted application tools
+     ↓
+Existing Goal / Report / FoodEntry services
+     ↓
+Repositories
+     ↓
+Prisma
+     ↓
+PostgreSQL
+```
+
+**The LLM never accesses the database directly.** It never receives `DATABASE_URL`, Prisma, SQL, or arbitrary repository methods. It may only request these allowlisted tools:
+
+- `getGoals` — read current **daily** calorie/macro targets (no mutation)
+- `getNutritionSummary` — aggregated intake vs daily and period targets (no mutation)
+- `getWeeklyReport` — Monday–Sunday aggregates with labeled kcal/gram fields (no mutation)
+- `listMeals` — logged food entries for a date range or `today`/`week` (no mutation)
+- `searchFood` — in-app catalog estimates behind `FoodSearchProvider` (no mutation)
+- `logMeal` — propose a food entry; the chat loop does **not** persist it
+
+Tool arguments are Zod-validated before execution. Owner identity always comes from the JWT `sub`. Tool names are allowlisted; unknown tools are rejected. The orchestrator stops after `CHAT_MAX_TOOL_ROUNDS` (5).
+
+Meal confirmation is enforced at the application layer:
+
+1. A `logMeal` tool call is validated and returned as `pendingMeal`.
+2. No `FoodEntry` is created.
+3. The client shows Save meal / Cancel.
+4. Only `POST /api/v1/ai/chat/confirm-meal` (authenticated) calls `FoodEntryService.create`.
+
+`searchFood` uses a `FoodSearchProvider` abstraction. The current implementation is an in-memory `CatalogFoodSearchProvider` of labeled estimates (`source: catalog_estimate`), not a laboratory food database. A real provider can replace it later.
+
+Chat is stateless: no chat-history tables. Optional `history` may be sent on the request. Gemini credentials stay on the backend. Tests inject a mock `LlmProvider` and must not call Gemini.
+
+---
+
 # 13. Error Handling
 
 All API errors use a single JSON envelope:
@@ -484,6 +534,8 @@ Examples:
 /api/v1/food-entries
 /api/v1/reports
 /api/v1/ai/nutrition-extract
+/api/v1/ai/chat
+/api/v1/ai/chat/confirm-meal
 ```
 
 ---
@@ -532,9 +584,10 @@ Enforce:
 - ownership checks on all user-owned resources; never trust a client `userId`
 - CORS allowlist from `CORS_ORIGIN` (comma-separated origins; `*` is rejected)
 - upload validation for AI endpoints (MIME, magic bytes, 5MB cap)
-- rate limiting for authentication and AI endpoints
+- rate limiting for authentication, AI extraction, and AI chat endpoints
 - generic HTTP 500 responses without stack traces, Prisma errors, Gemini payloads, or secrets
 - Gemini credentials loaded only on the backend
+- conversational AI tools cannot receive a client `userId` or execute SQL; only allowlisted tools run
 
 ---
 
@@ -552,6 +605,7 @@ Priority coverage:
 - pagination
 - report calculations
 - AI response validation (with mocked provider)
+- conversational AI tools, confirmation, ownership, and mocked LLM provider loops
 
 Use Vitest and Fastify inject/API tests for backend-critical paths.
 
@@ -565,9 +619,10 @@ Family functionality (later) must be an **additional authorization/policy layer*
 
 Do not implement in v1:
 
-- conversational AI
 - PDF import
 - family system
+
+Conversational AI is implemented as a post-core bonus. The LLM never accesses the database directly.
 
 Required functionality comes first.
 
@@ -581,4 +636,5 @@ Required functionality comes first.
 4. Macros use fixed units (kcal / grams); micros use `amount` + `unit` with canonical keys.
 5. Reports are computed on read with no materialization in v1.
 6. AI extract never persists food entries; the user confirms via the food entry API.
-7. Family tables and bonus features are deferred until the core app is stable.
+7. Conversational AI may propose a meal, but only explicit `confirm-meal` (Save meal) creates a `FoodEntry`.
+8. Family tables and remaining bonus features (PDF import) are deferred.

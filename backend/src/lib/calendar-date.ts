@@ -140,3 +140,14 @@ export function eachCalendarDateInclusive(startDate: string, endDate: string): s
   }
   return dates;
 }
+
+/** Monday of the ISO week containing a calendar date (YYYY-MM-DD). */
+export function mondayOfContainingWeek(dateStr: string): string {
+  const parsed = parseDateOnly(dateStr);
+  if (!parsed) {
+    throw new Error(`Invalid calendar date: ${dateStr}`);
+  }
+  const weekday = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day)).getUTCDay();
+  const delta = weekday === 0 ? -6 : 1 - weekday;
+  return addCalendarDays(dateStr, delta);
+}

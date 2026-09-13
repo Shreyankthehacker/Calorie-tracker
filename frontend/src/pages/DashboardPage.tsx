@@ -125,6 +125,9 @@ export function DashboardPage() {
             <Link className="button button-secondary" to="/scan">
               Scan Food
             </Link>
+            <Link className="button button-secondary" to="/chat">
+              Ask the assistant
+            </Link>
           </div>
         </section>
 

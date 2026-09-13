@@ -183,4 +183,32 @@ export type NutritionExtractResponse = {
   extraction: NutritionExtraction;
 };
 
+export type ChatHistoryItem = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export type PendingMeal = {
+  mealType: MealType;
+  foodName: string;
+  quantity: number;
+  quantityUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  consumedAt: string;
+  micronutrients: Micronutrient[];
+};
+
+export type ChatResponse = {
+  message: string;
+  pendingMeal: PendingMeal | null;
+};
+
+export type ConfirmMealResponse = {
+  message: string;
+  foodEntry: FoodEntry;
+};
+
 export const AI_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;

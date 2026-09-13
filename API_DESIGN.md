@@ -242,6 +242,69 @@ Rules:
 
 ---
 
+# Conversational AI
+
+```text
+POST /ai/chat
+POST /ai/chat/confirm-meal
+```
+
+Authenticated. Rate-limited with the same AI budget as extraction (`AI_RATE_LIMIT_MAX`, default 10 requests / 60s). Identity comes from the access token. Requests must not include a `userId`. Chat is stateless (no chat-history tables). Optional `history` is accepted only for the current request.
+
+The LLM is reached through `LlmProvider` (Gemini in production, a mock in tests). **The LLM never accesses the database directly.** It may only request allowlisted application tools, whose arguments are Zod-validated before existing services run:
+
+| Tool | Mutates data | Service |
+| --- | --- | --- |
+| `getGoals` | no | `GoalService` |
+| `getNutritionSummary` | no | `ReportService` |
+| `getWeeklyReport` | no | `ReportService` |
+| `listMeals` | no | `FoodEntryService.list` |
+| `searchFood` | no | `FoodSearchProvider` (in-memory catalog estimates) |
+| `logMeal` | no in the chat loop | Validated proposal only; persist via confirm-meal → `FoodEntryService` |
+
+`POST /ai/chat` request:
+
+```json
+{
+  "message": "How many calories have I eaten today?",
+  "history": [{ "role": "user", "content": "Hi" }]
+}
+```
+
+`message` is required, 1–4000 characters. `history` is optional, max 20 items.
+
+Success:
+
+```json
+{
+  "message": "You've consumed 1033 kcal today.",
+  "pendingMeal": null
+}
+```
+
+When the model proposes `logMeal`, `pendingMeal` contains the validated entry fields (no `userId`). No `FoodEntry` is created. The frontend must show Save meal / Cancel. Typing "yes" in chat does not persist.
+
+`POST /ai/chat/confirm-meal` persists that payload for the authenticated user and returns `201`:
+
+```json
+{
+  "message": "Saved 2 eggs to breakfast.",
+  "foodEntry": {}
+}
+```
+
+Rules:
+
+- Unknown tools are rejected and never executed
+- Tool loop max is 5 rounds (`502` / `AI_PROVIDER_ERROR` if exceeded)
+- Provider timeout: `504` / `AI_PROVIDER_ERROR`
+- Provider failure: `502` / `AI_PROVIDER_ERROR` (no raw provider payload)
+- Negative calories/macros/quantities and invalid dates/meal types are rejected
+- `searchFood` results are catalog estimates (`source: catalog_estimate`), not an authoritative food database
+- Do not return raw Gemini payloads
+
+---
+
 # Common API Response Pattern
 
 Successful list response:

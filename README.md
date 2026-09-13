@@ -1,8 +1,8 @@
 # Personal Calorie Tracker
 
-A full-stack personal nutrition tracker for logging meals, setting a current nutrition goal, reviewing timezone-aware reports, and extracting nutrition from food photos.
+A full-stack personal nutrition tracker for logging meals, setting a current nutrition goal, reviewing timezone-aware reports, extracting nutrition from food photos, and chatting with an assistant that uses application tools.
 
-Users review and edit AI-extracted values before anything is saved. Extraction never creates a food entry on its own.
+Users review and edit AI-extracted values before anything is saved. Extraction never creates a food entry on its own. Conversational meal logging also requires an explicit Save meal confirmation.
 
 ---
 
@@ -31,7 +31,7 @@ Users review and edit AI-extracted values before anything is saved. Extraction n
 
 ## AI
 
-- Gemini, used only on the backend through a `NutritionExtractionProvider` / `AIExtractionService` abstraction
+- Gemini, used only on the backend through `NutritionExtractionProvider` / `AIExtractionService` and `LlmProvider` / `ChatService` abstractions
 
 The browser never receives `GEMINI_API_KEY` and never calls Gemini.
 
@@ -53,10 +53,11 @@ Implemented:
 - Goal vs actual comparison (daily goal multiplied by inclusive day count)
 - AI food/nutrition extraction from JPEG, PNG, or WebP images
 - Review/edit of extracted nutrition before an explicit save through `POST /food-entries`
+- Conversational AI assistant (`/chat`) that reads goals, summaries, and weekly reports through application tools
+- Explicit Save meal confirmation before chat-proposed meals are persisted
 
 Deferred (not implemented):
 
-- Conversational AI
 - PDF nutrition history import
 - Family accounts / dependent accounts
 
@@ -263,7 +264,7 @@ pnpm --filter @calorie-tracker/backend exec prisma migrate status
 
 Frontend tests use Vitest + Testing Library with mocked API modules (no live database, no Gemini).
 
-Backend AI tests inject a mock `NutritionExtractionProvider` and do not call Gemini.
+Backend AI tests inject mock `NutritionExtractionProvider` and `LlmProvider` implementations and do not call Gemini.
 
 ---
 
@@ -276,6 +277,10 @@ Backend AI tests inject a mock `NutritionExtractionProvider` and do not call Gem
 - The backend asks Gemini (or a test mock) for structured nutrition, then validates with Zod
 - The client shows a review/edit form. Saving uses the normal food-entry API
 - Extraction does **not** create a `FoodEntry`
+- Conversational AI: `POST /api/v1/ai/chat` (authenticated, same AI rate limit). Optional `history` is request-scoped only; there is no chat-history table
+- The assistant uses allowlisted tools (`getGoals`, `getNutritionSummary`, `getWeeklyReport`, `listMeals`, `searchFood`, `logMeal`) that call existing services. **The LLM never accesses the database directly.**
+- `logMeal` in the chat loop only returns a `pendingMeal`. Persist with `POST /api/v1/ai/chat/confirm-meal` after Save meal
+- `searchFood` uses an in-app catalog of labeled estimates, not a live external food database
 - `GEMINI_API_KEY` stays on the backend
 
 ---
@@ -287,7 +292,7 @@ Backend AI tests inject a mock `NutritionExtractionProvider` and do not call Gem
 - Refresh tokens generated with CSPRNG, stored hashed (SHA-256 with `JWT_REFRESH_SECRET` as pepper), rotated on use, and revoked on logout
 - Ownership is enforced server-side from the access token; client `userId` is ignored
 - Zod validation at API boundaries, including AI output
-- Rate limits on auth (default 20 / 60s) and AI extraction (default 10 / 60s)
+- Rate limits on auth (default 20 / 60s) and AI extraction/chat (default 10 / 60s)
 - CORS allowlist via `CORS_ORIGIN` (no `*`)
 - Upload validation for AI images; oversized uploads return 413; unsupported types return 415
 - Generic HTTP 500 bodies never include stack traces, Prisma errors, provider payloads, or secrets
@@ -304,7 +309,7 @@ The implemented HTTP contract is documented in `API_DESIGN.md`.
 
 # Architecture
 
-See `ARCHITECTURE.md` for layering, schema decisions, reporting, AI extraction, and security boundaries.
+See `ARCHITECTURE.md` for layering, schema decisions, reporting, AI extraction, conversational AI tools, and security boundaries.
 
 ---
 
@@ -322,4 +327,4 @@ See `PROJECT_REQUIREMENTS.md`.
 
 # Development Roadmap
 
-See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI, PDF import, and family accounts are out of scope until the core application is complete and stable.
+See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI is implemented. PDF import and family accounts remain out of scope.
