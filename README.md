@@ -138,6 +138,14 @@ Auth (Phase 1):
 - `JWT_REFRESH_EXPIRES_IN` (default `7d`)
 - `AUTH_RATE_LIMIT_MAX` / `AUTH_RATE_LIMIT_TIME_WINDOW_MS`
 
+AI nutrition extraction (Phase 5):
+
+- `GEMINI_API_KEY` — Gemini API key (backend only; never send to the browser)
+- `GEMINI_MODEL` — default `gemini-2.5-flash`
+- `AI_MAX_UPLOAD_BYTES` — default 5MB
+- `AI_RATE_LIMIT_MAX` / `AI_RATE_LIMIT_TIME_WINDOW_MS` — default 10 requests / 60s
+- `AI_PROVIDER_TIMEOUT_MS` — default 25000
+
 For local development without Neon credentials, both database URLs may temporarily point at the same local PostgreSQL instance.
 
 Secrets must never be committed to Git. Never commit `.env`.

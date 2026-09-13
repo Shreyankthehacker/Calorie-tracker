@@ -12,7 +12,7 @@ type ErrorBody = {
 
 function isFastifyLikeError(
   error: unknown,
-): error is { validation?: unknown; statusCode?: number } {
+): error is { validation?: unknown; statusCode?: number; code?: string } {
   return typeof error === 'object' && error !== null;
 }
 
@@ -65,6 +65,20 @@ export function registerErrorHandler(app: FastifyInstance): void {
         error: {
           code: 'UNAUTHORIZED',
           message: 'Authentication required',
+        },
+      } satisfies ErrorBody);
+    }
+
+    if (
+      isFastifyLikeError(error) &&
+      (error.statusCode === 413 ||
+        (typeof error.code === 'string' &&
+          ['FST_REQ_FILE_TOO_LARGE', 'FST_ERR_CTP_BODY_TOO_LARGE'].includes(error.code)))
+    ) {
+      return reply.status(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Image exceeds the maximum upload size of 5MB',
         },
       } satisfies ErrorBody);
     }

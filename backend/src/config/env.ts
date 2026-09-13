@@ -13,6 +13,12 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
   AUTH_RATE_LIMIT_TIME_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  GEMINI_API_KEY: z.string().trim().optional().default(''),
+  GEMINI_MODEL: z.string().trim().min(1).default('gemini-2.5-flash'),
+  AI_MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
+  AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  AI_RATE_LIMIT_TIME_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(25_000),
 });
 
 export type Env = z.infer<typeof envSchema>;

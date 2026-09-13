@@ -161,3 +161,26 @@ export type ReportRangeParams = {
   startDate: string;
   endDate: string;
 };
+
+export type ExtractionSource = 'label' | 'photo_estimate' | 'unknown';
+
+export type NutritionExtraction = {
+  foodName: string;
+  quantity: number;
+  quantityUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  micronutrients: Micronutrient[];
+  confidence: number | null;
+  notes: string | null;
+  source: ExtractionSource;
+  mealType: MealType | null;
+};
+
+export type NutritionExtractResponse = {
+  extraction: NutritionExtraction;
+};
+
+export const AI_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;

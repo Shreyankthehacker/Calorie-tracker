@@ -5,6 +5,7 @@ export type AppErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'RATE_LIMITED'
+  | 'AI_PROVIDER_ERROR'
   | 'INTERNAL_ERROR';
 
 export class AppError extends Error {

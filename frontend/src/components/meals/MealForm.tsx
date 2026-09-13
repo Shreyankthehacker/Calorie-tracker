@@ -55,12 +55,14 @@ export function MealForm({
   initial,
   submitting,
   error,
+  submitLabel,
   onSubmit,
   onCancel,
 }: {
   initial?: FoodEntry;
   submitting: boolean;
   error: string | null;
+  submitLabel?: string;
   onSubmit: (payload: FoodEntryWritePayload) => void;
   onCancel: () => void;
 }) {
@@ -307,7 +309,7 @@ export function MealForm({
 
       <div className="action-row">
         <button className="button button-primary" type="submit" disabled={submitting}>
-          {submitting ? 'Saving…' : initial ? 'Save changes' : 'Save meal'}
+          {submitting ? 'Saving…' : (submitLabel ?? (initial ? 'Save changes' : 'Save meal'))}
         </button>
         <button type="button" className="button button-ghost" onClick={onCancel}>
           Cancel

@@ -172,6 +172,8 @@ Required report coverage:
 POST /ai/nutrition-extract
 ```
 
+Authenticated. Rate-limited separately from auth (`AI_RATE_LIMIT_MAX`, default 10 requests / 60s).
+
 Input:
 
 ```text
@@ -179,23 +181,49 @@ multipart/form-data
 image=<file>
 ```
 
+Supported types: `image/jpeg`, `image/png`, `image/webp`. Maximum size: **5MB**. Images are processed in memory and discarded; they are not stored.
+
+The vision provider is Gemini (`GEMINI_API_KEY`, `GEMINI_MODEL`, default `gemini-2.5-flash`), behind `NutritionExtractionProvider`. Tests inject a mock provider. The browser never calls Gemini.
+
 Flow:
 
 ```text
-upload → MIME/size validation → AIExtractionService → Zod validation
-  → structured payload for frontend review → user saves via POST /food-entries
+upload → MIME/size/magic-byte validation → AIExtractionService → provider
+  → Zod validation → structured payload for frontend review → user saves via POST /food-entries
 ```
+
+Example success:
+
+```json
+{
+  "extraction": {
+    "foodName": "Chicken rice bowl",
+    "quantity": 1,
+    "quantityUnit": "serving",
+    "calories": 620,
+    "protein": 42,
+    "carbs": 65,
+    "fat": 18,
+    "micronutrients": [{ "nutrientKey": "iron", "amount": 3.2, "unit": "mg" }],
+    "confidence": 0.87,
+    "notes": "Estimated from visible nutrition information.",
+    "source": "label",
+    "mealType": null
+  }
+}
+```
+
+`source` is `label`, `photo_estimate`, or `unknown`. `mealType` is an optional suggestion only.
 
 Rules:
 
 - Must **not** automatically create a `FoodEntry`
-- Validate MIME type and file size
+- Negative calories/macros/micros and invalid structures are rejected (not clamped)
+- If the model reports `detected: false`, respond `422` with no invented values
+- Provider timeout: `504` / `AI_PROVIDER_ERROR`
+- Provider failure: `502` / `AI_PROVIDER_ERROR` (no raw provider payload)
 - Validate AI response structure with Zod
-- Validate nutritional value ranges
 - Rate-limit this endpoint
-- Provider is abstracted; tests mock the AI provider
-
-Response contains structured nutrition information intended to pre-fill a food entry form.
 
 ---
 
@@ -242,9 +270,11 @@ Internal errors must return a generic 500 body without stack traces.
 403 Forbidden
 404 Not Found
 409 Conflict
-422 Unprocessable Entity
-429 Too Many Requests
-500 Internal Server Error
+  422 Unprocessable Entity
+  429 Too Many Requests
+  500 Internal Server Error
+  502 Bad Gateway
+  504 Gateway Timeout
 ```
 
 ---

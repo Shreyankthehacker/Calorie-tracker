@@ -5,7 +5,8 @@ import { DashboardPage } from '../pages/DashboardPage';
 import { GoalsPage } from '../pages/GoalsPage';
 import { MealsPage } from '../pages/MealsPage';
 import { ReportsPage } from '../pages/ReportsPage';
-import { GuestRoute, PlaceholderPage, ProtectedRoute } from './guards';
+import { ScanFoodPage } from '../pages/ScanFoodPage';
+import { GuestRoute, ProtectedRoute } from './guards';
 
 export function AppRouter() {
   return (
@@ -21,15 +22,7 @@ export function AppRouter() {
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/meals" element={<MealsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route
-            path="/scan"
-            element={
-              <PlaceholderPage
-                title="Scan Food"
-                description="AI nutrition extraction from images will arrive in a later phase."
-              />
-            }
-          />
+          <Route path="/scan" element={<ScanFoodPage />} />
         </Route>
       </Route>
 

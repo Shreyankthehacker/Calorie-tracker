@@ -1,17 +1,25 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import type { Env } from './config/env.js';
+import type { NutritionExtractionProvider } from './ai/nutrition-provider.js';
 import { authPlugin } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
+import { aiExtractionRoutes } from './routes/ai.js';
 import { authRoutes } from './routes/auth.js';
 import { foodEntryRoutes } from './routes/food-entries.js';
 import { goalRoutes } from './routes/goals.js';
 import { healthRoutes } from './routes/health.js';
 import { reportRoutes } from './routes/reports.js';
 
-export async function buildApp(env: Env) {
+export type AppDependencies = {
+  nutritionProvider?: NutritionExtractionProvider;
+};
+
+export async function buildApp(env: Env, deps: AppDependencies = {}) {
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
+    bodyLimit: env.AI_MAX_UPLOAD_BYTES + 256 * 1024,
   });
 
   registerErrorHandler(app);
@@ -20,12 +28,25 @@ export async function buildApp(env: Env) {
     origin: env.CORS_ORIGIN,
   });
 
+  await app.register(multipart, {
+    limits: {
+      fileSize: env.AI_MAX_UPLOAD_BYTES,
+      files: 1,
+      fields: 4,
+    },
+  });
+
   await app.register(authPlugin, { env });
   await app.register(healthRoutes, { prefix: '/api/v1' });
   await app.register(authRoutes, { prefix: '/api/v1', env });
   await app.register(goalRoutes, { prefix: '/api/v1' });
   await app.register(foodEntryRoutes, { prefix: '/api/v1' });
   await app.register(reportRoutes, { prefix: '/api/v1' });
+  await app.register(aiExtractionRoutes, {
+    prefix: '/api/v1',
+    env,
+    ...(deps.nutritionProvider ? { nutritionProvider: deps.nutritionProvider } : {}),
+  });
 
   return app;
 }
