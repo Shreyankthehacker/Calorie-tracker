@@ -208,14 +208,26 @@ export function ScanFoodPage() {
                     Barcode
                   </label>
                   <input
-                    id="barcode-value"
-                    ref={barcodeInputRef}
-                    value={barcode}
-                    inputMode="numeric"
-                    autoComplete="off"
-                    placeholder="Enter barcode digits"
-                    onChange={(event) => setBarcode(event.target.value)}
-                  />
+  id="barcode-value"
+  ref={barcodeInputRef}
+  value={barcode}
+  inputMode="numeric"
+  autoComplete="off"
+  placeholder="Enter barcode digits"
+  onChange={(event) => setBarcode(event.target.value)}
+  style={{
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px 14px",
+    border: "1px solid #d6d3d1",
+    borderRadius: "6px",
+    background: "#ffffff",
+    color: "#292524",
+    fontSize: "14px",
+    fontFamily: "inherit",
+    outline: "none",
+  }}
+/>
                   <button type="submit" className="primary" disabled={barcodeMutation.isPending}>
                     {barcodeMutation.isPending ? 'Looking up…' : 'Look up barcode'}
                   </button>
