@@ -1,0 +1,76 @@
+.page-goals {
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin: 24px 0 24px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin: 0 0 6px 0; }
+  h2.panel-sub { font-size: 16px; margin-bottom: 18px; }
+  h2.panel-sub-sm { font-size: 15px; margin-bottom: 12px; }
+  .sub { font-size: 13.5px; color: #4E4B47; margin: 0 0 24px 0; line-height: 1.5; max-width: 640px; }
+  .hero-num { position: relative; background: var(--black); color: var(--white); border-radius: 16px; padding: 28px 32px; height: 150px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; overflow: hidden; }
+  .hero-num .slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: crossfade2 12s infinite; }
+  .hero-num .slide:nth-child(1) { animation-delay: 0s; }
+  .hero-num .slide:nth-child(2) { animation-delay: 4s; }
+  .hero-num .slide:nth-child(3) { animation-delay: 8s; }
+  .hero-num::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10, 10, 10, 0.94) 30%, rgba(10, 10, 10, 0.55) 100%); z-index: 1; }
+  .hero-num .content { position: relative; z-index: 2; }
+  .hero-num .l { font-size: 12.5px; color: #C9C6C2; letter-spacing: .3px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .hero-num .n { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 600; line-height: 1; }
+  .hero-num .n span { font-size: 18px; font-weight: 400; color: #D8D5D0; margin-left: 6px; font-family: 'Inter', sans-serif; }
+  .steam { position: relative; z-index: 2; width: 70px; height: 70px; flex-shrink: 0; }
+  .steam path { stroke: #D8D5D0; stroke-width: 3; fill: none; stroke-linecap: round; opacity: 0; animation: rise 3s ease-in infinite; }
+  .steam path:nth-child(2) { animation-delay: 1s; }
+  .steam path:nth-child(3) { animation-delay: 2s; }
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+  .panel { border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .macro-row { margin-bottom: 22px; }
+  .macro-row:last-child { margin-bottom: 0; }
+  .macro-head { display: flex; justify-content: space-between; font-size: 14.5px; margin-bottom: 8px; }
+  .macro-head b { font-weight: 700; }
+  .bar-bg { height: 8px; border-radius: 99px; background: var(--paper); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; background: var(--crimson); }
+  .actions { display: flex; gap: 10px; margin-top: 26px; position: relative; }
+  .actions .btn-primary { position: relative; overflow: visible; }
+  .confetti { position: absolute; top: 50%; left: 50%; width: 1px; height: 1px; pointer-events: none; }
+  .confetti i { position: absolute; width: 6px; height: 10px; top: 0; left: 0; background: var(--crimson); opacity: 0; border-radius: 1px; animation: burst 1.6s ease-out 1.8s forwards; }
+  .confetti i:nth-child(1) { background: #A8112A; --tx: -60px; --ty: -40px; }
+  .confetti i:nth-child(2) { background: #0A0A0A; --tx: -20px; --ty: -55px; }
+  .confetti i:nth-child(3) { background: #A8112A; --tx: 20px; --ty: -58px; }
+  .confetti i:nth-child(4) { background: #7A0C1F; --tx: 55px; --ty: -38px; }
+  .confetti i:nth-child(5) { background: #0A0A0A; --tx: -40px; --ty: -20px; }
+  .confetti i:nth-child(6) { background: #A8112A; --tx: 40px; --ty: -15px; }
+  .pct-card .pct-row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .pct-row:last-child { border-bottom: none; }
+  .pct-row b { font-weight: 700; }
+  .warn-card { background: #FBEAEC; border: 1px solid #EFC0C7; }
+  .warn-card .t { font-weight: 700; color: var(--crimson-dark); font-size: 14px; margin-bottom: 8px; }
+  .warn-card p { font-size: 13px; color: #5C2A31; line-height: 1.55; margin: 0; }
+  .streak-card { background: var(--black); display: flex; align-items: center; gap: 16px; }
+  .flame-wrap { position: relative; width: 58px; height: 76px; flex-shrink: 0; }
+  .flame { width: 100%; height: 100%; transform-origin: 50% 100%; animation: flicker 1.6s ease-in-out infinite; }
+  .spark { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--crimson); opacity: 0; animation: sparkrise 2.2s ease-in infinite; }
+  .spark.s1 { left: 8px; bottom: 14px; animation-delay: 0s; }
+  .spark.s2 { left: 28px; bottom: 8px; animation-delay: .7s; }
+  .spark.s3 { left: 44px; bottom: 16px; animation-delay: 1.4s; }
+  .streak-text .n { font-weight: 700; font-size: 15px; color: var(--white); margin-bottom: 4px; }
+  .streak-text .s { font-size: 12.5px; color: #C9C6C2; line-height: 1.45; }
+  .note { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+  .macro-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .macro-inputs input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; font-family: 'Inter', sans-serif; }
+  .results { background: var(--paper); border-radius: 14px; padding: 32px; margin-bottom: 24px; }
+  input[type='number'] {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@keyframes crossfade2 { 0% { opacity: 0; } 4% { opacity: 0.32; } 30% { opacity: 0.32; } 36% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes rise { 0% { opacity: 0; transform: translateY(6px) scaleY(0.7); } 25% { opacity: .8; } 80% { opacity: 0; } 100% { opacity: 0; transform: translateY(-14px) scaleY(1.1); } }
+@keyframes burst { 0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(180deg) scale(1); } }
+@keyframes flicker { 0%, 100% { transform: scaleY(1) scaleX(1) rotate(0deg); } 25% { transform: scaleY(1.06) scaleX(0.95) rotate(-2deg); } 50% { transform: scaleY(0.94) scaleX(1.05) rotate(1.5deg); } 75% { transform: scaleY(1.04) scaleX(0.97) rotate(-1deg); } }
+@keyframes sparkrise { 0% { opacity: 0; transform: translateY(0) scale(1); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-46px) scale(0.4); } }
+
+@media (max-width: 980px) {
+  .page-goals .grid { grid-template-columns: 1fr; }
+}

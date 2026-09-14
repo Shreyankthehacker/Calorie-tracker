@@ -1,0 +1,131 @@
+.field { display: grid; gap: 6px; min-width: 0; }
+.field-label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+input[type='text'],
+input[type='number'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+input[type='datetime-local'],
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background: var(--white);
+  color: var(--black);
+  appearance: none;
+}
+input[type='datetime-local'] { min-width: 0; color-scheme: light; }
+input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button { appearance: none; margin: 0; }
+select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%237A756E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--crimson); }
+
+input[type='file'] {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+input[type='file']::file-selector-button {
+  margin-right: 12px;
+  border: 1px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+input[type='checkbox'] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 5px;
+  background: var(--white);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+}
+input[type='checkbox']:checked {
+  background: var(--crimson);
+  border-color: var(--crimson);
+}
+input[type='checkbox']:checked::after {
+  content: '';
+  width: 8px;
+  height: 5px;
+  border: 2px solid #fff;
+  border-top: 0;
+  border-right: 0;
+  transform: rotate(-45deg) translate(0, -1px);
+}
+
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.field-row.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.field-row.three { grid-template-columns: minmax(0, 1fr) 120px 88px; }
+.field-row > *, .field-row.three > * { min-width: 0; }
+.qty-unit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(96px, 140px);
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.qty-unit > * { min-width: 0; }
+.unit-suffix {
+  min-height: 42px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: 9px; background: var(--paper);
+  color: var(--ink-soft); font-size: 13px; font-weight: 600;
+}
+
+.stack-form { display: grid; gap: 14px; min-width: 0; }
+.stack-form > .button,
+.stack-form > .button-ghost,
+.stack-form > .button-secondary {
+  justify-self: start;
+  width: auto;
+}
+.stack-form > .scan-card { justify-self: stretch; width: 100%; }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.file-picker { display: grid; gap: 8px; cursor: pointer; }
+.file-picker-row {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--white);
+}
+.file-picker-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 34px; padding: 0 14px; border-radius: 8px;
+  background: var(--black); color: var(--white);
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.file-picker-name { font-size: 13px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-picker:hover .file-picker-row { border-color: var(--crimson); }
+
+@media (max-width: 720px) {
+  .field-row.four { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}

@@ -1,0 +1,9 @@
+.app {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+main { display: flex; flex-direction: column; min-height: 100vh; }
+.main-inner { padding: 0 44px; flex: 1; }
+.main-inner > .kicker { margin-top: 24px; }

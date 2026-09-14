@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-top">
         <div className="footer-brand">
-          <div className="brand" style={{ color: 'var(--black)' }}>
+          <div className="brand">
             <BrandMark />
             <BrandWord />
           </div>

@@ -1,0 +1,35 @@
+.page-water {
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin: 24px 0 22px; }
+  .grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+  .wave-card { background: var(--black); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; }
+  .bottle { position: relative; width: 96px; height: 200px; margin: 6px auto 18px; }
+  .bottle svg { position: absolute; inset: 0; }
+  .bottle .water { position: absolute; left: 8px; right: 8px; bottom: 10px; background: linear-gradient(180deg, #C9515F, var(--crimson)); border-radius: 0 0 20px 20px; height: 55%; transition: height .4s ease; overflow: hidden; }
+  .bottle .water::before { content: ""; position: absolute; top: -4px; left: 0; right: 0; height: 8px; background: rgba(255, 255, 255, .25); border-radius: 50%; }
+  .wave-card .cap { color: #C9C6C2; font-size: 12px; margin-bottom: 2px; }
+  .wave-card .n { font-family: 'Fraunces', serif; color: var(--white); font-size: 30px; font-weight: 600; }
+  .wave-card .n span { font-size: 14px; font-weight: 400; color: #C9C6C2; }
+  .glass-row { display: flex; gap: 8px; margin-top: 16px; }
+  .glass-btn { width: 30px; height: 36px; border-radius: 4px 4px 8px 8px; border: 1.5px solid #4A4844; background: transparent; cursor: pointer; }
+  .glass-btn.filled { background: var(--crimson); border-color: var(--crimson); }
+  .add-water-row { display: flex; gap: 10px; margin-top: 18px; width: 100%; }
+  .add-water-row button { flex: 1; background: var(--white); color: var(--black); border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .add-water-row button:hover { background: var(--crimson); color: var(--white); }
+  h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin: 0 0 14px 0; }
+  h2.reminders-title { font-size: 15px; margin-bottom: 4px; }
+  .week-bars { display: flex; align-items: flex-end; gap: 14px; height: 140px; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 8px; }
+  .week-bars .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .week-bars .bar { width: 100%; max-width: 28px; height: 70%; background: var(--paper); border-radius: 6px 6px 0 0; position: relative; overflow: hidden; }
+  .week-bars .bar .fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--crimson); border-radius: 6px 6px 0 0; }
+  .week-bars .lbl { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .reminder-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+  .reminder-row:first-of-type { border-top: none; }
+  .toggle { width: 36px; height: 20px; border-radius: 999px; background: var(--paper); position: relative; cursor: pointer; border: 1px solid var(--line); padding: 0; flex-shrink: 0; }
+  .toggle.on { background: var(--crimson); border-color: var(--crimson); }
+  .toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--white); transition: left .15s ease; }
+  .toggle.on::after { left: 18px; }
+}
+
+@media (max-width: 980px) {
+  .page-water .grid { grid-template-columns: 1fr; }
+}

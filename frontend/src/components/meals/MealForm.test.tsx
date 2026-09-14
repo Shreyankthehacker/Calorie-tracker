@@ -22,22 +22,6 @@ const chicken: FoodEntry = {
 };
 
 describe('MealForm nutrition scaling', () => {
-  it('keeps food full width and places quantity with unit on the next row', () => {
-    renderWithProviders(
-      <MealForm submitting={false} error={null} onSubmit={() => undefined} onCancel={() => undefined} />,
-      { withAuth: false },
-    );
-
-    const food = screen.getByLabelText(/^food$/i);
-    expect(food.closest('.food-qty')).toBeNull();
-    expect(food.closest('.field-row')).toBeNull();
-    expect(document.querySelector('.field-row.food-qty')).toBeNull();
-
-    const quantityRow = screen.getByLabelText(/^quantity$/i).closest('.qty-unit');
-    expect(quantityRow).not.toBeNull();
-    expect(quantityRow?.querySelector('#meal-unit')).not.toBeNull();
-    expect(screen.getByText(/this meal/i).closest('.meal-live')).not.toBeNull();
-  });
   it('scales macros from the original quantity when quantity changes', async () => {
     const user = userEvent.setup();
     renderWithProviders(

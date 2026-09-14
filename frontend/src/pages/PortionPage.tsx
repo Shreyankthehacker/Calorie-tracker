@@ -74,15 +74,15 @@ export function PortionPage() {
             </div>
             <div className="plate-legend">
               <span>
-                <span className="dot" style={{ background: 'var(--crimson)' }} />
+                <span className="dot dot-protein" />
                 Protein 40%
               </span>
               <span>
-                <span className="dot" style={{ background: '#2B2A28' }} />
+                <span className="dot dot-carbs" />
                 Carbs 35%
               </span>
               <span>
-                <span className="dot" style={{ background: '#D8D5D0' }} />
+                <span className="dot dot-veg" />
                 Veg &amp; fat 25%
               </span>
             </div>
@@ -93,8 +93,8 @@ export function PortionPage() {
               <div className="l">Suggested portion</div>
               <div className="n">{portionDefaults.suggestion}</div>
             </div>
-            <div className="side-card" style={{ background: 'var(--white)', border: '1px solid var(--line)' }}>
-              <h2 style={{ fontSize: 15, marginBottom: 2 }}>Portion breakdown</h2>
+            <div className="side-card breakdown">
+              <h2>Portion breakdown</h2>
               <div className="result-row">
                 <span>Calories</span>
                 <b>{portionDefaults.calories} kcal</b>
@@ -120,7 +120,7 @@ export function PortionPage() {
               <div className="who">🐾 Sage on portions</div>
               <p>
                 "This portion leaves room for a light snack later. Scan the salmon packaging with the{' '}
-                <Link to="/scan" style={{ color: 'var(--crimson)' }}>
+                <Link className="link-accent" to="/scan">
                   barcode scanner
                 </Link>{' '}
                 to log the exact cut you're using."

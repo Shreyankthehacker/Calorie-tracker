@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+@import './tokens.css';
+@import './reset.css';
+@import './utilities.css';
+
+@import './layout/app.css';
+@import './layout/sidebar.css';
+@import './layout/header.css';
+@import './layout/footer.css';
+@import './layout/tools-strip.css';
+
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/panels.css';
+@import './components/feedback.css';
+@import './components/date-field.css';
+@import './components/meal-form.css';
+@import './components/food-catalog.css';
+@import './components/food-logger.css';
+@import './components/import.css';
+@import './components/barcode.css';
+
+@import './pages/today.css';
+@import './pages/log-meal.css';
+@import './pages/meals.css';
+@import './pages/goals.css';
+@import './pages/chat.css';
+@import './pages/scan.css';
+@import './pages/water.css';
+@import './pages/bmi.css';
+@import './pages/portion.css';
+@import './pages/family.css';
+@import './pages/reports.css';
+@import './pages/import.css';
+@import './pages/auth.css';

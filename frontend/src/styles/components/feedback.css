@@ -1,0 +1,29 @@
+.alert { border-radius: 10px; padding: 0.8rem 0.95rem; font-size: 13.5px; margin-bottom: 12px; }
+.alert-error { background: var(--crimson-soft); color: var(--crimson-dark); }
+.alert-success { background: #E7EEE8; color: var(--ink-soft); }
+.alert-info { background: var(--paper); color: var(--ink-soft); }
+
+.skeleton {
+  height: 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--paper) 25%, var(--white) 50%, var(--paper) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+.skeleton-lg { height: 4.5rem; border-radius: 12px; }
+.skeleton-stack { display: grid; gap: 12px; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(10, 10, 10, 0.45);
+  display: grid; place-items: center; padding: 16px; z-index: 40;
+}
+.modal-panel {
+  width: min(100%, 40rem); max-height: calc(100vh - 2rem); overflow: auto;
+  background: var(--white); border-radius: 16px; padding: 24px;
+  border: 1px solid var(--line); display: grid; gap: 12px;
+}
+.modal-panel h2 { margin: 0; font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+
+.toast-region { position: fixed; right: 1rem; bottom: 1.25rem; z-index: 60; display: grid; gap: 0.5rem; }
+.toast { margin: 0; background: var(--black); color: var(--white); padding: 0.7rem 1rem; border-radius: 8px; }

@@ -1,0 +1,11 @@
+.panel, .panel-quiet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+  background: var(--white);
+}
+.side-card { background: var(--paper); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+.side-card .who { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.side-card p { font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 12px 0; }
+.empty-panel { background: var(--paper); border-radius: 14px; padding: 24px; }

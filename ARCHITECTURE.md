@@ -180,6 +180,21 @@ Frontend must not contain database logic.
 
 Charts (Recharts) consume report API aggregate series.
 
+Styles live in `frontend/src/styles` and are loaded once from `frontend/src/styles/index.css`:
+
+```text
+tokens / reset / utilities
+ ↓
+layout (app, sidebar, header, footer, tools strip)
+ ↓
+shared components (buttons, forms, panels, meal form, catalog, …)
+ ↓
+pages (one file per screen)
+```
+
+Class names stay global so they continue to match the Typeface HTML reference. Page-specific rules are nested under `.page-*`. Dynamic values (chart widths, bottle fill) may stay inline; static presentation belongs in CSS.
+
+
 ---
 
 # 5. Database Design

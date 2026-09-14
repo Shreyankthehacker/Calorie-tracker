@@ -1,0 +1,15 @@
+.inline-actions {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;
+}
+.barcode-lookup, .join-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  width: 100%;
+}
+.barcode-lookup .field, .join-row .field { margin: 0; }
+.inline-actions .btn-primary,
+.inline-actions .button-primary,
+.barcode-lookup .btn-primary,
+.join-row .btn-primary {
+  height: 42px; padding: 0 16px; white-space: nowrap;
+}
+.scan-preview { width: min(100%, 22rem); max-height: 16rem; object-fit: cover; border-radius: 12px; }

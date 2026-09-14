@@ -1,0 +1,39 @@
+.page-log-meal {
+  .search { margin: 0 0 18px; }
+  h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin: 0 0 14px 0; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  .panel { border: 1px solid var(--line); border-radius: 14px; padding: 22px; min-width: 0; }
+  .log-ways { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  button.tool-card { width: 100%; font: inherit; background: var(--white); cursor: pointer; text-align: left; }
+  .scan-card { display: flex; align-items: center; gap: 20px; background: var(--black); border-radius: 16px; padding: 20px; margin: 4px 0 2px; }
+  .viewfinder { position: relative; width: 150px; height: 150px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: #141414; }
+  .viewfinder img, .viewfinder-idle { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .viewfinder .frame { position: absolute; inset: 14px; border: 2px solid transparent; }
+  .viewfinder .frame span { position: absolute; width: 16px; height: 16px; border: 2.5px solid var(--crimson); }
+  .viewfinder .frame span:nth-child(1) { top: 0; left: 0; border-right: none; border-bottom: none; }
+  .viewfinder .frame span:nth-child(2) { top: 0; right: 0; border-left: none; border-bottom: none; }
+  .viewfinder .frame span:nth-child(3) { bottom: 0; left: 0; border-right: none; border-top: none; }
+  .viewfinder .frame span:nth-child(4) { bottom: 0; right: 0; border-left: none; border-top: none; }
+  .viewfinder .scanline { position: absolute; left: 14px; right: 14px; height: 2px; background: var(--crimson); box-shadow: 0 0 8px 1px rgba(168, 17, 42, .8); animation: scan 2.4s ease-in-out infinite; }
+  .scan-copy { color: var(--white); min-width: 0; flex: 1; }
+  .scan-copy .t { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+  .scan-copy .s { font-size: 13px; color: #C9C6C2; line-height: 1.5; margin-bottom: 14px; max-width: none; }
+  .scan-copy a { color: #fff; text-decoration: underline; }
+  .scan-copy .btn-outline { background: var(--white); }
+  .tray { background: var(--paper); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+  .tray-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .tray-row:last-child { border-bottom: none; }
+  .tray-row b { font-weight: 700; }
+  .actions { display: flex; gap: 10px; }
+  .actions .btn-primary { flex: 1; }
+  .barcode-lookup { width: 100%; }
+}
+
+@keyframes scan { 0%, 100% { top: 14px; opacity: .9; } 50% { top: 136px; opacity: .9; } }
+
+@media (max-width: 980px) {
+  .page-log-meal .grid,
+  .page-log-meal .log-ways {
+    grid-template-columns: 1fr;
+  }
+}

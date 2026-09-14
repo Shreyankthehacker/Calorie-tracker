@@ -71,7 +71,7 @@ export function WaterPage() {
             <div className="week-bars">
               {weekHydration.map((day) => (
                 <div key={day.label} className="col">
-                  <div className="bar" style={{ height: '70%' }}>
+                  <div className="bar">
                     <div className="fill" style={{ height: `${day.fill}%` }} />
                   </div>
                   <div className="lbl">{day.label}</div>
@@ -88,7 +88,7 @@ export function WaterPage() {
             </div>
 
             <div className="side-card">
-              <h2 style={{ fontSize: 15, marginBottom: 4 }}>Reminders</h2>
+              <h2 className="reminders-title">Reminders</h2>
               <div className="reminder-row">
                 <span>Remind me every 2 hours</span>
                 <button

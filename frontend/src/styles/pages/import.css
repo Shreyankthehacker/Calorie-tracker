@@ -1,0 +1,7 @@
+.page-import {
+  .top-row { margin: 24px 0 22px; }
+  .top-row p { margin: 10px 0 0; max-width: 640px; line-height: 1.55; }
+  .panel, .panel-quiet { border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 20px; background: var(--white); }
+  .dropzone { justify-items: stretch; }
+  .import-card .field-row { margin-bottom: 0; }
+}

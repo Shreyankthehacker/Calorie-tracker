@@ -156,7 +156,7 @@ export function GoalsPage() {
       {formError ? <Alert tone="error">{formError}</Alert> : null}
 
       {missingGoal && !editing ? (
-        <div className="results" style={{ background: 'var(--paper)', borderRadius: 14, padding: 32, marginBottom: 24 }}>
+        <div className="results">
           <p>No nutrition goal set yet.</p>
           <button
             type="button"
@@ -219,7 +219,7 @@ export function GoalsPage() {
           </div>
           <div className="grid">
             <div className="panel">
-              <h2 style={{ fontSize: 16, marginBottom: 18 }}>Macro allotment inputs</h2>
+              <h2 className="panel-sub">Macro allotment inputs</h2>
               <div className="macro-row">
                 <div className="macro-head">
                   <span>Protein target</span>
@@ -286,7 +286,7 @@ export function GoalsPage() {
                 </div>
               </div>
               <div className="side-card pct-card">
-                <h2 style={{ fontSize: 15, marginBottom: 12 }}>Percentage allocation</h2>
+                <h2 className="panel-sub-sm">Percentage allocation</h2>
                 <div className="pct-row">
                   <span>Protein (g)</span>
                   <b>{pool ? Math.round((proteinKcal / pool) * 100) : 0}%</b>

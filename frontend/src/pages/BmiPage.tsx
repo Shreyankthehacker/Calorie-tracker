@@ -72,10 +72,10 @@ export function BmiPage() {
             <div className="flag" />
           </div>
           <div className="scale">
-            <span className="under" style={{ flex: 2 }} />
-            <span className="normal" style={{ flex: 3 }} />
-            <span className="over" style={{ flex: 2 }} />
-            <span className="obese" style={{ flex: 3 }} />
+            <span className="under" />
+            <span className="normal" />
+            <span className="over" />
+            <span className="obese" />
           </div>
           <div className="scale-labels">
             <span>15</span>
@@ -97,7 +97,7 @@ export function BmiPage() {
 
         <div className="panel">
           <h2>What BMI does and doesn't tell you</h2>
-          <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--ink-soft)', margin: 0 }}>
+          <p className="copy">
             BMI is a quick screening ratio of weight to height — useful for spotting trends over time, but it doesn't
             account for muscle mass, bone density, age, or where fat is carried on the body. Two people with the same
             BMI can have very different body compositions. Treat it as one data point among several, not a verdict.
@@ -105,22 +105,22 @@ export function BmiPage() {
         </div>
 
         <div className="grid">
-          <div className="side-card" style={{ margin: 0 }}>
+          <div className="side-card">
             <div className="who">🐾 Sage on BMI</div>
             <p>
               "Your BMI has stayed in the normal range for 3 months. Given your logged protein intake, this looks like a
               stable, healthy trend rather than a number to chase further."
             </p>
           </div>
-          <div className="side-card" style={{ margin: 0 }}>
+          <div className="side-card">
             <div className="who">📎 Related tools</div>
             <p>
               Use your BMI category alongside the{' '}
-              <Link to="/goals" style={{ color: 'var(--crimson)' }}>
+              <Link className="link-accent" to="/goals">
                 Goals &amp; target
               </Link>{' '}
               page to set a realistic calorie pool, or the{' '}
-              <Link to="/portions" style={{ color: 'var(--crimson)' }}>
+              <Link className="link-accent" to="/portions">
                 portion calculator
               </Link>{' '}
               to size individual meals.

@@ -1,0 +1,15 @@
+.date-field { display: grid; gap: 6px; position: relative; min-width: 10rem; }
+.date-field-trigger {
+  width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 12px; font: inherit; background: var(--white); text-align: left; cursor: pointer;
+}
+.date-pop {
+  position: absolute; z-index: 24; top: calc(100% + 6px); left: 0;
+  width: min(18.75rem, calc(100vw - 2rem)); background: var(--white);
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 12px;
+}
+.date-pop-head { display: flex; align-items: center; justify-content: space-between; }
+.date-weekdays, .date-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
+.date-weekdays { color: var(--muted); font-size: 11px; font-weight: 600; }
+.date-cell { min-height: 36px; border: 0; background: transparent; border-radius: 8px; font: inherit; cursor: pointer; }
+.date-cell.is-selected { background: var(--crimson); color: #fff; }

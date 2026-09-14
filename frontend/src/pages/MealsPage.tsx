@@ -110,7 +110,7 @@ export function MealsPage() {
   return (
     <div className="page-entries">
       <div className="main-inner">
-      <div className="kicker" style={{ marginTop: 24 }}>
+      <div className="kicker">
         Chronological list view
       </div>
       <h1 className="sr-only">Meals</h1>
@@ -138,7 +138,7 @@ export function MealsPage() {
         </div>
       </div>
 
-      <div className="action-row" style={{ marginBottom: 16 }}>
+      <div className="action-row">
         <button type="button" className="btn-secondary" onClick={openLogFood}>
           Log food
         </button>

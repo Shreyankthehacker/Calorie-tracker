@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import { AppRouter } from './routes/AppRouter';
 import { ToastProvider } from './components/ui/ToastProvider';
-import './index.css';
+import './styles/index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -1,0 +1,33 @@
+.button, .btn-primary, .button-primary, .btn-secondary, .button-secondary, .button-ghost, .button-danger, .btn-outline, .btn-link {
+  font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; text-decoration: none; box-sizing: border-box; line-height: 1.2;
+}
+.button, .btn-secondary, .button-secondary {
+  background: var(--white); border: 1px solid var(--line); color: var(--black);
+}
+.button:hover, .btn-secondary:hover, .button-secondary:hover { border-color: var(--crimson); color: var(--crimson); }
+.btn-primary, .button-primary {
+  background: var(--black); color: var(--white); border: 1px solid var(--black);
+}
+.btn-primary:hover, .button-primary:hover { background: var(--crimson); border-color: var(--crimson); color: var(--white); }
+.button.button-primary, a.button-primary {
+  background: var(--black); color: var(--white); border-color: var(--black);
+}
+.button.button-primary:hover, a.button-primary:hover {
+  background: var(--crimson); border-color: var(--crimson); color: var(--white);
+}
+.button-danger { background: var(--crimson-soft); color: var(--crimson-dark); border: none; }
+.button-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
+.button-ghost:hover { border-color: var(--crimson); color: var(--crimson); }
+.btn-outline {
+  background: var(--white); border: 1px solid var(--black); color: var(--black);
+  padding: 9px 14px; min-height: 38px; font-size: 13px;
+}
+.btn-link { background: var(--white); border: 1px solid var(--crimson); color: var(--crimson); }
+.button:disabled, .btn-primary:disabled, .button-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.icon-button {
+  width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer;
+}

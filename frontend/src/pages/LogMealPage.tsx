@@ -137,7 +137,7 @@ export function LogMealPage() {
   return (
     <div className="page-log-meal">
       <div className="main-inner">
-        <div className="kicker" style={{ marginTop: 24 }}>
+        <div className="kicker">
           Split workspace
         </div>
         <h1 className="page-title">Log food intake</h1>
@@ -335,7 +335,7 @@ export function LogMealPage() {
             <div className="side-card">
               <div className="who">Log from PDF</div>
               <p>Upload a nutrition label sheet or food diary. The existing PDF parser reviews rows before they are saved.</p>
-              <Link className="btn-outline" to="/import" style={{ display: 'inline-flex' }}>
+              <Link className="btn-outline" to="/import">
                 Upload PDF
               </Link>
             </div>
@@ -343,7 +343,7 @@ export function LogMealPage() {
               <div className="who">🐾 Sage help</div>
               <p>
                 &quot;If you&apos;re logging a meal, commit below to update the ledger. Want the exact portion for your
-                goal? Try the <Link to="/portions" style={{ color: 'var(--crimson)' }}>portion calculator</Link>.&quot;
+                goal? Try the <Link className="link-accent" to="/portions">portion calculator</Link>.&quot;
               </p>
             </div>
           </div>
