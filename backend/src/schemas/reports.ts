@@ -5,6 +5,9 @@ import { inclusiveDayCount } from '../lib/calendar-date.js';
 /** Inclusive maximum number of calendar days a report query may span. */
 export const MAX_REPORT_RANGE_DAYS = 93;
 
+/** Consecutive tracked days for `currentStreak` are counted from today backwards. */
+export const STREAK_LOOKBACK_DAYS = 90;
+
 const ignoredClientUserId = z.string().optional();
 
 export const reportTodayQuerySchema = z

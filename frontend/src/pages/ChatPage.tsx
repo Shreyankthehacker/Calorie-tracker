@@ -32,7 +32,7 @@ function mealSummary(meal: PendingMeal): string {
     `Protein: ${meal.protein}g`,
     `Carbs: ${meal.carbs}g`,
     `Fat: ${meal.fat}g`,
-  ].join(' · ');
+  ].join(', ');
 }
 
 function withoutPendingMeal(item: ChatMessage): ChatMessage {
@@ -158,7 +158,7 @@ export function ChatPage() {
   const busy = chatMutation.isPending || saveMutation.isPending;
 
   return (
-    <section className="page">
+    <section className="page chat-page">
       <header className="page-header">
         <h1>Assistant</h1>
         <p className="muted">Ask about goals, today&apos;s intake, or this week. Meals are saved only after you confirm.</p>

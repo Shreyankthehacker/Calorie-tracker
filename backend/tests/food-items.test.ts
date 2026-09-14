@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { prisma } from '../src/db/prisma.js';
+import { PrismaFoodSearchProvider } from '../src/ai/prisma-food-search.js';
 
 type AuthResponse = {
   user: { id: string; email: string };
@@ -309,5 +310,13 @@ describe('food items catalog API', () => {
       },
     });
     expect(missing.statusCode).toBe(404);
+  });
+
+  it('searchFood catalog provider reads FoodItem rows from the database', async () => {
+    const provider = new PrismaFoodSearchProvider();
+    const matches = await provider.search(`Eggs ${suffix}`);
+    expect(matches[0]?.foodName).toBe(`Eggs ${suffix}`);
+    expect(matches[0]?.source).toBe('catalog_estimate');
+    expect(matches[0]?.calories).toBe(78);
   });
 });

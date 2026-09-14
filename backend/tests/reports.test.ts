@@ -219,6 +219,7 @@ describe('reports API', () => {
       '/api/v1/reports/macros?startDate=2026-09-07&endDate=2026-09-08',
       '/api/v1/reports/micronutrients?startDate=2026-09-07&endDate=2026-09-08',
       '/api/v1/reports/goals?startDate=2026-09-07&endDate=2026-09-08',
+      '/api/v1/reports/insights?startDate=2026-09-07&endDate=2026-09-08',
     ];
 
     for (const url of endpoints) {
@@ -543,5 +544,59 @@ describe('reports API', () => {
       headers: auth(userA),
     });
     expect(partial.statusCode).toBe(400);
+  });
+
+  it('summarizes tracked days, averages, and on-target counts from persisted entries', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/reports/insights?startDate=2026-09-07&endDate=2026-09-13',
+      headers: auth(userA),
+    });
+    expect(response.statusCode).toBe(200);
+    const body = response.json() as {
+      timezone: string;
+      dayCount: number;
+      averageCalories: number;
+      averageProtein: number;
+      daysTracked: number;
+      daysOnTarget: number;
+      daysOver: number;
+      currentStreak: number;
+      dailyGoal: { calories: number } | null;
+    };
+    expect(body.timezone).toBe('UTC');
+    expect(body.dayCount).toBe(7);
+    expect(body.averageCalories).toBe(635.7);
+    expect(body.averageProtein).toBe(38.9);
+    expect(body.daysTracked).toBe(3);
+    expect(body.daysOnTarget).toBe(3);
+    expect(body.daysOver).toBe(0);
+    expect(body.dailyGoal?.calories).toBe(2200);
+    expect(body.currentStreak).toBe(0);
+  });
+
+  it('counts a current streak from consecutive tracked days ending today', async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    await createEntry(userNoGoal, {
+      foodName: 'Streak yesterday',
+      calories: 400,
+      consumedAt: `${yesterday}T12:00:00.000Z`,
+    });
+    await createEntry(userNoGoal, {
+      foodName: 'Streak today',
+      calories: 350,
+      consumedAt: `${today}T12:00:00.000Z`,
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/reports/insights?startDate=${yesterday}&endDate=${today}`,
+      headers: auth(userNoGoal),
+    });
+    expect(response.statusCode).toBe(200);
+    const body = response.json() as { currentStreak: number; daysTracked: number };
+    expect(body.daysTracked).toBe(2);
+    expect(body.currentStreak).toBeGreaterThanOrEqual(2);
   });
 });

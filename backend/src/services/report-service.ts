@@ -1,4 +1,5 @@
 import {
+  addCalendarDays,
   calendarDateInTimeZone,
   calendarDayEndUtc,
   calendarDayStartUtc,
@@ -6,6 +7,7 @@ import {
   inclusiveDayCount,
   resolveTimeZone,
 } from '../lib/calendar-date.js';
+import { STREAK_LOOKBACK_DAYS } from '../schemas/reports.js';
 import { resolveOwnerId } from '../ownership/ownership.js';
 import { goalRepository, type GoalRepository } from '../repositories/goal-repository.js';
 import {
@@ -55,6 +57,22 @@ export type GoalVsActualReport = {
   actual: MacroTotals;
 };
 
+export type InsightsReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  dayCount: number;
+  averageCalories: number;
+  averageProtein: number;
+  averageCarbs: number;
+  averageFat: number;
+  daysTracked: number;
+  daysOnTarget: number;
+  daysOver: number;
+  currentStreak: number;
+  dailyGoal: MacroTotals | null;
+};
+
 function emptyMacros(): MacroTotals {
   return { calories: 0, protein: 0, carbs: 0, fat: 0 };
 }
@@ -69,6 +87,27 @@ function fillDailySeries(
     const row = byDate.get(date);
     return row ?? { date, ...emptyMacros() };
   });
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+export function computeTrackingStreak(
+  days: Array<{ date: string; calories: number }>,
+  today: string,
+): number {
+  const byDate = new Map(days.map((row) => [row.date, row.calories]));
+  let cursor = today;
+  if ((byDate.get(cursor) ?? 0) <= 0) {
+    cursor = addCalendarDays(cursor, -1);
+  }
+  let streak = 0;
+  while ((byDate.get(cursor) ?? 0) > 0) {
+    streak += 1;
+    cursor = addCalendarDays(cursor, -1);
+  }
+  return streak;
 }
 
 function scaleGoal(
@@ -205,6 +244,76 @@ export class ReportService {
       dailyGoal,
       goal: goal ? scaleGoal(goal, dayCount) : null,
       actual,
+    };
+  }
+
+  async getInsights(
+    authenticatedUserId: string,
+    startDate: string,
+    endDate: string,
+    clientUserId?: string,
+  ): Promise<InsightsReport> {
+    const { ownerId, timeZone } = await this.resolveOwner(authenticatedUserId, clientUserId);
+    const today = calendarDateInTimeZone(new Date(), timeZone);
+    const streakStart = addCalendarDays(today, -STREAK_LOOKBACK_DAYS);
+    const dayCount = inclusiveDayCount(startDate, endDate);
+
+    const [rangeSeries, streakSeries, goal] = await Promise.all([
+      this.dailySeries(authenticatedUserId, startDate, endDate, clientUserId),
+      this.dailySeries(authenticatedUserId, streakStart, today, clientUserId),
+      this.goals.findByUserId(ownerId),
+    ]);
+
+    const dailyGoal = goal
+      ? {
+          calories: goal.dailyCalorieTarget,
+          protein: goal.proteinTarget,
+          carbs: goal.carbTarget,
+          fat: goal.fatTarget,
+        }
+      : null;
+
+    const totals = rangeSeries.days.reduce(
+      (acc, row) => ({
+        calories: acc.calories + row.calories,
+        protein: acc.protein + row.protein,
+        carbs: acc.carbs + row.carbs,
+        fat: acc.fat + row.fat,
+      }),
+      emptyMacros(),
+    );
+
+    let daysTracked = 0;
+    let daysOnTarget = 0;
+    let daysOver = 0;
+    for (const row of rangeSeries.days) {
+      if (row.calories <= 0) {
+        continue;
+      }
+      daysTracked += 1;
+      if (dailyGoal) {
+        if (row.calories > dailyGoal.calories) {
+          daysOver += 1;
+        } else {
+          daysOnTarget += 1;
+        }
+      }
+    }
+
+    return {
+      timezone: timeZone,
+      startDate,
+      endDate,
+      dayCount,
+      averageCalories: dayCount === 0 ? 0 : round1(totals.calories / dayCount),
+      averageProtein: dayCount === 0 ? 0 : round1(totals.protein / dayCount),
+      averageCarbs: dayCount === 0 ? 0 : round1(totals.carbs / dayCount),
+      averageFat: dayCount === 0 ? 0 : round1(totals.fat / dayCount),
+      daysTracked,
+      daysOnTarget,
+      daysOver,
+      currentStreak: computeTrackingStreak(streakSeries.days, today),
+      dailyGoal,
     };
   }
 

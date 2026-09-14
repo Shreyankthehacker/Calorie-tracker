@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import {
   createFoodEntry,
   deleteFoodEntry,
@@ -7,22 +8,24 @@ import {
   updateFoodEntry,
 } from '../api/food-entries';
 import { ApiError, type FoodEntry, type FoodEntryWritePayload, type MealType } from '../api/types';
+import { Plus, Utensils } from 'lucide-react';
 import { Alert } from '../components/layout/AppShell';
 import { MealForm } from '../components/meals/MealForm';
 import { FoodCatalog } from '../components/meals/FoodCatalog';
+import { useLogFood } from '../components/meals/LogFoodProvider';
+import { EmptyState } from '../components/ui/EmptyState';
+import { DateField } from '../components/ui/DateField';
+import { FoodThumb } from '../components/meals/FoodThumb';
 import { formatConsumedAt } from '../lib/dates';
-
-const mealSections: Array<{ type: MealType; label: string }> = [
-  { type: 'BREAKFAST', label: 'Breakfast' },
-  { type: 'LUNCH', label: 'Lunch' },
-  { type: 'DINNER', label: 'Dinner' },
-  { type: 'SNACKS', label: 'Snacks' },
-];
+import { MEAL_SECTIONS } from '../lib/nutrition';
 
 const PAGE_SIZE = 10;
 
 export function MealsPage() {
   const queryClient = useQueryClient();
+  const { openLogFood } = useLogFood();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [mealType, setMealType] = useState<MealType | ''>('');
@@ -30,6 +33,14 @@ export function MealsPage() {
   const [editor, setEditor] = useState<'create' | FoodEntry | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      setStartDate(dateParam);
+      setEndDate(dateParam);
+      setPage(1);
+    }
+  }, [dateParam]);
 
   const filters = useMemo(() => {
     const params: Parameters<typeof listFoodEntries>[0] = {
@@ -106,17 +117,24 @@ export function MealsPage() {
           <h1>Meals</h1>
           <p className="muted">Pick a food from the catalog, or log a custom meal.</p>
         </div>
-        <button
-          type="button"
-          className="button button-primary"
-          onClick={() => {
-            setEditor('create');
-            setFormError(null);
-            setSuccess(null);
-          }}
-        >
-          Add custom meal
-        </button>
+        <div className="action-row">
+          <button type="button" className="button button-secondary" onClick={openLogFood}>
+            <Utensils size={16} aria-hidden="true" />
+            Log food
+          </button>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => {
+              setEditor('create');
+              setFormError(null);
+              setSuccess(null);
+            }}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Add custom meal
+          </button>
+        </div>
       </header>
 
       <FoodCatalog
@@ -127,29 +145,25 @@ export function MealsPage() {
         }}
       />
 
-      <form className="panel filter-bar" onSubmit={(event) => event.preventDefault()}>
-        <label className="field">
-          <span className="field-label">Start date</span>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(event) => {
-              setStartDate(event.target.value);
-              setPage(1);
-            }}
-          />
-        </label>
-        <label className="field">
-          <span className="field-label">End date</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(event) => {
-              setEndDate(event.target.value);
-              setPage(1);
-            }}
-          />
-        </label>
+      <form className="filter-bar" onSubmit={(event) => event.preventDefault()}>
+        <DateField
+          id="start-date"
+          label="Start date"
+          value={startDate}
+          onChange={(next) => {
+            setStartDate(next);
+            setPage(1);
+          }}
+        />
+        <DateField
+          id="end-date"
+          label="End date"
+          value={endDate}
+          onChange={(next) => {
+            setEndDate(next);
+            setPage(1);
+          }}
+        />
         <label className="field">
           <span className="field-label">Meal type</span>
           <select
@@ -160,7 +174,7 @@ export function MealsPage() {
             }}
           >
             <option value="">All</option>
-            {mealSections.map((section) => (
+            {MEAL_SECTIONS.map((section) => (
               <option key={section.type} value={section.type}>
                 {section.label}
               </option>
@@ -171,37 +185,44 @@ export function MealsPage() {
 
       {success ? <Alert tone="success">{success}</Alert> : null}
 
-      {mealsQuery.isPending ? <p className="muted">Loading meals…</p> : null}
+      {mealsQuery.isPending ? (
+        <div className="skeleton-stack" aria-busy="true">
+          <p className="muted">Loading meals…</p>
+          <div className="skeleton skeleton-lg" />
+        </div>
+      ) : null}
       {mealsQuery.isError ? (
         <Alert tone="error">Unable to load meals. Please try again.</Alert>
       ) : null}
 
       {!mealsQuery.isPending && !mealsQuery.isError && entries.length === 0 ? (
-        <div className="empty-panel">
-          <p>
-            {isFiltered
+        <EmptyState
+          title={
+            isFiltered
               ? startDate && endDate && startDate === endDate && !mealType
                 ? 'No meals recorded for this day.'
                 : 'No meals match these filters.'
-              : 'No meals recorded yet.'}
-          </p>
-          {!isFiltered ? (
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => {
-                setEditor('create');
-                setFormError(null);
-              }}
-            >
-              Add your first meal
-            </button>
-          ) : null}
-        </div>
+              : 'No meals recorded yet.'
+          }
+          action={
+            !isFiltered ? (
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={() => {
+                  setEditor('create');
+                  setFormError(null);
+                }}
+              >
+                Add your first meal
+              </button>
+            ) : undefined
+          }
+        />
       ) : null}
 
       {entries.length > 0
-        ? mealSections.map((section) => {
+        ? MEAL_SECTIONS.map((section) => {
             const items = entries.filter((entry) => entry.mealType === section.type);
             if (items.length === 0) {
               return null;
@@ -212,26 +233,31 @@ export function MealsPage() {
                 <ul className="meal-list">
                   {items.map((entry) => (
                     <li key={entry.id} className="meal-item">
-                      <div>
-                        <p className="meal-name">{entry.foodName}</p>
-                        <p className="muted small">
-                          {entry.quantity} {entry.quantityUnit} ·{' '}
-                          {formatConsumedAt(entry.consumedAt)}
-                        </p>
-                        <p className="muted small">
-                          {entry.calories} kcal · P {entry.protein}g · C {entry.carbs}g · F{' '}
-                          {entry.fat}g
-                        </p>
-                        {entry.micronutrients.length > 0 ? (
+                      <div className="meal-item-main">
+                        <FoodThumb name={entry.foodName} />
+                        <div>
+                          <p className="meal-name">{entry.foodName}</p>
                           <p className="muted small">
-                            {entry.micronutrients
-                              .map(
-                                (nutrient) =>
-                                  `${nutrient.nutrientKey} ${nutrient.amount}${nutrient.unit}`,
-                              )
-                              .join(' · ')}
+                            {entry.quantity} {entry.quantityUnit}
+                            <span className="sr-only"> </span> {formatConsumedAt(entry.consumedAt)}
                           </p>
-                        ) : null}
+                          <div className="meal-macros">
+                            <span>{entry.calories} kcal</span>
+                            <span>P {entry.protein}g</span>
+                            <span>C {entry.carbs}g</span>
+                            <span>F {entry.fat}g</span>
+                          </div>
+                          {entry.micronutrients.length > 0 ? (
+                            <p className="muted small">
+                              {entry.micronutrients
+                                .map(
+                                  (nutrient) =>
+                                    `${nutrient.nutrientKey} ${nutrient.amount}${nutrient.unit}`,
+                                )
+                                .join(', ')}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                       <div className="action-row">
                         <button
@@ -276,7 +302,7 @@ export function MealsPage() {
             Previous
           </button>
           <p className="muted">
-            Page {pagination.page} of {pagination.totalPages} · {pagination.total} meals
+            Page {pagination.page} of {pagination.totalPages} / {pagination.total} meals
           </p>
           <button
             type="button"

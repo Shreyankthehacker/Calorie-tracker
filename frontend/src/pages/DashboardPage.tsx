@@ -1,12 +1,23 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { listFoodEntries } from '../api/food-entries';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { deleteFoodEntry, listFoodEntries, updateFoodEntry } from '../api/food-entries';
 import { getGoal } from '../api/goals';
-import { getTodayReport } from '../api/reports';
-import { ApiError, type Goal } from '../api/types';
+import { getInsightsReport, getTodayReport } from '../api/reports';
+import { ApiError, type FoodEntry, type FoodEntryWritePayload, type Goal } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
-import { ProgressBar } from '../components/layout/AppShell';
-import { calendarDateInTimeZone, formatConsumedAt } from '../lib/dates';
+import { SkeletonBlock } from '../components/layout/AppShell';
+import { useLogFood } from '../components/meals/LogFoodProvider';
+import { MealForm } from '../components/meals/MealForm';
+import { MealTimeline } from '../components/meals/MealTimeline';
+import { CalorieRing } from '../components/nutrition/CalorieRing';
+import { MacroBars } from '../components/nutrition/MacroBars';
+import { calendarDateInTimeZone, isoWeekRange } from '../lib/dates';
+import { formatAmount } from '../lib/nutrition';
+import { EmptyState } from '../components/ui/EmptyState';
+import { TimeOfDayMark } from '../components/ui/TimeOfDayMark';
+import { useState } from 'react';
 
 function greetingName(email: string | undefined): string {
   if (!email) return 'there';
@@ -23,7 +34,12 @@ function timeGreeting(): string {
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const { openLogFood } = useLogFood();
+  const queryClient = useQueryClient();
   const today = calendarDateInTimeZone(new Date(), user?.timezone ?? 'UTC');
+  const week = isoWeekRange(today);
+  const [editor, setEditor] = useState<FoodEntry | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const goalQuery = useQuery({
     queryKey: ['goals', 'current'],
@@ -36,136 +52,236 @@ export function DashboardPage() {
     queryFn: getTodayReport,
   });
 
-  const recentMealsQuery = useQuery({
-    queryKey: ['food-entries', 'today-recent', today],
+  const insightsQuery = useQuery({
+    queryKey: ['reports', 'insights', week.startDate, week.endDate],
+    queryFn: () => getInsightsReport(week),
+  });
+
+  const mealsQuery = useQuery({
+    queryKey: ['food-entries', 'today', today],
     queryFn: () =>
       listFoodEntries({
         startDate: today,
         endDate: today,
         page: 1,
-        pageSize: 4,
+        pageSize: 50,
       }),
+  });
+
+  function invalidateDay() {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['food-entries'] }),
+      queryClient.invalidateQueries({ queryKey: ['reports'] }),
+    ]);
+  }
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: FoodEntryWritePayload }) =>
+      updateFoodEntry(id, payload),
+    onSuccess: async () => {
+      setEditor(null);
+      setFormError(null);
+      await invalidateDay();
+    },
+    onError: (err: unknown) => {
+      setFormError(err instanceof ApiError ? err.message : 'Could not update meal.');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteFoodEntry,
+    onSuccess: async () => {
+      await invalidateDay();
+    },
   });
 
   const missingGoal =
     goalQuery.isError && goalQuery.error instanceof ApiError && goalQuery.error.status === 404;
   const goal = goalQuery.data;
   const totals = todayReportQuery.data ?? { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  const recentMeals = recentMealsQuery.data?.data ?? [];
+  const entries = mealsQuery.data?.data ?? [];
   const nutritionLoading = goalQuery.isPending || todayReportQuery.isPending;
+  const insights = insightsQuery.data;
 
   return (
-    <section className="page">
-      <header className="page-header">
-        <h1>
-          {timeGreeting()}, {greetingName(user?.email)}
-        </h1>
-        <p className="muted">Here is your nutrition overview for today.</p>
+    <section className="page overview-page">
+      <header className="page-header-row">
+        <div className="page-header greeting-row">
+          <TimeOfDayMark />
+          <div>
+            <h1>
+              {timeGreeting()}, {greetingName(user?.email)}
+            </h1>
+            <p className="muted">
+              {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(
+                new Date(),
+              )}
+            </p>
+          </div>
+        </div>
+        <button type="button" className="button button-primary" onClick={openLogFood}>
+          <Plus size={16} aria-hidden="true" />
+          Log food
+        </button>
       </header>
 
-      <div className="dashboard-grid">
-        <section className="panel">
-          <h2>Today&apos;s Nutrition</h2>
-          {nutritionLoading ? (
-            <p className="muted">Loading today&apos;s nutrition…</p>
-          ) : todayReportQuery.isError ? (
-            <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
-          ) : missingGoal ? (
-            <div className="empty-panel compact">
-              <MacroSummary totals={totals} />
-              <p>No nutrition goal set yet.</p>
-              <Link className="button button-primary" to="/goals">
-                Set your goal
-              </Link>
-            </div>
-          ) : goalQuery.isError ? (
-            <p className="error-text">Unable to load goals. Please try again.</p>
-          ) : (
-            <MacroSummary totals={totals} {...(goal ? { goal } : {})} />
-          )}
-        </section>
-
-        <section className="panel">
-          <h2>Today&apos;s progress</h2>
-          {todayReportQuery.isPending ? (
-            <p className="muted">Loading today&apos;s nutrition…</p>
-          ) : todayReportQuery.isError ? (
-            <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
-          ) : goal ? (
-            <div className="progress-stack">
-              <ProgressBar
-                label="Calories"
-                current={totals.calories}
-                target={goal.dailyCalorieTarget}
-                unit="kcal"
+      {nutritionLoading ? (
+        <SkeletonBlock label="Loading today's nutrition…" />
+      ) : todayReportQuery.isError ? (
+        <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
+      ) : goalQuery.isError && !missingGoal ? (
+        <p className="error-text">Unable to load goals. Please try again.</p>
+      ) : (
+        <section className="overview-hero">
+          <CalorieRing consumed={totals.calories} target={goal?.dailyCalorieTarget ?? null} />
+          <div className="overview-macros">
+            <h2>Macros</h2>
+            {missingGoal ? (
+              <EmptyState
+                illustration="target"
+                title="No nutrition goal set yet."
+                action={
+                  <Link className="button button-primary" to="/goals">
+                    Set your goal
+                  </Link>
+                }
               />
-              <ProgressBar
-                label="Protein"
-                current={totals.protein}
-                target={goal.proteinTarget}
-                unit="g"
+            ) : (
+              <MacroBars
+                protein={totals.protein}
+                carbs={totals.carbs}
+                fat={totals.fat}
+                {...(goal
+                  ? {
+                      proteinTarget: goal.proteinTarget,
+                      carbTarget: goal.carbTarget,
+                      fatTarget: goal.fatTarget,
+                    }
+                  : {})}
               />
-              <ProgressBar label="Carbs" current={totals.carbs} target={goal.carbTarget} unit="g" />
-              <ProgressBar label="Fat" current={totals.fat} target={goal.fatTarget} unit="g" />
-            </div>
-          ) : (
-            <p className="muted">Set a goal to track daily progress against targets.</p>
-          )}
-        </section>
-
-        <section className="panel">
-          <h2>Quick Actions</h2>
-          <div className="action-row">
-            <Link className="button button-secondary" to="/meals">
-              Add Meal
-            </Link>
-            <Link className="button button-secondary" to="/goals">
-              Set Goals
-            </Link>
-            <Link className="button button-secondary" to="/scan">
-              Scan Food
-            </Link>
-            <Link className="button button-secondary" to="/chat">
-              Ask the assistant
-            </Link>
-            <Link className="button button-secondary" to="/import">
-              Import PDF
-            </Link>
+            )}
           </div>
         </section>
+      )}
 
-        <section className="panel">
-          <h2>Recent Activity</h2>
-          {recentMealsQuery.isPending ? (
-            <p className="muted">Loading meals…</p>
-          ) : recentMealsQuery.isError ? (
-            <p className="error-text">Unable to load meals. Please try again.</p>
-          ) : recentMeals.length === 0 ? (
-            <div className="empty-panel compact">
-              <p>No meals logged today.</p>
-              <Link className="button button-secondary" to="/meals">
+      <section className="panel-quiet">
+        <header className="section-head">
+          <h2>Today</h2>
+          <p className="muted small">
+            {entries.length === 0 ? 'Nothing logged yet' : `${entries.length} logged`}
+          </p>
+        </header>
+        {mealsQuery.isPending ? (
+          <SkeletonBlock label="Loading meals…" />
+        ) : mealsQuery.isError ? (
+          <p className="error-text">Unable to load meals. Please try again.</p>
+        ) : entries.length === 0 ? (
+          <EmptyState
+            title="No meals logged today."
+            action={
+              <button type="button" className="button button-secondary" onClick={openLogFood}>
                 Add a meal
-              </Link>
-            </div>
+              </button>
+            }
+          />
+        ) : (
+          <MealTimeline
+            entries={entries}
+            onAdd={openLogFood}
+            onEdit={(entry) => {
+              setEditor(entry);
+              setFormError(null);
+            }}
+            onDelete={(entry) => {
+              if (window.confirm(`Delete ${entry.foodName}?`)) {
+                deleteMutation.mutate(entry.id);
+              }
+            }}
+          />
+        )}
+      </section>
+
+      <section className="insight-grid">
+        <article className="insight-card">
+          <h2>This week</h2>
+          {insightsQuery.isPending ? (
+            <p className="muted">Loading reports…</p>
+          ) : insightsQuery.isError ? (
+            <p className="error-text">Unable to load weekly insights.</p>
           ) : (
-            <ul className="meal-list compact-list">
-              {recentMeals.map((entry) => (
-                <li key={entry.id}>
-                  <p className="meal-name">{entry.foodName}</p>
-                  <p className="muted small">
-                    {entry.calories} kcal · {formatConsumedAt(entry.consumedAt)}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <dl className="insight-stats">
+              <div>
+                <dt>Avg calories</dt>
+                <dd>
+                  {formatAmount(insights?.averageCalories ?? 0)} <span className="unit">kcal</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Avg protein</dt>
+                <dd>
+                  {formatAmount(insights?.averageProtein ?? 0)} <span className="unit">g</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Days tracked</dt>
+                <dd>{insights?.daysTracked ?? 0}</dd>
+              </div>
+              <div>
+                <dt>On target</dt>
+                <dd>{insights?.daysOnTarget ?? 0}</dd>
+              </div>
+              <div className={insights?.currentStreak ? 'streak-stat' : undefined}>
+                <dt>Streak</dt>
+                <dd>
+                  <motion.span
+                    key={insights?.currentStreak ?? 0}
+                    initial={{ scale: 0.92, opacity: 0.6 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.22 }}
+                  >
+                    {insights?.currentStreak ?? 0}
+                  </motion.span>
+                </dd>
+              </div>
+            </dl>
           )}
-        </section>
-      </div>
+        </article>
+        <nav className="insight-card insight-actions" aria-label="Shortcuts">
+          <h2>More ways to log</h2>
+          <Link className="button button-secondary" to="/scan">
+            Scan a photo
+          </Link>
+          <Link className="button button-secondary" to="/chat">
+            Ask the assistant
+          </Link>
+          <Link className="button button-secondary" to="/import">
+            Import a PDF
+          </Link>
+        </nav>
+      </section>
+
+      {editor ? (
+        <div className="modal-backdrop">
+          <div className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="edit-meal-title">
+            <h2 id="edit-meal-title">Edit meal</h2>
+            <MealForm
+              initial={editor}
+              submitting={updateMutation.isPending}
+              error={formError}
+              onCancel={() => {
+                setEditor(null);
+                setFormError(null);
+              }}
+              onSubmit={(payload) => updateMutation.mutate({ id: editor.id, payload })}
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
 
-function MacroSummary({
+export function MacroSummary({
   totals,
   goal,
 }: {

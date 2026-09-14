@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement, ReactNode } from 'react';
 import { AuthProvider } from '../auth/AuthProvider';
+import { ToastProvider } from '../components/ui/ToastProvider';
+import { LogFoodProvider } from '../components/meals/LogFoodProvider';
 
 export function renderWithProviders(
   ui: ReactElement,
@@ -22,7 +24,11 @@ export function renderWithProviders(
     const tree = withAuth ? <AuthProvider>{children}</AuthProvider> : children;
     return (
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[route]}>{tree}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[route]}>
+            <LogFoodProvider>{tree}</LogFoodProvider>
+          </MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>
     );
   }

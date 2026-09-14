@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import type { Env } from '../config/env.js';
 import type { FoodSearchProvider } from '../ai/food-search-provider.js';
+import { PrismaFoodSearchProvider } from '../ai/prisma-food-search.js';
 import { GeminiLlmProvider } from '../ai/gemini-llm-provider.js';
 import type { LlmProvider } from '../ai/llm-provider.js';
 import { ChatHandler } from '../handlers/chat-handler.js';
@@ -23,9 +24,13 @@ export const chatRoutes: FastifyPluginAsync<{
   });
 
   const llm = opts.llmProvider ?? new GeminiLlmProvider(opts.env);
-  const tools = opts.foodSearchProvider
-    ? new ChatToolExecutor(new GoalService(), new ReportService(), new FoodEntryService(), opts.foodSearchProvider)
-    : new ChatToolExecutor();
+  const foodSearch = opts.foodSearchProvider ?? new PrismaFoodSearchProvider();
+  const tools = new ChatToolExecutor(
+    new GoalService(),
+    new ReportService(),
+    new FoodEntryService(),
+    foodSearch,
+  );
   const service = new ChatService(opts.env, llm, tools);
   const handler = new ChatHandler(service);
 

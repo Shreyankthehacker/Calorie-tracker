@@ -274,7 +274,7 @@ FoodEntryService.create
 PostgreSQL (FoodEntry snapshot)
 ```
 
-One `FoodItem` table with many-to-many meal tags (`FoodItemMealType`). Meal type (when eaten) is not the same as food category (fruit, grain, protein). Seeded rows are `sourceType = SYSTEM`. `imageUrl` is optional (URL only). Logging copies macros/micros into `FoodEntry`; there is no live foreign key. Custom manual meal entry remains available. PDF/AI name matching against the catalog is deferred. Chat `searchFood` stays on the in-memory provider.
+One `FoodItem` table with many-to-many meal tags (`FoodItemMealType`). Meal type (when eaten) is not the same as food category (fruit, grain, protein). Seeded rows are `sourceType = SYSTEM`. `imageUrl` is optional (URL only). Logging copies macros/micros into `FoodEntry`; there is no live foreign key. Custom manual meal entry remains available. PDF/AI name matching against the catalog is deferred. Chat `searchFood` uses the `FoodItem` table through `PrismaFoodSearchProvider`.
 
 ### Future — Family System (not implemented)
 

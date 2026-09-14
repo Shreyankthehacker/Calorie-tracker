@@ -52,6 +52,20 @@ export type FoodEntryListFilter = {
   consumedAtLte?: Date;
 };
 
+export type RecentFoodRow = {
+  foodName: string;
+  mealType: MealType;
+  quantity: number;
+  quantityUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  micronutrients: PublicNutrient[];
+  lastConsumedAt: Date;
+  timesLogged: number;
+};
+
 export function toPublicFoodEntry(entry: FoodEntryWithNutrients): PublicFoodEntry {
   return {
     id: entry.id,
@@ -300,6 +314,68 @@ export class FoodEntryRepository {
       where: ownershipWhere(userId, id),
     });
     return result.count > 0;
+  }
+
+  async findRecentFoods(userId: string, limit: number): Promise<RecentFoodRow[]> {
+    const grouped = await prisma.foodEntry.groupBy({
+      by: ['foodName'],
+      where: { userId },
+      _count: { _all: true },
+      _max: { consumedAt: true },
+      orderBy: {
+        _max: { consumedAt: 'desc' },
+      },
+      take: limit,
+    });
+
+    if (grouped.length === 0) {
+      return [];
+    }
+
+    const templates = await prisma.foodEntry.findMany({
+      where: {
+        userId,
+        OR: grouped.map((row) => ({
+          foodName: row.foodName,
+          consumedAt: row._max.consumedAt ?? new Date(0),
+        })),
+      },
+      include: withNutrients,
+      orderBy: { consumedAt: 'desc' },
+    });
+
+    const byName = new Map<string, FoodEntryWithNutrients>();
+    for (const entry of templates) {
+      if (!byName.has(entry.foodName)) {
+        byName.set(entry.foodName, entry);
+      }
+    }
+
+    return grouped.flatMap((row) => {
+      const entry = byName.get(row.foodName);
+      if (!entry) {
+        return [];
+      }
+      return [
+        {
+          foodName: entry.foodName,
+          mealType: entry.mealType,
+          quantity: entry.quantity,
+          quantityUnit: entry.quantityUnit,
+          calories: entry.calories,
+          protein: entry.protein,
+          carbs: entry.carbs,
+          fat: entry.fat,
+          micronutrients: entry.nutrients.map((nutrient) => ({
+            nutrientKey: nutrient.nutrientKey,
+            amount: nutrient.amount,
+            unit: nutrient.unit,
+          })),
+          lastConsumedAt: entry.consumedAt,
+          timesLogged: row._count._all,
+        },
+      ];
+    });
   }
 }
 

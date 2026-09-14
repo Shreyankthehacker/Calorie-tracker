@@ -58,4 +58,14 @@ export class ReportHandler {
     );
     return reply.status(200).send(report);
   };
+
+  insights = async (query: ReportRangeQuery, request: FastifyRequest, reply: FastifyReply) => {
+    const report = await this.reportService.getInsights(
+      request.user.sub,
+      query.startDate,
+      query.endDate,
+      clientUserIdFromQuery(request),
+    );
+    return reply.status(200).send(report);
+  };
 }

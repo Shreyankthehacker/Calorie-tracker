@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import type {
   FoodEntryCreateBody,
   FoodEntryListQuery,
+  FoodEntryRecentsQuery,
   FoodEntryUpdateBody,
 } from '../schemas/food-entries.js';
 import type { FoodEntryService } from '../services/food-entry-service.js';
@@ -54,6 +55,15 @@ export class FoodEntryHandler {
 
   list = async (query: FoodEntryListQuery, request: FastifyRequest, reply: FastifyReply) => {
     const result = await this.foodEntryService.list(
+      request.user.sub,
+      query,
+      clientUserIdFromQuery(request),
+    );
+    return reply.status(200).send(result);
+  };
+
+  recents = async (query: FoodEntryRecentsQuery, request: FastifyRequest, reply: FastifyReply) => {
+    const result = await this.foodEntryService.listRecent(
       request.user.sub,
       query,
       clientUserIdFromQuery(request),

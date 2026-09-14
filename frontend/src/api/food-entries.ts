@@ -5,6 +5,7 @@ import type {
   FoodEntryListResponse,
   FoodEntryUpdatePayload,
   FoodEntryWritePayload,
+  RecentFoodListResponse,
 } from './types';
 
 function toQuery(params: FoodEntryListParams): string {
@@ -22,6 +23,11 @@ export async function listFoodEntries(
   params: FoodEntryListParams = {},
 ): Promise<FoodEntryListResponse> {
   return apiRequest<FoodEntryListResponse>(`/api/v1/food-entries${toQuery(params)}`);
+}
+
+export async function listRecentFoods(limit = 12): Promise<RecentFoodListResponse> {
+  const search = new URLSearchParams({ limit: String(limit) });
+  return apiRequest<RecentFoodListResponse>(`/api/v1/food-entries/recents?${search.toString()}`);
 }
 
 export async function getFoodEntry(id: string): Promise<FoodEntry> {

@@ -43,4 +43,9 @@ export const reportRoutes: FastifyPluginAsync = async (app) => {
     const query = reportRangeQuerySchema.parse(request.query);
     return handler.goalVsActual(query, request, reply);
   });
+
+  app.get('/reports/insights', async (request, reply) => {
+    const query = reportRangeQuerySchema.parse(request.query);
+    return handler.insights(query, request, reply);
+  });
 };

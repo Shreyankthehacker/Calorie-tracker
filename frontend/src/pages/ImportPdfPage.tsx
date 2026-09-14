@@ -114,8 +114,9 @@ export function ImportPdfPage() {
     },
   });
 
-  function handleFile(event: ChangeEvent<HTMLInputElement>) {
-    const next = event.target.files?.[0] ?? null;
+  const [dragOver, setDragOver] = useState(false);
+
+  function acceptFile(next: File | null) {
     setFile(next);
     setRows(null);
     setWarnings([]);
@@ -131,6 +132,10 @@ export function ImportPdfPage() {
     if (isPdfOversized(next)) {
       setLocalError('PDF exceeds the maximum upload size of 5MB.');
     }
+  }
+
+  function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    acceptFile(event.target.files?.[0] ?? null);
   }
 
   function handlePreview(event: FormEvent) {
@@ -155,6 +160,7 @@ export function ImportPdfPage() {
 
   const readyRows = rows?.filter(isComplete) ?? [];
   const parsing = previewMutation.isPending;
+  const step = importedCount !== null ? 3 : rows ? 2 : 1;
 
   if (importedCount !== null) {
     return (
@@ -193,21 +199,55 @@ export function ImportPdfPage() {
         <p className="muted">Upload a text-based food diary. Review every meal before anything is saved.</p>
       </header>
 
-      <form className="panel" onSubmit={handlePreview}>
-        <label className="field">
-          <span className="field-label">PDF file</span>
-          <input type="file" accept="application/pdf,.pdf" onChange={handleFile} disabled={parsing || confirmMutation.isPending} />
-        </label>
-        {file ? (
-          <p className="muted">
-            {file.name} · {(file.size / 1024).toFixed(1)} KB
-          </p>
-        ) : (
-          <p className="muted">No file selected.</p>
-        )}
-        <button className="button button-primary" type="submit" disabled={!file || parsing || confirmMutation.isPending}>
-          {parsing ? 'Parsing PDF…' : 'Parse PDF'}
-        </button>
+      <ol className="step-track" aria-label="Import steps">
+        <li className={step === 1 ? 'is-current' : 'is-done'}>
+          <span className="step-index">01</span>
+          Choose file
+        </li>
+        <li className={step === 2 ? 'is-current' : step > 2 ? 'is-done' : ''}>
+          <span className="step-index">02</span>
+          Review
+        </li>
+        <li className={step === 3 ? 'is-current' : ''}>
+          <span className="step-index">03</span>
+          Import
+        </li>
+      </ol>
+
+      <form className="panel-quiet" onSubmit={handlePreview}>
+        <div
+          className={`dropzone ${dragOver ? 'is-hover' : ''} ${parsing ? 'is-busy' : ''}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragOver(false);
+            acceptFile(event.dataTransfer.files[0] ?? null);
+          }}
+        >
+          <label className="field">
+            <span className="field-label">PDF file</span>
+            <input
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={handleFile}
+              disabled={parsing || confirmMutation.isPending}
+            />
+          </label>
+          {file ? (
+            <p className="muted">
+              {file.name} ({(file.size / 1024).toFixed(1)} KB)
+            </p>
+          ) : (
+            <p className="muted">No file selected. Drop a PDF here or choose one to parse.</p>
+          )}
+          <button className="button button-primary" type="submit" disabled={!file || parsing || confirmMutation.isPending}>
+            {parsing ? 'Parsing PDF…' : 'Parse PDF'}
+          </button>
+        </div>
       </form>
 
       {parsing ? (

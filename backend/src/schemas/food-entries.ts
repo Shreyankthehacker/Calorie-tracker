@@ -143,6 +143,15 @@ export const foodEntryIdParamsSchema = z.object({
   id: z.string().trim().min(1).max(128),
 });
 
+export const MAX_RECENT_FOODS = 20;
+
+export const foodEntryRecentsQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(MAX_RECENT_FOODS).default(12),
+    userId: z.string().optional(),
+  })
+  .strict();
+
 export const foodEntryListQuerySchema = z
   .object({
     startDate: dateOnlySchema.optional(),
@@ -168,3 +177,4 @@ export type NutrientInput = z.infer<typeof nutrientInputSchema>;
 export type FoodEntryCreateBody = z.infer<typeof foodEntryCreateBodySchema>;
 export type FoodEntryUpdateBody = z.infer<typeof foodEntryUpdateBodySchema>;
 export type FoodEntryListQuery = z.infer<typeof foodEntryListQuerySchema>;
+export type FoodEntryRecentsQuery = z.infer<typeof foodEntryRecentsQuerySchema>;

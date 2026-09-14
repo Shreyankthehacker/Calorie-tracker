@@ -73,6 +73,7 @@ Goals belong exclusively to the authenticated user.
 ```text
 POST   /food-entries
 GET    /food-entries
+GET    /food-entries/recents
 GET    /food-entries/:id
 PUT    /food-entries/:id
 DELETE /food-entries/:id
@@ -121,6 +122,36 @@ GET /food-entries?startDate=2026-09-01&endDate=2026-09-07&mealType=DINNER&page=1
 ```
 
 Ownership: every read/update/delete by id must verify the entry belongs to the authenticated user.
+
+## Recent foods
+
+```text
+GET /food-entries/recents?limit=12
+```
+
+Authenticated. Returns distinct foods the **authenticated user** has logged, newest last-eaten first. `limit` is 1–20 (default 12). This is not a paginated entry list: each row is a template from the most recent snapshot of that food name.
+
+```json
+{
+  "data": [
+    {
+      "foodName": "Overnight oats",
+      "mealType": "BREAKFAST",
+      "quantity": 1,
+      "quantityUnit": "bowl",
+      "calories": 340,
+      "protein": 12,
+      "carbs": 54,
+      "fat": 6,
+      "micronutrients": [],
+      "lastConsumedAt": "2026-09-11T08:00:00.000Z",
+      "timesLogged": 2
+    }
+  ]
+}
+```
+
+Another user's foods are never included. Empty history returns `{ "data": [] }`.
 
 ---
 
@@ -186,6 +217,7 @@ GET /reports/micros?startDate=&endDate=
 GET /reports/micronutrients?startDate=&endDate=   (alias of /micros)
 GET /reports/goals?startDate=&endDate=
 GET /reports/goal-vs-actual?startDate=&endDate=   (alias of /goals)
+GET /reports/insights?startDate=&endDate=
 ```
 
 Example:
@@ -209,6 +241,8 @@ Timezone:
 - Example: `2026-09-12T23:30:00Z` for `Asia/Kolkata` belongs to **2026-09-13**, not 2026-09-12
 
 `GET /reports/today` uses the current instant in the user's timezone and is **not** paginated. It is the source of dashboard daily totals (do not sum a food-entry list page).
+
+`GET /reports/insights` is request-time too. It returns period averages (inclusive day count, including empty days), `daysTracked` (calories > 0), `daysOnTarget` / `daysOver` versus the current daily calorie goal, and `currentStreak` (consecutive tracked days ending today, or yesterday if today is still empty). Streak lookback is 90 days and is independent of the requested range. `dailyGoal` is `null` when the user has no goal; on-target counts are then 0.
 
 Rules:
 
@@ -309,7 +343,7 @@ The LLM is reached through `LlmProvider` (Gemini in production, a mock in tests)
 | `getNutritionSummary` | no | `ReportService` |
 | `getWeeklyReport` | no | `ReportService` |
 | `listMeals` | no | `FoodEntryService.list` |
-| `searchFood` | no | `FoodSearchProvider` (in-memory catalog estimates) |
+| `searchFood` | no | `FoodSearchProvider` (`PrismaFoodSearchProvider` over `FoodItem`; tests may inject a mock) |
 | `logMeal` | no in the chat loop | Validated proposal only; persist via confirm-meal → `FoodEntryService` |
 
 `POST /ai/chat` request:
@@ -350,7 +384,7 @@ Rules:
 - Provider timeout: `504` / `AI_PROVIDER_ERROR`
 - Provider failure: `502` / `AI_PROVIDER_ERROR` (no raw provider payload)
 - Negative calories/macros/quantities and invalid dates/meal types are rejected
-- `searchFood` results are catalog estimates (`source: catalog_estimate`), not an authoritative food database
+- `searchFood` results are catalog estimates (`source: catalog_estimate`) from the `FoodItem` table, not an authoritative laboratory database
 - Do not return raw Gemini payloads
 
 ---

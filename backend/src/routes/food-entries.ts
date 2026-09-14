@@ -4,6 +4,7 @@ import {
   foodEntryCreateBodySchema,
   foodEntryIdParamsSchema,
   foodEntryListQuerySchema,
+  foodEntryRecentsQuerySchema,
   foodEntryUpdateBodySchema,
 } from '../schemas/food-entries.js';
 import { FoodEntryService } from '../services/food-entry-service.js';
@@ -17,6 +18,11 @@ export const foodEntryRoutes: FastifyPluginAsync = async (app) => {
   app.get('/food-entries', async (request, reply) => {
     const query = foodEntryListQuerySchema.parse(request.query);
     return handler.list(query, request, reply);
+  });
+
+  app.get('/food-entries/recents', async (request, reply) => {
+    const query = foodEntryRecentsQuerySchema.parse(request.query);
+    return handler.recents(query, request, reply);
   });
 
   app.post('/food-entries', async (request, reply) => {

@@ -7,11 +7,13 @@ import {
   type FoodEntryListFilter,
   type FoodEntryRepository,
   type PublicFoodEntry,
+  type RecentFoodRow,
 } from '../repositories/food-entry-repository.js';
 import { userRepository, type UserRepository } from '../repositories/user-repository.js';
 import type {
   FoodEntryCreateBody,
   FoodEntryListQuery,
+  FoodEntryRecentsQuery,
   FoodEntryUpdateBody,
 } from '../schemas/food-entries.js';
 import { tryNormalizeNutrients } from '../schemas/food-entries.js';
@@ -167,5 +169,15 @@ export class FoodEntryService {
         totalPages: total === 0 ? 0 : Math.ceil(total / query.pageSize),
       },
     };
+  }
+
+  async listRecent(
+    authenticatedUserId: string,
+    query: FoodEntryRecentsQuery,
+    clientUserId?: string,
+  ): Promise<{ data: RecentFoodRow[] }> {
+    const ownerId = resolveOwnerId(authenticatedUserId, clientUserId ?? query.userId);
+    const data = await this.entries.findRecentFoods(ownerId, query.limit);
+    return { data };
   }
 }

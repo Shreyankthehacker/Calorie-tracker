@@ -197,6 +197,40 @@ export type GoalVsActualReport = {
   actual: MacroTotals;
 };
 
+export type InsightsReport = {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  dayCount: number;
+  averageCalories: number;
+  averageProtein: number;
+  averageCarbs: number;
+  averageFat: number;
+  daysTracked: number;
+  daysOnTarget: number;
+  daysOver: number;
+  currentStreak: number;
+  dailyGoal: MacroTotals | null;
+};
+
+export type RecentFood = {
+  foodName: string;
+  mealType: MealType;
+  quantity: number;
+  quantityUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  micronutrients: Micronutrient[];
+  lastConsumedAt: string;
+  timesLogged: number;
+};
+
+export type RecentFoodListResponse = {
+  data: RecentFood[];
+};
+
 export type ReportRangeParams = {
   startDate: string;
   endDate: string;

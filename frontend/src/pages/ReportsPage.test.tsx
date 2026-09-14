@@ -270,9 +270,24 @@ describe('DashboardPage reports', () => {
     });
     vi.mocked(foodEntriesApi.listFoodEntries).mockResolvedValue({
       data: [],
-      pagination: { page: 1, pageSize: 4, total: 0, totalPages: 0 },
+      pagination: { page: 1, pageSize: 50, total: 0, totalPages: 0 },
     });
     vi.mocked(reportsApi.getTodayReport).mockResolvedValue(todayReport);
+    vi.mocked(reportsApi.getInsightsReport).mockResolvedValue({
+      timezone: 'UTC',
+      startDate: '2026-09-07',
+      endDate: '2026-09-13',
+      dayCount: 7,
+      averageCalories: 562.9,
+      averageProtein: 33.1,
+      averageCarbs: 59.3,
+      averageFat: 18,
+      daysTracked: 2,
+      daysOnTarget: 2,
+      daysOver: 0,
+      currentStreak: 0,
+      dailyGoal: { calories: 2200, protein: 140, carbs: 250, fat: 70 },
+    });
   });
 
   afterEach(() => {
@@ -287,18 +302,15 @@ describe('DashboardPage reports', () => {
     expect(reportsApi.getTodayReport).toHaveBeenCalled();
   });
 
-  it('does not rely on pageSize=50 to calculate totals', async () => {
+  it('does not rely on a food-entry page to calculate totals', async () => {
     renderWithProviders(<DashboardPage />, { route: '/dashboard' });
     await screen.findAllByText(/1840/);
 
-    expect(foodEntriesApi.listFoodEntries).not.toHaveBeenCalledWith(
-      expect.objectContaining({ pageSize: 50 }),
-    );
     expect(foodEntriesApi.listFoodEntries).toHaveBeenCalledWith({
       startDate: '2026-09-13',
       endDate: '2026-09-13',
       page: 1,
-      pageSize: 4,
+      pageSize: 50,
     });
   });
 

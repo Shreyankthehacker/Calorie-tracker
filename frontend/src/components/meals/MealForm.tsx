@@ -139,8 +139,26 @@ export function MealForm({
     });
   }
 
+  const liveCalories = Number(form.calories);
+  const liveProtein = Number(form.protein);
+  const liveCarbs = Number(form.carbs);
+  const liveFat = Number(form.fat);
+
   return (
-    <form className="stack-form" onSubmit={handleSubmit} noValidate>
+    <form className="stack-form meal-form-layout" onSubmit={handleSubmit} noValidate>
+      <aside className="meal-live" aria-live="polite">
+        <p className="eyebrow">This meal</p>
+        <p className="hero-stat">
+          {Number.isFinite(liveCalories) && liveCalories >= 0 ? liveCalories : 0}
+          <span className="unit">kcal</span>
+        </p>
+        <div className="meal-live-grid">
+          <span>Protein {Number.isFinite(liveProtein) ? liveProtein : 0}g</span>
+          <span>Carbs {Number.isFinite(liveCarbs) ? liveCarbs : 0}g</span>
+          <span>Fat {Number.isFinite(liveFat) ? liveFat : 0}g</span>
+        </div>
+      </aside>
+
       {(localError || error) && (
         <p className="error-text" role="alert">
           {localError ?? error}

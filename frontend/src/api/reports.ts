@@ -2,6 +2,7 @@ import { apiRequest } from './client';
 import type {
   CalorieTrendReport,
   GoalVsActualReport,
+  InsightsReport,
   MacroTrendReport,
   MicronutrientReport,
   ReportRangeParams,
@@ -38,4 +39,8 @@ export async function getGoalVsActualReport(
   params: ReportRangeParams,
 ): Promise<GoalVsActualReport> {
   return apiRequest<GoalVsActualReport>(`/api/v1/reports/goals${toQuery(params)}`);
+}
+
+export async function getInsightsReport(params: ReportRangeParams): Promise<InsightsReport> {
+  return apiRequest<InsightsReport>(`/api/v1/reports/insights${toQuery(params)}`);
 }

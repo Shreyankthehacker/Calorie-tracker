@@ -79,6 +79,43 @@ export function fromDateTimeLocalValue(value: string): string {
   return date.toISOString();
 }
 
+export function parseDateOnly(value: string): { year: number; month: number; day: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!year || !month || !day) return null;
+  return { year, month, day };
+}
+
+export function formatDateLabel(value: string): string {
+  const parsed = parseDateOnly(value);
+  if (!parsed) return 'Pick a date';
+  return new Intl.DateTimeFormat(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day)));
+}
+
+export function monthGrid(year: number, month: number): Array<string | null> {
+  const first = new Date(Date.UTC(year, month - 1, 1));
+  const weekday = first.getUTCDay();
+  const startPad = weekday === 0 ? 6 : weekday - 1;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const cells: Array<string | null> = Array.from({ length: startPad }, () => null);
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(
+      `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+    );
+  }
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+  return cells;
+}
+
 export function formatConsumedAt(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {

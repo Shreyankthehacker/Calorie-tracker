@@ -86,6 +86,9 @@ describe('food entries API', () => {
     const list = await app.inject({ method: 'GET', url: '/api/v1/food-entries' });
     expect(list.statusCode).toBe(401);
 
+    const recents = await app.inject({ method: 'GET', url: '/api/v1/food-entries/recents' });
+    expect(recents.statusCode).toBe(401);
+
     const create = await app.inject({
       method: 'POST',
       url: '/api/v1/food-entries',
@@ -429,6 +432,54 @@ describe('food entries API', () => {
     });
     const second = page2.json() as { data: FoodEntry[] };
     expect(second.data[0]?.id).not.toBe(first.data[0]?.id);
+  });
+
+  it('returns distinct recent foods from the authenticated user only', async () => {
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/food-entries',
+      headers: auth(userA),
+      payload: {
+        ...validEntry,
+        foodName: 'Overnight oats',
+        consumedAt: '2026-09-10T08:00:00.000Z',
+      },
+    });
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/food-entries',
+      headers: auth(userA),
+      payload: {
+        ...validEntry,
+        foodName: 'Overnight oats',
+        calories: 340,
+        consumedAt: '2026-09-11T08:00:00.000Z',
+      },
+    });
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/food-entries',
+      headers: auth(userB),
+      payload: {
+        ...validEntry,
+        foodName: 'Secret toast',
+        consumedAt: '2026-09-12T08:00:00.000Z',
+      },
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/food-entries/recents?limit=5',
+      headers: auth(userA),
+    });
+    expect(response.statusCode).toBe(200);
+    const body = response.json() as {
+      data: Array<{ foodName: string; timesLogged: number; calories: number }>;
+    };
+    const oats = body.data.find((row) => row.foodName === 'Overnight oats');
+    expect(oats?.timesLogged).toBe(2);
+    expect(oats?.calories).toBe(340);
+    expect(body.data.some((row) => row.foodName === 'Secret toast')).toBe(false);
   });
 
   it('returns an empty paginated list and deletes owned entries', async () => {

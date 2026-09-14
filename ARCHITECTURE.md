@@ -406,6 +406,7 @@ Required reports:
 - macronutrient breakdown
 - micronutrient summary
 - goal vs actual
+- period insights (averages, tracked days, streak)
 
 Pipeline:
 
@@ -501,7 +502,7 @@ Meal confirmation is enforced at the application layer:
 3. The client shows Save meal / Cancel.
 4. Only `POST /api/v1/ai/chat/confirm-meal` (authenticated) calls `FoodEntryService.create`.
 
-`searchFood` uses a `FoodSearchProvider` abstraction. The current implementation is an in-memory `CatalogFoodSearchProvider` of labeled estimates (`source: catalog_estimate`), not a laboratory food database. A real provider can replace it later.
+`searchFood` uses a `FoodSearchProvider` abstraction. Production uses `PrismaFoodSearchProvider` against the `FoodItem` catalog (`source: catalog_estimate`). Tests may inject an in-memory `CatalogFoodSearchProvider` or a failing mock. This is still not a laboratory food database.
 
 Chat is stateless: no chat-history tables. Optional `history` may be sent on the request. Gemini credentials stay on the backend. Tests inject a mock `LlmProvider` and must not call Gemini.
 
@@ -579,10 +580,10 @@ FoodEntry snapshot
 
 Rules:
 
-- Seeded rows use `sourceType = SYSTEM`. `imageUrl` is optional; the UI falls back to an emoji when it is null.
+- Seeded rows use `sourceType = SYSTEM`. `imageUrl` is optional; the UI falls back to a letter mark / icon when it is null.
 - Logging copies nutrition into `FoodEntry`. Changing Eggs from 78 kcal to 80 kcal later must not change old entries.
 - `FoodEntry` has no `foodItemId` in this version (avoids a live dependency and a FoodEntry redesign).
-- PDF import and AI extraction do **not** match names against `FoodItem` yet. Chat `searchFood` stays on the in-memory `CatalogFoodSearchProvider`.
+- PDF import and AI extraction do **not** match names against `FoodItem` yet. Chat `searchFood` uses `PrismaFoodSearchProvider` over `FoodItem`.
 
 ---
 
@@ -769,4 +770,4 @@ Required functionality comes first.
 8. PDF import may propose meals from a text-based diary, but only explicit confirm creates `FoodEntry` rows.
 9. Family tables remain deferred.
 10. Catalog logging copies scaled nutrition into `FoodEntry`. Later `FoodItem` edits do not rewrite history.
-11. Chat `searchFood` remains an in-memory estimate provider; it is not wired to `FoodItem` in this version.
+11. Chat `searchFood` reads the `FoodItem` catalog through `PrismaFoodSearchProvider`; it still returns labeled estimates (`catalog_estimate`).

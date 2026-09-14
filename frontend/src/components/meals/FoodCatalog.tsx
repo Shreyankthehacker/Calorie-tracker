@@ -4,13 +4,16 @@ import { listFoodItems, logFoodItem } from '../../api/food-items';
 import { ApiError, type FoodItem, type MealType } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { Alert, FormField } from '../layout/AppShell';
+import { FoodThumb } from './FoodThumb';
+import { Coffee, Cookie, LayoutGrid, Moon, Sun } from 'lucide-react';
+import { LayoutGroup, motion } from 'framer-motion';
 
-const mealTabs: Array<{ value: MealType | ''; label: string }> = [
-  { value: '', label: 'All' },
-  { value: 'BREAKFAST', label: 'Breakfast' },
-  { value: 'LUNCH', label: 'Lunch' },
-  { value: 'DINNER', label: 'Dinner' },
-  { value: 'SNACKS', label: 'Snacks' },
+const mealTabs: Array<{ value: MealType | ''; label: string; icon: typeof Sun }> = [
+  { value: '', label: 'All', icon: LayoutGrid },
+  { value: 'BREAKFAST', label: 'Breakfast', icon: Coffee },
+  { value: 'LUNCH', label: 'Lunch', icon: Sun },
+  { value: 'DINNER', label: 'Dinner', icon: Moon },
+  { value: 'SNACKS', label: 'Snacks', icon: Cookie },
 ];
 
 const mealLabels: Record<MealType, string> = {
@@ -19,37 +22,6 @@ const mealLabels: Record<MealType, string> = {
   DINNER: 'dinner',
   SNACKS: 'snacks',
 };
-
-const nameEmoji: Record<string, string> = {
-  oats: '🥣',
-  banana: '🍌',
-  eggs: '🥚',
-  idli: '⚪',
-  toast: '🍞',
-  'greek yogurt': '🥛',
-  apple: '🍎',
-  'white rice': '🍚',
-  chapati: '🫓',
-  'chicken breast': '🍗',
-  paneer: '🧀',
-  salmon: '🐟',
-  'mixed salad': '🥗',
-  almonds: '🥜',
-  milk: '🥛',
-};
-
-const categoryEmoji: Record<string, string> = {
-  grain: '🥣',
-  fruit: '🍌',
-  protein: '🥚',
-  dairy: '🥛',
-  vegetable: '🥗',
-  nuts: '🥜',
-};
-
-function catalogEmoji(item: FoodItem): string {
-  return nameEmoji[item.name.toLowerCase()] ?? categoryEmoji[item.category ?? ''] ?? '🍽️';
-}
 
 function scaleFromServing(
   perServing: number,
@@ -144,10 +116,11 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
   }
 
   return (
-    <section className="panel catalog-panel">
+    <section className="catalog-panel">
       <h2>Add from catalog</h2>
       <p className="muted small">Choose a food, enter how much you ate, and nutrition is calculated for you.</p>
 
+      <LayoutGroup>
       <div className="catalog-tabs" role="tablist" aria-label="Catalog meal">
         {mealTabs.map((tab) => (
           <button
@@ -158,10 +131,13 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
             className={`catalog-tab ${mealType === tab.value ? 'is-active' : ''}`}
             onClick={() => setMealType(tab.value)}
           >
+            {mealType === tab.value ? <motion.span className="catalog-tab-pill" layoutId="catalog-tab-pill" /> : null}
+            <tab.icon size={15} aria-hidden="true" />
             {tab.label}
           </button>
         ))}
       </div>
+      </LayoutGroup>
 
       <label className="field catalog-search">
         <span className="field-label">Search food</span>
@@ -191,13 +167,7 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
               className="catalog-card"
               onClick={() => openItem(item)}
             >
-              <span className="catalog-emoji" aria-hidden="true">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt="" className="catalog-thumb" />
-                ) : (
-                  catalogEmoji(item)
-                )}
-              </span>
+              <FoodThumb name={item.name} imageUrl={item.imageUrl} />
               <span className="catalog-card-name">{item.name}</span>
               <span className="muted small">
                 {item.calories} kcal / {item.servingSize} {item.servingUnit}
@@ -264,10 +234,14 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
             </FormField>
 
             {preview ? (
-              <p className="catalog-total">
-                Total: {preview.calories} kcal · P {preview.protein}g · C {preview.carbs}g · F{' '}
-                {preview.fat}g
-              </p>
+              <div className="meal-live">
+                <p className="catalog-total">Total: {preview.calories} kcal</p>
+                <div className="meal-live-grid">
+                  <span>P {preview.protein}g</span>
+                  <span>C {preview.carbs}g</span>
+                  <span>F {preview.fat}g</span>
+                </div>
+              </div>
             ) : (
               <p className="muted small">Enter a quantity greater than 0 to see totals.</p>
             )}

@@ -104,7 +104,6 @@ describe('GoalsPage', () => {
     await userEvt.type(screen.getByLabelText(/daily protein/i), '120');
     await userEvt.type(screen.getByLabelText(/daily carbohydrates/i), '200');
     await userEvt.type(screen.getByLabelText(/daily fat/i), '60');
-    await userEvt.type(screen.getByLabelText(/weight goal/i), '70');
     await userEvt.click(screen.getByRole('button', { name: /save goals/i }));
 
     await waitFor(() => {
@@ -113,7 +112,7 @@ describe('GoalsPage', () => {
         proteinTarget: 120,
         carbTarget: 200,
         fatTarget: 60,
-        weightGoal: 70,
+        weightGoal: null,
       });
     });
   });

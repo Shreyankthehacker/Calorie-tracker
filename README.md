@@ -287,7 +287,7 @@ Backend AI tests inject mock `NutritionExtractionProvider` and `LlmProvider` imp
 - Conversational AI: `POST /api/v1/ai/chat` (authenticated, same AI rate limit). Optional `history` is request-scoped only; there is no chat-history table
 - The assistant uses allowlisted tools (`getGoals`, `getNutritionSummary`, `getWeeklyReport`, `listMeals`, `searchFood`, `logMeal`) that call existing services. **The LLM never accesses the database directly.**
 - `logMeal` in the chat loop only returns a `pendingMeal`. Persist with `POST /api/v1/ai/chat/confirm-meal` after Save meal
-- `searchFood` uses an in-app catalog of labeled estimates, not a live external food database
+- `searchFood` reads the seeded `FoodItem` catalog (`source: catalog_estimate`); it is not a laboratory food database
 - `GEMINI_API_KEY` stays on the backend
 
 ---

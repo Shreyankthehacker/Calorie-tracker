@@ -131,13 +131,13 @@ export function ScanFoodPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <h1>Scan Food</h1>
-        <p className="muted">Upload a photo or nutrition label. Review everything before it is saved.</p>
-      </header>
+        <header className="page-header">
+          <h1>Scan Food</h1>
+          <p className="muted">Upload a photo or nutrition label. Review everything before it is saved.</p>
+        </header>
 
       {!extraction ? (
-        <section className="panel scan-panel">
+        <section className="dropzone scan-panel">
           <label className="field">
             <span className="field-label">Upload image</span>
             <input
@@ -147,7 +147,10 @@ export function ScanFoodPage() {
             />
           </label>
           {previewUrl ? (
-            <img className="scan-preview" src={previewUrl} alt="Selected food to analyze" />
+            <div className="scan-stage">
+              <img className="scan-preview" src={previewUrl} alt="Selected food to analyze" />
+              <div className="scan-frame" aria-hidden="true" />
+            </div>
           ) : null}
           {file ? <p className="muted small">{file.name}</p> : null}
           {localError ? (
@@ -181,7 +184,10 @@ export function ScanFoodPage() {
           ) : null}
           {extraction.notes ? <p className="muted small">{extraction.notes}</p> : null}
           {previewUrl ? (
-            <img className="scan-preview" src={previewUrl} alt="Analyzed food" />
+            <div className="scan-stage">
+              <img className="scan-preview" src={previewUrl} alt="Analyzed food" />
+              <div className="scan-frame" aria-hidden="true" />
+            </div>
           ) : null}
           <MealForm
             initial={toDraftEntry(extraction)}
