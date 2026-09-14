@@ -10,7 +10,7 @@ const nonNegativeNumber = z
   .finite()
   .nonnegative();
 
-const positiveQuantity = z
+export const positiveQuantity = z
   .number({
     required_error: 'Value is required',
     invalid_type_error: 'Value must be a number',

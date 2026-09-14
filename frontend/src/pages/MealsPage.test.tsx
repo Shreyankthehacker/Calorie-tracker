@@ -7,10 +7,12 @@ import { ProtectedRoute } from '../routes/guards';
 import { renderWithProviders } from '../test/render';
 import { ApiError, type FoodEntry } from '../api/types';
 import * as foodEntriesApi from '../api/food-entries';
+import * as foodItemsApi from '../api/food-items';
 import * as authApi from '../api/auth';
 import { tokenStorage } from '../api/tokenStorage';
 
 vi.mock('../api/food-entries');
+vi.mock('../api/food-items');
 vi.mock('../api/auth', async () => {
   const actual = await vi.importActual<typeof import('../api/auth')>('../api/auth');
   return {
@@ -58,6 +60,10 @@ describe('MealsPage', () => {
     tokenStorage.setTokens('access', 'refresh');
     vi.clearAllMocks();
     vi.mocked(authApi.getCurrentUser).mockResolvedValue(user);
+    vi.mocked(foodItemsApi.listFoodItems).mockResolvedValue({
+      data: [],
+      pagination: { page: 1, pageSize: 50, total: 0, totalPages: 0 },
+    });
     vi.stubGlobal(
       'confirm',
       vi.fn(() => true),
@@ -138,7 +144,7 @@ describe('MealsPage', () => {
     vi.mocked(foodEntriesApi.createFoodEntry).mockResolvedValue(oatmeal);
 
     renderWithProviders(<MealsPage />, { route: '/meals' });
-    await userEvt.click(await screen.findByRole('button', { name: 'Add Meal' }));
+    await userEvt.click(await screen.findByRole('button', { name: /add custom meal/i }));
     await userEvt.type(screen.getByLabelText(/^food$/i), 'Oatmeal');
     await userEvt.clear(screen.getByLabelText(/^calories/i));
     await userEvt.type(screen.getByLabelText(/^calories/i), '320');

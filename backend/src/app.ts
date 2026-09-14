@@ -12,6 +12,7 @@ import { aiExtractionRoutes } from './routes/ai.js';
 import { chatRoutes } from './routes/chat.js';
 import { authRoutes } from './routes/auth.js';
 import { foodEntryRoutes } from './routes/food-entries.js';
+import { foodItemRoutes } from './routes/food-items.js';
 import { goalRoutes } from './routes/goals.js';
 import { healthRoutes } from './routes/health.js';
 import { reportRoutes } from './routes/reports.js';
@@ -49,6 +50,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
   await app.register(authRoutes, { prefix: '/api/v1', env });
   await app.register(goalRoutes, { prefix: '/api/v1' });
   await app.register(foodEntryRoutes, { prefix: '/api/v1' });
+  await app.register(foodItemRoutes, { prefix: '/api/v1' });
   await app.register(reportRoutes, { prefix: '/api/v1' });
   await app.register(aiExtractionRoutes, {
     prefix: '/api/v1',

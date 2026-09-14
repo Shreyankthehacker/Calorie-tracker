@@ -140,6 +140,7 @@ Examples:
 AuthService
 GoalService
 FoodEntryService
+FoodItemService
 NutritionReportService
 AIExtractionService
 ```
@@ -154,6 +155,7 @@ Examples:
 UserRepository
 GoalRepository
 FoodEntryRepository
+FoodItemRepository
 ```
 
 Centralized error handling in `registerErrorHandler` maps `AppError`, Zod failures, Fastify client errors, and unknown exceptions to `{ error: { code, message } }`. Unexpected errors are logged and returned as a generic `INTERNAL_SERVER_ERROR`.
@@ -189,14 +191,21 @@ User
   │
   ├── Goal                 (1:1 — current active goal only)
   │
-  └── FoodEntry            (1:many)
+  └── FoodEntry            (1:many — what the user ate; nutrition is a snapshot)
           │
           └── FoodEntryNutrient   (1:many)
+
+FoodItem                   (shared catalog; not user-owned)
+  │
+  ├── FoodItemMealType     (many meal tags: BREAKFAST / LUNCH / DINNER / SNACKS)
+  └── FoodItemNutrient     (1:many)
 ```
 
 v1 does **not** implement goal history.
 
 Do **not** create Family / FamilyMember / FamilyInvitation / FamilyPermission / `familyId` tables or columns in v1.
+
+`FoodEntry` does **not** foreign-key to `FoodItem`. Logging from the catalog copies scaled nutrition into the entry so later catalog edits cannot rewrite history.
 
 ## Schema
 
@@ -248,12 +257,49 @@ food_entry_id
 nutrient_key           (canonical key, e.g. vitamin_c, iron, sodium)
 amount
 unit
+
+
+food_items
+----------
+id
+name
+category               (optional food kind: fruit, grain, protein, … — not meal type)
+serving_size
+serving_unit
+calories
+protein
+carbs
+fat
+image_url              (URL only; never store image bytes in PostgreSQL)
+source_type            (SYSTEM | USDA | USER | PDF | AI; v1 seed is SYSTEM)
+source_reference
+verified
+created_at
+updated_at
+
+
+food_item_meal_types
+--------------------
+food_item_id
+meal_type              (composite primary key with food_item_id)
+
+
+food_item_nutrients
+-------------------
+id
+food_item_id
+nutrient_key
+amount
+unit
 ```
 
 Recommended indexes:
 
 - `food_entries (user_id, consumed_at)`
 - `food_entry_nutrients (food_entry_id)`
+- `food_items (name)`
+- `food_items (source_type, name)` unique
+- `food_item_nutrients (food_item_id)`
 
 ---
 
@@ -513,6 +559,33 @@ Duplicates: preview compares food name (case-insensitive), meal type, quantity, 
 
 ---
 
+# 12d. Food Catalog
+
+The catalog is a shared `FoodItem` table, not separate breakfast/lunch/dinner tables. Meal type (when eaten) and food category (fruit, grain, protein) are different fields. A food can be tagged for several meals through `FoodItemMealType`.
+
+```text
+GET /food-items  (filter by mealType / q)
+     ↓
+User selects a food and quantity
+     ↓
+POST /food-items/:id/entries
+     ↓
+FoodItemService (scale = quantity / servingSize)
+     ↓
+FoodEntryService.create  (copied calories, macros, micros)
+     ↓
+FoodEntry snapshot
+```
+
+Rules:
+
+- Seeded rows use `sourceType = SYSTEM`. `imageUrl` is optional; the UI falls back to an emoji when it is null.
+- Logging copies nutrition into `FoodEntry`. Changing Eggs from 78 kcal to 80 kcal later must not change old entries.
+- `FoodEntry` has no `foodItemId` in this version (avoids a live dependency and a FoodEntry redesign).
+- PDF import and AI extraction do **not** match names against `FoodItem` yet. Chat `searchFood` stays on the in-memory `CatalogFoodSearchProvider`.
+
+---
+
 # 13. Error Handling
 
 All API errors use a single JSON envelope:
@@ -662,6 +735,7 @@ Priority coverage:
 - AI response validation (with mocked provider)
 - conversational AI tools, confirmation, ownership, and mocked LLM provider loops
 - PDF import preview/confirm, parser fixtures, ownership, and transactional confirm
+- food catalog list/filter/search, quantity scaling, snapshot logging, and unauthenticated 401
 
 Use Vitest and Fastify inject/API tests for backend-critical paths.
 
@@ -677,7 +751,7 @@ Do not implement in v1:
 
 - family system
 
-Conversational AI and PDF food diary import are implemented as post-core bonuses. The LLM never accesses the database directly. PDF preview never writes food entries.
+Conversational AI, PDF food diary import, and the food catalog are implemented as post-core bonuses. The LLM never accesses the database directly. PDF preview never writes food entries. Catalog logging copies nutrition into `FoodEntry` rather than live-linking catalog rows.
 
 Required functionality comes first.
 
@@ -694,3 +768,5 @@ Required functionality comes first.
 7. Conversational AI may propose a meal, but only explicit `confirm-meal` (Save meal) creates a `FoodEntry`.
 8. PDF import may propose meals from a text-based diary, but only explicit confirm creates `FoodEntry` rows.
 9. Family tables remain deferred.
+10. Catalog logging copies scaled nutrition into `FoodEntry`. Later `FoodItem` edits do not rewrite history.
+11. Chat `searchFood` remains an in-memory estimate provider; it is not wired to `FoodItem` in this version.

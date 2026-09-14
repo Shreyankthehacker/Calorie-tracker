@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "db:generate": "pnpm --filter @calorie-tracker/backend db:generate",
     "db:migrate": "pnpm --filter @calorie-tracker/backend db:migrate",
-    "db:migrate:dev": "pnpm --filter @calorie-tracker/backend db:migrate:dev"
+    "db:migrate:dev": "pnpm --filter @calorie-tracker/backend db:migrate:dev",
+    "db:seed": "pnpm --filter @calorie-tracker/backend db:seed"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

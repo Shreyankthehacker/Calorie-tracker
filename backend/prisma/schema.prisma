@@ -20,6 +20,14 @@ enum MealType {
   SNACKS
 }
 
+enum FoodItemSource {
+  SYSTEM
+  USDA
+  USER
+  PDF
+  AI
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -103,4 +111,54 @@ model FoodEntryNutrient {
   @@unique([foodEntryId, nutrientKey])
   @@index([foodEntryId])
   @@map("food_entry_nutrients")
+}
+
+// Reusable nutrition catalog. FoodEntry stores a snapshot; it does not live-link to these values.
+model FoodItem {
+  id              String         @id @default(cuid())
+  name            String
+  category        String?
+  servingSize     Float          @map("serving_size")
+  servingUnit     String         @map("serving_unit")
+  calories        Float
+  protein         Float
+  carbs           Float
+  fat             Float
+  imageUrl        String?        @map("image_url")
+  sourceType      FoodItemSource @default(SYSTEM) @map("source_type")
+  sourceReference String?        @map("source_reference")
+  verified        Boolean        @default(true)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  nutrients FoodItemNutrient[]
+  mealTypes FoodItemMealType[]
+
+  @@unique([sourceType, name])
+  @@index([name])
+  @@map("food_items")
+}
+
+model FoodItemMealType {
+  foodItemId String   @map("food_item_id")
+  mealType   MealType @map("meal_type")
+
+  foodItem FoodItem @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+
+  @@id([foodItemId, mealType])
+  @@map("food_item_meal_types")
+}
+
+model FoodItemNutrient {
+  id          String @id @default(cuid())
+  foodItemId  String @map("food_item_id")
+  nutrientKey String @map("nutrient_key")
+  amount      Float
+  unit        String
+
+  foodItem FoodItem @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+
+  @@unique([foodItemId, nutrientKey])
+  @@index([foodItemId])
+  @@map("food_item_nutrients")
 }

@@ -124,6 +124,56 @@ Ownership: every read/update/delete by id must verify the entry belongs to the a
 
 ---
 
+# Food Catalog
+
+Reusable nutrition records. Meal logging copies scaled values into a normal `FoodEntry`. Catalog edits do **not** rewrite past entries. There is no live foreign key from `FoodEntry` to `FoodItem`.
+
+```text
+GET  /food-items
+GET  /food-items/:id
+POST /food-items/:id/entries
+```
+
+Authenticated. Identity for `POST .../entries` comes from the access token. The catalog itself is shared system data (seeded `SYSTEM` foods).
+
+## List filters
+
+```text
+mealType
+q
+page
+pageSize
+```
+
+- `mealType` filters foods tagged for that meal (a food can have several tags, e.g. banana → BREAKFAST and SNACKS)
+- `q` is a case-insensitive name search
+- offset pagination: `page` (1-based), `pageSize`, maximum `pageSize` = **50**, default order `name ASC`
+
+`GET /food-items/:id` → `200 { foodItem }` or `404`.
+
+## Log from catalog
+
+```json
+POST /food-items/:id/entries
+{
+  "quantity": 3,
+  "mealType": "BREAKFAST",
+  "consumedAt": "2026-09-13T08:00:00.000Z"
+}
+```
+
+The server computes `factor = quantity / servingSize`, scales calories, macros, and micronutrients, and creates a `FoodEntry` through `FoodEntryService.create`.
+
+`201 { foodEntry }` — same shape as `POST /food-entries`.
+
+Unknown catalog id: `404`. Quantity must be positive. Unauthenticated: `401`.
+
+Meal type on the entry is **when the user ate it**. Catalog meal tags are only for browsing.
+
+PDF import and conversational AI do **not** match against this catalog yet. Chat `searchFood` still uses the in-memory estimate provider.
+
+---
+
 # Reports
 
 Reports are derived at request time from persisted `FoodEntry` rows. There is no `Report` table, cache, or materialized total.

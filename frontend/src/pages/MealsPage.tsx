@@ -9,6 +9,7 @@ import {
 import { ApiError, type FoodEntry, type FoodEntryWritePayload, type MealType } from '../api/types';
 import { Alert } from '../components/layout/AppShell';
 import { MealForm } from '../components/meals/MealForm';
+import { FoodCatalog } from '../components/meals/FoodCatalog';
 import { formatConsumedAt } from '../lib/dates';
 
 const mealSections: Array<{ type: MealType; label: string }> = [
@@ -103,7 +104,7 @@ export function MealsPage() {
       <header className="page-header page-header-row">
         <div>
           <h1>Meals</h1>
-          <p className="muted">Log what you ate and when you ate it.</p>
+          <p className="muted">Pick a food from the catalog, or log a custom meal.</p>
         </div>
         <button
           type="button"
@@ -114,9 +115,17 @@ export function MealsPage() {
             setSuccess(null);
           }}
         >
-          Add Meal
+          Add custom meal
         </button>
       </header>
+
+      <FoodCatalog
+        onLogged={async () => {
+          setSuccess('Meal added.');
+          setFormError(null);
+          await invalidateMeals();
+        }}
+      />
 
       <form className="panel filter-bar" onSubmit={(event) => event.preventDefault()}>
         <label className="field">

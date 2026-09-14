@@ -712,8 +712,84 @@ p {
   color: #7a4e12;
 }
 
-.status-unparsed {
-  background: rgba(155, 44, 44, 0.12);
-  color: var(--danger);
+.catalog-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.catalog-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.catalog-tab {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catalog-tab.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.catalog-search {
+  max-width: 22rem;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.catalog-card {
+  display: grid;
+  gap: 0.25rem;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.catalog-card:hover,
+.catalog-card:focus-visible {
+  border-color: var(--brand);
+}
+
+.catalog-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.catalog-thumb {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border-radius: 0.4rem;
+}
+
+.catalog-card-name {
+  font-weight: 650;
+}
+
+.catalog-macros {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+}
+
+.catalog-total {
+  font-weight: 650;
+  margin: 0.25rem 0 0.75rem;
 }
 

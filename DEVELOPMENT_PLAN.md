@@ -4,7 +4,7 @@ The project will be implemented incrementally.
 
 **Testing is part of every phase.** A phase is not complete until its tests pass.
 
-Do not implement remaining family features until the core application (Phases 0–6) is stable. Conversational AI and PDF food diary import are post-core bonuses and are implemented after that bar.
+Do not implement remaining family features until the core application (Phases 0–6) is stable. Conversational AI, PDF food diary import, and the food catalog are post-core bonuses and are implemented after that bar.
 
 Stack constraints: React, TypeScript, Vite, TanStack Query, Recharts, Node.js, Fastify, Zod, Prisma, Neon PostgreSQL, Vitest. Do not introduce Express, NestJS, FastAPI, GraphQL, Redis, or other unnecessary infrastructure.
 
@@ -255,6 +255,26 @@ PostgreSQL
 ```
 
 Supported layouts: tabular, line-oriented, mixed dash/pipe. No OCR. No LLM assistance. Preview rate limit default 10 / 60s. Upload cap 5MB. Confirmation is all-or-nothing and reuses existing FoodEntry validation and ownership.
+
+### Bonus 3 — Food Catalog (implemented)
+
+```text
+Frontend /meals catalog picker
+     ↓
+GET /api/v1/food-items?mealType=&q=
+     ↓
+User chooses food + quantity
+     ↓
+POST /api/v1/food-items/:id/entries
+     ↓
+FoodItemService (scale nutrition from serving)
+     ↓
+FoodEntryService.create
+     ↓
+PostgreSQL (FoodEntry snapshot)
+```
+
+One `FoodItem` table with many-to-many meal tags (`FoodItemMealType`). Meal type (when eaten) is not the same as food category (fruit, grain, protein). Seeded rows are `sourceType = SYSTEM`. `imageUrl` is optional (URL only). Logging copies macros/micros into `FoodEntry`; there is no live foreign key. Custom manual meal entry remains available. PDF/AI name matching against the catalog is deferred. Chat `searchFood` stays on the in-memory provider.
 
 ### Future — Family System (not implemented)
 

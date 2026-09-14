@@ -1,6 +1,6 @@
 # Personal Calorie Tracker
 
-A full-stack personal nutrition tracker for logging meals, setting a current nutrition goal, reviewing timezone-aware reports, extracting nutrition from food photos, chatting with an assistant that uses application tools, and importing text-based PDF food diaries after review.
+A full-stack personal nutrition tracker for logging meals from a shared food catalog or a custom form, setting a current nutrition goal, reviewing timezone-aware reports, extracting nutrition from food photos, chatting with an assistant that uses application tools, and importing text-based PDF food diaries after review.
 
 Users review and edit AI-extracted values before anything is saved. Extraction never creates a food entry on its own. Conversational meal logging also requires an explicit Save meal confirmation. PDF import never creates food entries until the user confirms the previewed meals.
 
@@ -46,6 +46,7 @@ Implemented:
 - Authentication: register, login, refresh, logout, current user
 - One current nutrition goal per user (create, update, delete)
 - Meal / food entries with calories, macros, micronutrients, quantity, meal type, and `consumedAt`
+- Shared food catalog: pick a food, enter quantity, server calculates nutrition and saves a `FoodEntry` snapshot
 - Offset pagination for food-entry lists (default order `consumedAt DESC`, max `pageSize` 50)
 - Date and meal-type filtering on `consumedAt`
 - Timezone-aware reports (today, calorie trend, macros, micronutrients, goal vs actual)
@@ -149,9 +150,12 @@ Neon (or other app database pointed to by `backend/.env`):
 ```bash
 pnpm db:generate
 pnpm db:migrate
+pnpm db:seed
 ```
 
 `DATABASE_URL` is the pooled runtime connection. `DIRECT_URL` is the direct connection used for Prisma migrations.
+
+`pnpm db:seed` upserts the curated `SYSTEM` food catalog (oats, eggs, chapati, and similar). Re-running it updates those rows in place.
 
 ## 4. Start the backend
 

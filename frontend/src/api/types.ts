@@ -55,6 +55,8 @@ export type GoalWritePayload = {
 
 export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACKS';
 
+export type FoodItemSource = 'SYSTEM' | 'USDA' | 'USER' | 'PDF' | 'AI';
+
 export type Micronutrient = {
   nutrientKey: string;
   amount: number;
@@ -110,6 +112,44 @@ export type FoodEntryListParams = {
   mealType?: MealType;
   page?: number;
   pageSize?: number;
+};
+
+export type FoodItem = {
+  id: string;
+  name: string;
+  category: string | null;
+  servingSize: number;
+  servingUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  imageUrl: string | null;
+  sourceType: FoodItemSource;
+  sourceReference: string | null;
+  verified: boolean;
+  mealTypes: MealType[];
+  micronutrients: Micronutrient[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FoodItemListResponse = {
+  data: FoodItem[];
+  pagination: Pagination;
+};
+
+export type FoodItemListParams = {
+  mealType?: MealType;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type FoodItemLogPayload = {
+  quantity: number;
+  mealType: MealType;
+  consumedAt: string;
 };
 
 export type MacroTotals = {
