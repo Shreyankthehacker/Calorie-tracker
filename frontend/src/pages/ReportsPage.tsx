@@ -27,11 +27,11 @@ import {
   type ReportRangePreset,
 } from '../lib/dates';
 
-const ACCENT = '#3f5d44';
-const PROTEIN = '#d36b4a';
-const CARBS = '#c4a15a';
-const FAT = '#5d7a94';
-const INK = '#1c1b16';
+const ACCENT = '#A8112A';
+const PROTEIN = '#A8112A';
+const CARBS = '#2B2A28';
+const FAT = '#D8D5D0';
+const INK = '#0A0A0A';
 
 function formatAmount(value: number): string {
   if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 1e-6) {
@@ -114,12 +114,14 @@ export function ReportsPage() {
   const goalReport = goalQuery.data;
 
   return (
-    <section className="page">
+    <div className="page-reports">
+      <div className="main-inner">
+      <div className="top-row">
+        <div className="kicker">Track</div>
+        <h1 className="page-title">Reports &amp; trends</h1>
+        <p className="muted">Nutrition trends in your timezone ({timeZone}).</p>
+      </div>
       <header className="page-header-row">
-        <div className="page-header">
-          <h1>Reports</h1>
-          <p className="muted">Nutrition trends in your timezone ({timeZone}).</p>
-        </div>
         <div className="range-controls">
           <label className="field">
             <span className="field-label">Period</span>
@@ -322,6 +324,7 @@ export function ReportsPage() {
           </section>
         </div>
       )}
-    </section>
+      </div>
+    </div>
   );
 }

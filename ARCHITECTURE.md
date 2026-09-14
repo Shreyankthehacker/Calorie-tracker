@@ -187,13 +187,15 @@ Charts (Recharts) consume report API aggregate series.
 ## Entities and relationships
 
 ```text
-User
+Family                  (optional household; unique id)
   │
-  ├── Goal                 (1:1 — current active goal only)
-  │
-  └── FoodEntry            (1:many — what the user ate; nutrition is a snapshot)
-          │
-          └── FoodEntryNutrient   (1:many)
+  └── User                 (optional familyId; each user keeps their own data)
+        │
+        ├── Goal                 (1:1 — current active goal only)
+        │
+        └── FoodEntry            (1:many — what the user ate; nutrition is a snapshot)
+                │
+                └── FoodEntryNutrient   (1:many)
 
 FoodItem                   (shared catalog; not user-owned)
   │
@@ -203,19 +205,28 @@ FoodItem                   (shared catalog; not user-owned)
 
 v1 does **not** implement goal history.
 
-Do **not** create Family / FamilyMember / FamilyInvitation / FamilyPermission / `familyId` tables or columns in v1.
+Family membership is optional (`families` + `users.family_id`). Food entries remain owned by `user_id`. Do not add invitation or permission tables unless explicitly required.
 
 `FoodEntry` does **not** foreign-key to `FoodItem`. Logging from the catalog copies scaled nutrition into the entry so later catalog edits cannot rewrite history.
 
 ## Schema
 
 ```text
+families
+--------
+id
+name
+created_at
+updated_at
+
+
 users
 -----
 id
 email                  (unique)
 password_hash
 timezone               (IANA timezone string; sensible default e.g. UTC)
+family_id              (optional; members of the same family share this id)
 created_at
 updated_at
 
@@ -742,15 +753,11 @@ Use Vitest and Fastify inject/API tests for backend-critical paths.
 
 ---
 
-# 19. Future Family Functionality
+# 19. Family Membership
 
-v1 ownership is strictly per-user.
+Ownership of food entries remains strictly per-user (`userId`).
 
-Family functionality (later) must be an **additional authorization/policy layer** over existing user-owned data — not a replacement of `userId` ownership, and not part of the v1 schema.
-
-Do not implement in v1:
-
-- family system
+Family is an additional relationship layer: a `Family` row has a unique id, and `User.familyId` links members. Members keep their own profiles, goals, and meals. Family APIs return member profiles and that member's today calorie total; they do not reassign food-entry ownership.
 
 Conversational AI, PDF food diary import, and the food catalog are implemented as post-core bonuses. The LLM never accesses the database directly. PDF preview never writes food entries. Catalog logging copies nutrition into `FoodEntry` rather than live-linking catalog rows.
 
@@ -768,6 +775,6 @@ Required functionality comes first.
 6. AI extract never persists food entries; the user confirms via the food entry API.
 7. Conversational AI may propose a meal, but only explicit `confirm-meal` (Save meal) creates a `FoodEntry`.
 8. PDF import may propose meals from a text-based diary, but only explicit confirm creates `FoodEntry` rows.
-9. Family tables remain deferred.
+9. Family membership is optional via `User.familyId`; meals stay user-owned.
 10. Catalog logging copies scaled nutrition into `FoodEntry`. Later `FoodItem` edits do not rewrite history.
 11. Chat `searchFood` reads the `FoodItem` catalog through `PrismaFoodSearchProvider`; it still returns labeled estimates (`catalog_estimate`).

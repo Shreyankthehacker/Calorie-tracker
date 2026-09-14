@@ -28,6 +28,7 @@ const user = {
   id: 'u1',
   email: 'ada@example.com',
   timezone: 'UTC',
+  familyId: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -110,7 +111,7 @@ describe('MealsPage', () => {
     vi.mocked(foodEntriesApi.listFoodEntries).mockResolvedValue(listResponse([oatmeal]));
     renderWithProviders(<MealsPage />, { route: '/meals' });
     expect(await screen.findByText('Oatmeal')).toBeInTheDocument();
-    expect(screen.getByText(/320 kcal/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/320 kcal/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/iron 2mg/i)).toBeInTheDocument();
   });
 

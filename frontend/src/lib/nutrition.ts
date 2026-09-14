@@ -23,6 +23,24 @@ export function scaleNutrition(value: number, quantity: number, baseQuantity: nu
   return round1((value * quantity) / baseQuantity);
 }
 
+export type NutritionBase = {
+  quantity: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+export function scaleMacrosFromBase(base: NutritionBase, quantity: number): NutritionBase {
+  return {
+    quantity,
+    calories: scaleNutrition(base.calories, quantity, base.quantity),
+    protein: scaleNutrition(base.protein, quantity, base.quantity),
+    carbs: scaleNutrition(base.carbs, quantity, base.quantity),
+    fat: scaleNutrition(base.fat, quantity, base.quantity),
+  };
+}
+
 export function formatAmount(value: number): string {
   if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 1e-6) {
     return String(Math.round(value));

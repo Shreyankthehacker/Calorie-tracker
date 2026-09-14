@@ -43,6 +43,7 @@ describe('authentication UI', () => {
         id: 'u1',
         email: 'ada@example.com',
         timezone: 'UTC',
+        familyId: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -106,6 +107,7 @@ describe('authentication UI', () => {
       id: 'u1',
       email: 'ada@example.com',
       timezone: 'UTC',
+      familyId: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -126,7 +128,7 @@ describe('authentication UI', () => {
     );
 
     expect(await screen.findByText('Secret dashboard')).toBeInTheDocument();
-    await userEvt.click(screen.getByRole('button', { name: /log out/i }));
+    await userEvt.click(screen.getByRole('button', { name: /sign out/i }));
     expect(await screen.findByText('Login screen')).toBeInTheDocument();
     expect(screen.queryByText('Secret dashboard')).not.toBeInTheDocument();
   });

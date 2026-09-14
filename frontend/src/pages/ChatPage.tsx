@@ -19,6 +19,13 @@ const suggestions = [
   'Log my breakfast',
 ];
 
+const htmlChips = [
+  'What should I eat for dinner?',
+  'Am I low on protein this week?',
+  'Suggest a snack under 150 kcal',
+  'How\'s my hydration today?',
+];
+
 function newId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -158,74 +165,104 @@ export function ChatPage() {
   const busy = chatMutation.isPending || saveMutation.isPending;
 
   return (
-    <section className="page chat-page">
-      <header className="page-header">
-        <h1>Assistant</h1>
-        <p className="muted">Ask about goals, today&apos;s intake, or this week. Meals are saved only after you confirm.</p>
-      </header>
+    <div className="page-chat">
+      <div className="main-inner">
+        <div className="top-row">
+          <div className="kicker">Sage assistant</div>
+          <h1 className="sr-only">Assistant</h1>
+          <h1 className="page-title">Chat with Sage</h1>
+        </div>
 
-      {messages.length === 0 ? (
-        <div className="empty-panel">
-          <p>No messages yet. Try a question to get started.</p>
-          <div className="chat-suggestions">
-            {suggestions.map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                className="button button-secondary"
+        <div className="chat-shell">
+          <div className="chat-panel">
+            <div className="chat-log" aria-live="polite">
+              {messages.length === 0 ? (
+                <div className="msg sage">
+                  <span className="tag">🐾 Sage</span>
+                  No messages yet. Try a question to get started.
+                </div>
+              ) : (
+                messages.map((item) => (
+                  <div key={item.id} className={`msg ${item.role === 'user' ? 'user' : 'sage'}`}>
+                    <span className="tag">{item.role === 'user' ? 'You' : '🐾 Sage'}</span>
+                    {item.content}
+                    {item.pendingMeal ? (
+                      <PendingMealActions
+                        meal={item.pendingMeal}
+                        busy={busy}
+                        saving={saveMutation.isPending}
+                        onSave={(meal) => saveMutation.mutate(meal)}
+                        onCancel={handleCancel}
+                      />
+                    ) : null}
+                  </div>
+                ))
+              )}
+              {chatMutation.isPending ? (
+                <div className="msg sage" role="status">
+                  <span className="tag">🐾 Sage</span>
+                  Thinking…
+                </div>
+              ) : null}
+            </div>
+            {error ? <Alert tone="error">{error}</Alert> : null}
+            <form className="chat-input-row" onSubmit={handleSubmit}>
+              <label className="sr-only" htmlFor="chat-message">
+                Message
+              </label>
+              <input
+                id="chat-message"
+                type="text"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                maxLength={4000}
+                placeholder="Ask Sage about meals, swaps, or your numbers…"
                 disabled={busy}
-                onClick={() => send(suggestion)}
-              >
-                {suggestion}
+              />
+              <button type="submit" disabled={busy || input.trim() === ''}>
+                {chatMutation.isPending ? 'Sending…' : 'Send'}
               </button>
-            ))}
+            </form>
+          </div>
+
+          <div>
+            <div className="side-card">
+              <div className="who">💬 Try asking</div>
+              {htmlChips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  className="suggest-chip"
+                  disabled={busy}
+                  onClick={() => send(chip)}
+                >
+                  {chip}
+                </button>
+              ))}
+              {messages.length === 0
+                ? suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      className="suggest-chip"
+                      disabled={busy}
+                      onClick={() => send(suggestion)}
+                    >
+                      {suggestion}
+                    </button>
+                  ))
+                : null}
+            </div>
+            <div className="side-card">
+              <div className="who">🐾 About Sage</div>
+              <p>
+                Sage reads your logged meals, goals, water intake, and family entries to give grounded, specific answers
+                — not generic diet advice.
+              </p>
+            </div>
           </div>
         </div>
-      ) : (
-        <div className="chat-thread" aria-live="polite">
-          {messages.map((item) => (
-            <article
-              key={item.id}
-              className={`chat-bubble ${item.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'}`}
-            >
-              <p>{item.content}</p>
-              {item.pendingMeal ? (
-                <PendingMealActions
-                  meal={item.pendingMeal}
-                  busy={busy}
-                  saving={saveMutation.isPending}
-                  onSave={(meal) => saveMutation.mutate(meal)}
-                  onCancel={handleCancel}
-                />
-              ) : null}
-            </article>
-          ))}
-        </div>
-      )}
-
-      {chatMutation.isPending ? (
-        <p className="muted" role="status">
-          Thinking…
-        </p>
-      ) : null}
-      {error ? <Alert tone="error">{error}</Alert> : null}
-
-      <form className="chat-composer panel" onSubmit={handleSubmit}>
-        <label className="field">
-          <span className="field-label">Message</span>
-          <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            rows={3}
-            maxLength={4000}
-            placeholder="Ask about calories, goals, or logging a meal"
-            disabled={busy}
-          />
-        </label>
-        <button className="button button-primary" type="submit" disabled={busy || input.trim() === ''}>
-          {chatMutation.isPending ? 'Sending…' : 'Send'}
-        </button>
-      </form>
-    </section>
+      </div>
+    </div>
   );
 }

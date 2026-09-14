@@ -1,98 +1,50 @@
-import { Link } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { deleteFoodEntry, listFoodEntries, updateFoodEntry } from '../api/food-entries';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { listFoodEntries } from '../api/food-entries';
 import { getGoal } from '../api/goals';
-import { getInsightsReport, getTodayReport } from '../api/reports';
-import { ApiError, type FoodEntry, type FoodEntryWritePayload, type Goal } from '../api/types';
+import { getTodayReport } from '../api/reports';
+import { ApiError, type FoodEntry, type MealType } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
+import { QuickTools } from '../components/layout/QuickTools';
 import { SkeletonBlock } from '../components/layout/AppShell';
 import { useLogFood } from '../components/meals/LogFoodProvider';
-import { MealForm } from '../components/meals/MealForm';
-import { MealTimeline } from '../components/meals/MealTimeline';
-import { CalorieRing } from '../components/nutrition/CalorieRing';
-import { MacroBars } from '../components/nutrition/MacroBars';
-import { calendarDateInTimeZone, isoWeekRange } from '../lib/dates';
-import { formatAmount } from '../lib/nutrition';
-import { EmptyState } from '../components/ui/EmptyState';
-import { TimeOfDayMark } from '../components/ui/TimeOfDayMark';
-import { useState } from 'react';
+import { calendarDateInTimeZone } from '../lib/dates';
+import { foodPhoto } from '../lib/food-photos';
+import { formatAmount, MEAL_SECTIONS } from '../lib/nutrition';
 
-function greetingName(email: string | undefined): string {
-  if (!email) return 'there';
-  const local = email.split('@')[0] ?? 'there';
-  return local;
+function formatTodayTitle(now: Date): string {
+  return `Today, ${new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric' }).format(now)}`;
 }
 
-function timeGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+function formatLoggedAt(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+}
+
+function groupMeal(entries: FoodEntry[], type: MealType) {
+  const items = entries.filter((entry) => entry.mealType === type);
+  if (items.length === 0) return null;
+  const calories = items.reduce((sum, entry) => sum + entry.calories, 0);
+  const latest = items.reduce((a, b) => (a.consumedAt > b.consumedAt ? a : b));
+  return {
+    items,
+    calories,
+    desc: items.map((entry) => entry.foodName).join(', '),
+    time: latest.consumedAt,
+    photo: foodPhoto(items[0]?.foodName ?? type),
+  };
 }
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { openLogFood } = useLogFood();
-  const queryClient = useQueryClient();
   const today = calendarDateInTimeZone(new Date(), user?.timezone ?? 'UTC');
-  const week = isoWeekRange(today);
-  const [editor, setEditor] = useState<FoodEntry | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
 
-  const goalQuery = useQuery({
-    queryKey: ['goals', 'current'],
-    queryFn: getGoal,
-    retry: false,
-  });
-
-  const todayReportQuery = useQuery({
-    queryKey: ['reports', 'today'],
-    queryFn: getTodayReport,
-  });
-
-  const insightsQuery = useQuery({
-    queryKey: ['reports', 'insights', week.startDate, week.endDate],
-    queryFn: () => getInsightsReport(week),
-  });
-
+  const goalQuery = useQuery({ queryKey: ['goals', 'current'], queryFn: getGoal, retry: false });
+  const todayReportQuery = useQuery({ queryKey: ['reports', 'today'], queryFn: getTodayReport });
   const mealsQuery = useQuery({
     queryKey: ['food-entries', 'today', today],
-    queryFn: () =>
-      listFoodEntries({
-        startDate: today,
-        endDate: today,
-        page: 1,
-        pageSize: 50,
-      }),
-  });
-
-  function invalidateDay() {
-    return Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['food-entries'] }),
-      queryClient.invalidateQueries({ queryKey: ['reports'] }),
-    ]);
-  }
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: FoodEntryWritePayload }) =>
-      updateFoodEntry(id, payload),
-    onSuccess: async () => {
-      setEditor(null);
-      setFormError(null);
-      await invalidateDay();
-    },
-    onError: (err: unknown) => {
-      setFormError(err instanceof ApiError ? err.message : 'Could not update meal.');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteFoodEntry,
-    onSuccess: async () => {
-      await invalidateDay();
-    },
+    queryFn: () => listFoodEntries({ startDate: today, endDate: today, page: 1, pageSize: 50 }),
   });
 
   const missingGoal =
@@ -101,223 +53,159 @@ export function DashboardPage() {
   const totals = todayReportQuery.data ?? { calories: 0, protein: 0, carbs: 0, fat: 0 };
   const entries = mealsQuery.data?.data ?? [];
   const nutritionLoading = goalQuery.isPending || todayReportQuery.isPending;
-  const insights = insightsQuery.data;
+  const macroSum = totals.protein + totals.carbs + totals.fat;
+  const proteinPct = macroSum > 0 ? Math.round((totals.protein / macroSum) * 100) : 0;
+  const circumference = 2 * Math.PI * 55;
+  const dashOffset = circumference - (circumference * proteinPct) / 100;
 
   return (
-    <section className="page overview-page">
-      <header className="page-header-row">
-        <div className="page-header greeting-row">
-          <TimeOfDayMark />
+    <div className="page-today">
+      <QuickTools />
+      <div className="main-inner">
+        <div className="top-row">
           <div>
-            <h1>
-              {timeGreeting()}, {greetingName(user?.email)}
-            </h1>
-            <p className="muted">
-              {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(
-                new Date(),
-              )}
-            </p>
+            <div className="kicker">Daily ledger</div>
+            <h1 className="page-title">{formatTodayTitle(new Date())}</h1>
           </div>
+          <button type="button" className="btn-primary" onClick={openLogFood}>
+            + Log new item
+          </button>
         </div>
-        <button type="button" className="button button-primary" onClick={openLogFood}>
-          <Plus size={16} aria-hidden="true" />
-          Log food
-        </button>
-      </header>
 
-      {nutritionLoading ? (
-        <SkeletonBlock label="Loading today's nutrition…" />
-      ) : todayReportQuery.isError ? (
-        <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
-      ) : goalQuery.isError && !missingGoal ? (
-        <p className="error-text">Unable to load goals. Please try again.</p>
-      ) : (
-        <section className="overview-hero">
-          <CalorieRing consumed={totals.calories} target={goal?.dailyCalorieTarget ?? null} />
-          <div className="overview-macros">
-            <h2>Macros</h2>
-            {missingGoal ? (
-              <EmptyState
-                illustration="target"
-                title="No nutrition goal set yet."
-                action={
-                  <Link className="button button-primary" to="/goals">
-                    Set your goal
-                  </Link>
-                }
+        {nutritionLoading ? (
+          <SkeletonBlock label="Loading today's nutrition…" />
+        ) : todayReportQuery.isError ? (
+          <p className="error-text">Unable to load today&apos;s nutrition. Please try again.</p>
+        ) : goalQuery.isError && !missingGoal ? (
+          <p className="error-text">Unable to load goals. Please try again.</p>
+        ) : (
+          <div className="hero-split">
+            <div className="right">
+              <img
+                src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000&q=80&auto=format&fit=crop"
+                onError={(event) => {
+                  event.currentTarget.src = 'https://picsum.photos/seed/rationhero/1000/460';
+                }}
+                alt="Fresh bowl of vegetables and greens"
               />
+            </div>
+            <div className="seam" />
+            <div className="left">
+              <div className="eyebrow">Daily ledger</div>
+              <div className="stat">
+                {formatAmount(totals.calories)}
+                <span>kcal logged today</span>
+              </div>
+              {goal ? (
+                <p>
+                  {totals.calories <= goal.dailyCalorieTarget
+                    ? `${formatAmount(goal.dailyCalorieTarget - totals.calories)} kcal remaining of your ${formatAmount(goal.dailyCalorieTarget)} kcal target.`
+                    : `${formatAmount(totals.calories - goal.dailyCalorieTarget)} kcal over your ${formatAmount(goal.dailyCalorieTarget)} kcal target.`}
+                </p>
+              ) : (
+                <p>
+                  No daily target set. CalorieTracker won&apos;t push a generic limit on you — set one in Goals, or
+                  keep tracking freely.
+                </p>
+              )}
+              <button type="button" onClick={() => navigate('/goals')}>
+                Set target
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="grid">
+          <div>
+            <h2>Meals &amp; spacing</h2>
+            {mealsQuery.isPending ? (
+              <SkeletonBlock label="Loading meals…" />
+            ) : mealsQuery.isError ? (
+              <p className="error-text">Unable to load meals. Please try again.</p>
             ) : (
-              <MacroBars
-                protein={totals.protein}
-                carbs={totals.carbs}
-                fat={totals.fat}
-                {...(goal
-                  ? {
-                      proteinTarget: goal.proteinTarget,
-                      carbTarget: goal.carbTarget,
-                      fatTarget: goal.fatTarget,
-                    }
-                  : {})}
-              />
+              <>
+                {entries.length === 0 ? <p>No meals logged today.</p> : null}
+                {MEAL_SECTIONS.map((section) => {
+                  const grouped = groupMeal(entries, section.type);
+                  if (!grouped) {
+                    return (
+                      <button
+                        type="button"
+                        className="empty-slot"
+                        key={section.type}
+                        onClick={openLogFood}
+                      >
+                        <span>{section.label}</span>
+                        <span className="plus">
+                          {section.type === 'SNACKS' ? '+ Add snack' : '+ Add meal'}
+                        </span>
+                      </button>
+                    );
+                  }
+                  return (
+                    <div className="meal-card" key={section.type}>
+                      <img
+                        src={grouped.photo}
+                        alt=""
+                        onError={(event) => {
+                          event.currentTarget.src = `https://picsum.photos/seed/${section.type}/200/200`;
+                        }}
+                      />
+                      <div className="meal-info">
+                        <div className="title">{section.label}</div>
+                        <div className="time">Logged at {formatLoggedAt(grouped.time)}</div>
+                        <div className="desc">{grouped.desc}</div>
+                      </div>
+                      <div className="meal-kcal">{Math.round(grouped.calories)} kcal</div>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
-        </section>
-      )}
-
-      <section className="panel-quiet">
-        <header className="section-head">
-          <h2>Today</h2>
-          <p className="muted small">
-            {entries.length === 0 ? 'Nothing logged yet' : `${entries.length} logged`}
-          </p>
-        </header>
-        {mealsQuery.isPending ? (
-          <SkeletonBlock label="Loading meals…" />
-        ) : mealsQuery.isError ? (
-          <p className="error-text">Unable to load meals. Please try again.</p>
-        ) : entries.length === 0 ? (
-          <EmptyState
-            title="No meals logged today."
-            action={
-              <button type="button" className="button button-secondary" onClick={openLogFood}>
-                Add a meal
-              </button>
-            }
-          />
-        ) : (
-          <MealTimeline
-            entries={entries}
-            onAdd={openLogFood}
-            onEdit={(entry) => {
-              setEditor(entry);
-              setFormError(null);
-            }}
-            onDelete={(entry) => {
-              if (window.confirm(`Delete ${entry.foodName}?`)) {
-                deleteMutation.mutate(entry.id);
-              }
-            }}
-          />
-        )}
-      </section>
-
-      <section className="insight-grid">
-        <article className="insight-card">
-          <h2>This week</h2>
-          {insightsQuery.isPending ? (
-            <p className="muted">Loading reports…</p>
-          ) : insightsQuery.isError ? (
-            <p className="error-text">Unable to load weekly insights.</p>
-          ) : (
-            <dl className="insight-stats">
-              <div>
-                <dt>Avg calories</dt>
-                <dd>
-                  {formatAmount(insights?.averageCalories ?? 0)} <span className="unit">kcal</span>
-                </dd>
+          <div>
+            <h2>Context &amp; wisdom</h2>
+            <div className="side-card">
+              <div className="who">🐾 Sage assistant</div>
+              <p>
+                &quot;Your breakfast was nutrient-dense but moderate in protein. Adding eggs or a whey isolate to lunch
+                will support muscle retention.&quot;
+              </p>
+              <Link className="ask-sage" to="/chat">
+                Ask Sage: &quot;What should I eat for dinner?&quot;
+              </Link>
+            </div>
+            <div className="ring-card">
+              <div className="cap">Macro balance</div>
+              <div className="ring-wrap">
+                <svg width="132" height="132" viewBox="0 0 132 132">
+                  <circle className="ring-bg" cx="66" cy="66" r="55" />
+                  <circle
+                    className="ring-fg"
+                    cx="66"
+                    cy="66"
+                    r="55"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
+                  />
+                </svg>
+                <div className="ring-center">
+                  <div className="n">{proteinPct}%</div>
+                  <div className="l">protein</div>
+                </div>
               </div>
-              <div>
-                <dt>Avg protein</dt>
-                <dd>
-                  {formatAmount(insights?.averageProtein ?? 0)} <span className="unit">g</span>
-                </dd>
+              <div className="ring-note">
+                {formatAmount(totals.protein)}g protein · {formatAmount(totals.carbs)}g carbs · {formatAmount(totals.fat)}g fat
               </div>
-              <div>
-                <dt>Days tracked</dt>
-                <dd>{insights?.daysTracked ?? 0}</dd>
+              <div className="ring-note">
+                {goal
+                  ? `Goal ${formatAmount(goal.dailyCalorieTarget)} kcal`
+                  : "No daily goal set — showing today's raw split"}
               </div>
-              <div>
-                <dt>On target</dt>
-                <dd>{insights?.daysOnTarget ?? 0}</dd>
-              </div>
-              <div className={insights?.currentStreak ? 'streak-stat' : undefined}>
-                <dt>Streak</dt>
-                <dd>
-                  <motion.span
-                    key={insights?.currentStreak ?? 0}
-                    initial={{ scale: 0.92, opacity: 0.6 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.22 }}
-                  >
-                    {insights?.currentStreak ?? 0}
-                  </motion.span>
-                </dd>
-              </div>
-            </dl>
-          )}
-        </article>
-        <nav className="insight-card insight-actions" aria-label="Shortcuts">
-          <h2>More ways to log</h2>
-          <Link className="button button-secondary" to="/scan">
-            Scan a photo
-          </Link>
-          <Link className="button button-secondary" to="/chat">
-            Ask the assistant
-          </Link>
-          <Link className="button button-secondary" to="/import">
-            Import a PDF
-          </Link>
-        </nav>
-      </section>
-
-      {editor ? (
-        <div className="modal-backdrop">
-          <div className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="edit-meal-title">
-            <h2 id="edit-meal-title">Edit meal</h2>
-            <MealForm
-              initial={editor}
-              submitting={updateMutation.isPending}
-              error={formError}
-              onCancel={() => {
-                setEditor(null);
-                setFormError(null);
-              }}
-              onSubmit={(payload) => updateMutation.mutate({ id: editor.id, payload })}
-            />
+            </div>
           </div>
         </div>
-      ) : null}
-    </section>
-  );
-}
-
-export function MacroSummary({
-  totals,
-  goal,
-}: {
-  totals: { calories: number; protein: number; carbs: number; fat: number };
-  goal?: Goal;
-}) {
-  return (
-    <dl className="stat-grid">
-      <div>
-        <dt>Calories</dt>
-        <dd>
-          {totals.calories}
-          {goal ? ` / ${goal.dailyCalorieTarget}` : ''} <span className="unit">kcal</span>
-        </dd>
       </div>
-      <div>
-        <dt>Protein</dt>
-        <dd>
-          {totals.protein}
-          {goal ? ` / ${goal.proteinTarget}` : ''} <span className="unit">g</span>
-        </dd>
-      </div>
-      <div>
-        <dt>Carbs</dt>
-        <dd>
-          {totals.carbs}
-          {goal ? ` / ${goal.carbTarget}` : ''} <span className="unit">g</span>
-        </dd>
-      </div>
-      <div>
-        <dt>Fat</dt>
-        <dd>
-          {totals.fat}
-          {goal ? ` / ${goal.fatTarget}` : ''} <span className="unit">g</span>
-        </dd>
-      </div>
-    </dl>
+    </div>
   );
 }

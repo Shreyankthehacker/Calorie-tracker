@@ -57,10 +57,12 @@ Implemented:
 - Conversational AI assistant (`/chat`) that reads goals, summaries, and weekly reports through application tools
 - Explicit Save meal confirmation before chat-proposed meals are persisted
 - PDF food diary import (`/import`): structural text extraction, preview, edit/remove, then explicit confirmation
+- Family membership via a unique family ID (each member keeps their own meals)
+- Barcode product lookup against Open Food Facts (`POST /barcode/lookup`)
 
 Deferred (not implemented):
 
-- Family accounts / dependent accounts
+- Dependent accounts, family meal planning, and shared family dashboards
 
 ---
 
@@ -104,7 +106,7 @@ Deferred (not implemented):
 5. **Units.** Calories = kcal; protein/carbs/fat = grams; micros = amount + unit; quantity = amount + `quantityUnit`.
 6. **Reports are on-read aggregates.** No materialized daily totals.
 7. **AI never auto-saves entries.** Extract → validate → user edit → `POST /food-entries`.
-8. **Strict user ownership in v1.** No family tables or `familyId`.
+8. **User-owned food entries.** Family membership (`User.familyId`) groups profiles; it does not replace `userId` ownership on meals.
 
 Details: `ARCHITECTURE.md`.
 
@@ -347,4 +349,4 @@ See `PROJECT_REQUIREMENTS.md`.
 
 # Development Roadmap
 
-See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI and PDF food diary import are implemented. Family accounts remain out of scope.
+See `DEVELOPMENT_PLAN.md` for the phased sequence. Phases 0–6 are the v1 core. Bonus conversational AI and PDF food diary import are implemented. Family membership uses a unique family ID; meals remain user-owned.

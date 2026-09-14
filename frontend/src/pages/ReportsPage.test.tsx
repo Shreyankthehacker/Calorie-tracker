@@ -29,6 +29,7 @@ const user = {
   id: 'u1',
   email: 'ada@example.com',
   timezone: 'UTC',
+  familyId: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };

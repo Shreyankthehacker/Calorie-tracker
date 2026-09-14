@@ -191,7 +191,7 @@ v1 models:
 
 `createdAt` is audit-only.
 
-Do not add Family / FamilyMember / FamilyInvitation / FamilyPermission / `familyId` in v1.
+Family membership is optional (`Family` + `User.familyId`). Food entries remain owned by `userId`. Do not add FamilyInvitation / FamilyPermission tables unless explicitly required.
 
 Use a pooled Neon connection for application runtime where appropriate and a direct connection for Prisma migrations where required.
 

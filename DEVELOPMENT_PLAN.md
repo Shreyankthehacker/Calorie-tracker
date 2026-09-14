@@ -276,8 +276,6 @@ PostgreSQL (FoodEntry snapshot)
 
 One `FoodItem` table with many-to-many meal tags (`FoodItemMealType`). Meal type (when eaten) is not the same as food category (fruit, grain, protein). Seeded rows are `sourceType = SYSTEM`. `imageUrl` is optional (URL only). Logging copies macros/micros into `FoodEntry`; there is no live foreign key. Custom manual meal entry remains available. PDF/AI name matching against the catalog is deferred. Chat `searchFood` uses the `FoodItem` table through `PrismaFoodSearchProvider`.
 
-### Future — Family System (not implemented)
+### Family membership
 
-Additional authorization/policy layer over existing user-owned data.
-
-Do **not** add Family tables in v1. No `familyId` on existing models until this phase intentionally begins.
+Optional `Family` + `User.familyId`. Members share a unique family ID and keep their own meals, goals, and profiles. Join is by family ID (no invitation/permission tables).

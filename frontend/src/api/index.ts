@@ -8,6 +8,8 @@ export * from './reports';
 export * from './ai';
 export * from './chat';
 export * from './pdf-import';
+export * from './barcode';
+export * from './family';
 export * from './food-items';
 export * from './types';
 export { ApiError } from './types';

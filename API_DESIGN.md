@@ -483,6 +483,80 @@ Invalid records: `400` / `VALIDATION_ERROR` with no partial insert.
 
 ---
 
+# Barcode Product Lookup
+
+```text
+POST /barcode/lookup
+```
+
+Authenticated. Rate-limited with the same budget as AI extraction (`AI_RATE_LIMIT_MAX`). Identity comes from the access token. This is **not** image/vision extraction.
+
+Flow:
+
+```text
+barcode digits → BarcodeLookupService → BarcodeLookupProvider → Zod-validated product → user review → POST /food-entries
+```
+
+Production provider: Open Food Facts (`OpenFoodFactsBarcodeProvider`). Tests inject a mock provider. Nutrition is returned per **100 g** as the scaling base (`quantity: 100`, `quantityUnit: "g"`).
+
+Request:
+
+```json
+{ "barcode": "3017620422003" }
+```
+
+`barcode` must be 6–14 digits.
+
+Success `200`:
+
+```json
+{
+  "product": {
+    "barcode": "3017620422003",
+    "name": "Nutella",
+    "brand": "Ferrero",
+    "quantity": 100,
+    "quantityUnit": "g",
+    "calories": 539,
+    "protein": 6.3,
+    "carbs": 57.5,
+    "fat": 30.9,
+    "micronutrients": [{ "nutrientKey": "sodium", "amount": 107, "unit": "mg" }],
+    "imageUrl": null,
+    "source": "open_food_facts"
+  }
+}
+```
+
+The lookup must **not** create a `FoodEntry`. Unknown barcodes: `404` / `NOT_FOUND`. Provider timeout: `504` / `BARCODE_PROVIDER_ERROR`. Provider failure: `502` / `BARCODE_PROVIDER_ERROR`.
+
+---
+
+# Family
+
+Family membership is an extra relationship layer. Food entries stay owned by `userId`.
+
+```text
+GET    /family
+POST   /family
+POST   /family/join
+POST   /family/leave
+```
+
+Authenticated. Identity comes from the access token.
+
+`GET /family` returns `{ "family": null }` when the user has not joined a family.
+
+`POST /family` creates a family (optional `{ "name" }`, default `Household`), assigns the current user, and returns `201`. Creating a second family while already a member is `409` / `CONFLICT`.
+
+`POST /family/join` body `{ "familyId" }` attaches the current user to that family. Unknown id: `404`. Already in a family: `409`.
+
+`POST /family/leave` returns `204`. The family row is deleted when the last member leaves.
+
+Member profiles include `id`, `email`, `timezone`, `createdAt`, `isCurrentUser`, and `todayCalories` (that member's entries for their timezone's current calendar day). Other members' full food-entry lists are not returned.
+
+---
+
 # Common API Response Pattern
 
 Successful list response:

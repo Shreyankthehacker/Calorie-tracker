@@ -164,10 +164,12 @@ export function ImportPdfPage() {
 
   if (importedCount !== null) {
     return (
-      <section className="page">
-        <header className="page-header">
-          <h1>Import PDF</h1>
-        </header>
+      <section className="page-reports">
+        <div className="main-inner">
+        <div className="top-row">
+          <div className="kicker">Account</div>
+          <h1 className="page-title">Import PDF</h1>
+        </div>
         <Alert tone="success">
           {importedCount} meal{importedCount === 1 ? '' : 's'} imported successfully.
         </Alert>
@@ -188,16 +190,19 @@ export function ImportPdfPage() {
             Import another PDF
           </button>
         </div>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="page">
-      <header className="page-header">
-        <h1>Import PDF</h1>
+    <section className="page-reports">
+      <div className="main-inner">
+      <div className="top-row">
+        <div className="kicker">Account</div>
+        <h1 className="page-title">Import PDF</h1>
         <p className="muted">Upload a text-based food diary. Review every meal before anything is saved.</p>
-      </header>
+      </div>
 
       <ol className="step-track" aria-label="Import steps">
         <li className={step === 1 ? 'is-current' : 'is-done'}>
@@ -417,6 +422,7 @@ export function ImportPdfPage() {
           </div>
         </>
       ) : null}
+      </div>
     </section>
   );
 }

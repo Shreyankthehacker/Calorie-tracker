@@ -8,16 +8,13 @@ import {
   updateFoodEntry,
 } from '../api/food-entries';
 import { ApiError, type FoodEntry, type FoodEntryWritePayload, type MealType } from '../api/types';
-import { Plus, Utensils } from 'lucide-react';
 import { Alert } from '../components/layout/AppShell';
 import { MealForm } from '../components/meals/MealForm';
-import { FoodCatalog } from '../components/meals/FoodCatalog';
 import { useLogFood } from '../components/meals/LogFoodProvider';
-import { EmptyState } from '../components/ui/EmptyState';
 import { DateField } from '../components/ui/DateField';
-import { FoodThumb } from '../components/meals/FoodThumb';
+import { foodPhoto } from '../lib/food-photos';
 import { formatConsumedAt } from '../lib/dates';
-import { MEAL_SECTIONS } from '../lib/nutrition';
+import { MEAL_LABELS, MEAL_SECTIONS } from '../lib/nutrition';
 
 const PAGE_SIZE = 10;
 
@@ -111,41 +108,54 @@ export function MealsPage() {
   const isFiltered = Boolean(startDate || endDate || mealType);
 
   return (
-    <section className="page">
-      <header className="page-header page-header-row">
-        <div>
-          <h1>Meals</h1>
-          <p className="muted">Pick a food from the catalog, or log a custom meal.</p>
-        </div>
-        <div className="action-row">
-          <button type="button" className="button button-secondary" onClick={openLogFood}>
-            <Utensils size={16} aria-hidden="true" />
-            Log food
-          </button>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => {
-              setEditor('create');
-              setFormError(null);
-              setSuccess(null);
-            }}
-          >
-            <Plus size={16} aria-hidden="true" />
-            Add custom meal
-          </button>
-        </div>
-      </header>
+    <div className="page-entries">
+      <div className="main-inner">
+      <div className="kicker" style={{ marginTop: 24 }}>
+        Chronological list view
+      </div>
+      <h1 className="sr-only">Meals</h1>
+      <h1 className="page-title">Intake records &amp; logs</h1>
 
-      <FoodCatalog
-        onLogged={async () => {
-          setSuccess('Meal added.');
-          setFormError(null);
-          await invalidateMeals();
-        }}
-      />
+      <div className="hero">
+        <img
+          className="slide"
+          src="https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1000&q=80&auto=format&fit=crop"
+          alt=""
+        />
+        <img
+          className="slide"
+          src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000&q=80&auto=format&fit=crop"
+          alt=""
+        />
+        <img
+          className="slide"
+          src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1000&q=80&auto=format&fit=crop"
+          alt=""
+        />
+        <div className="hero-content">
+          <div className="k">This week</div>
+          <div className="t">{pagination?.total ?? 0} meals logged</div>
+        </div>
+      </div>
 
-      <form className="filter-bar" onSubmit={(event) => event.preventDefault()}>
+      <div className="action-row" style={{ marginBottom: 16 }}>
+        <button type="button" className="btn-secondary" onClick={openLogFood}>
+          Log food
+        </button>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => {
+            setEditor('create');
+            setFormError(null);
+            setSuccess(null);
+          }}
+        >
+          Add custom meal
+        </button>
+      </div>
+
+      <form className="toolbar" onSubmit={(event) => event.preventDefault()}>
         <DateField
           id="start-date"
           label="Start date"
@@ -196,100 +206,93 @@ export function MealsPage() {
       ) : null}
 
       {!mealsQuery.isPending && !mealsQuery.isError && entries.length === 0 ? (
-        <EmptyState
-          title={
-            isFiltered
+        <div className="results">
+          <div className="icon">🔎</div>
+          <div className="t">
+            {isFiltered
               ? startDate && endDate && startDate === endDate && !mealType
                 ? 'No meals recorded for this day.'
                 : 'No meals match these filters.'
-              : 'No meals recorded yet.'
-          }
-          action={
-            !isFiltered ? (
-              <button
-                type="button"
-                className="button button-primary"
-                onClick={() => {
-                  setEditor('create');
-                  setFormError(null);
-                }}
-              >
-                Add your first meal
-              </button>
-            ) : undefined
-          }
-        />
+              : 'No meals recorded yet.'}
+          </div>
+          <div className="s">There are no logged entries matching this view.</div>
+          {!isFiltered ? (
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={() => {
+                setEditor('create');
+                setFormError(null);
+              }}
+            >
+              Add your first meal
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
-      {entries.length > 0
-        ? MEAL_SECTIONS.map((section) => {
-            const items = entries.filter((entry) => entry.mealType === section.type);
-            if (items.length === 0) {
-              return null;
-            }
-            return (
-              <section className="panel" key={section.type}>
-                <h2>{section.label}</h2>
-                <ul className="meal-list">
+      {entries.length > 0 ? (
+        <div className="grid">
+          <div>
+            <h2>Timeline records</h2>
+            {MEAL_SECTIONS.map((section) => {
+              const items = entries.filter((entry) => entry.mealType === section.type);
+              if (items.length === 0) return null;
+              const total = items.reduce((sum, entry) => sum + entry.calories, 0);
+              return (
+                <div className="day-block" key={section.type}>
+                  <div className="day-head">
+                    <span>{section.label}</span>
+                    <span>{Math.round(total)} kcal total</span>
+                  </div>
                   {items.map((entry) => (
-                    <li key={entry.id} className="meal-item">
-                      <div className="meal-item-main">
-                        <FoodThumb name={entry.foodName} />
-                        <div>
-                          <p className="meal-name">{entry.foodName}</p>
-                          <p className="muted small">
-                            {entry.quantity} {entry.quantityUnit}
-                            <span className="sr-only"> </span> {formatConsumedAt(entry.consumedAt)}
-                          </p>
-                          <div className="meal-macros">
-                            <span>{entry.calories} kcal</span>
-                            <span>P {entry.protein}g</span>
-                            <span>C {entry.carbs}g</span>
-                            <span>F {entry.fat}g</span>
-                          </div>
-                          {entry.micronutrients.length > 0 ? (
-                            <p className="muted small">
-                              {entry.micronutrients
-                                .map(
-                                  (nutrient) =>
-                                    `${nutrient.nutrientKey} ${nutrient.amount}${nutrient.unit}`,
-                                )
-                                .join(', ')}
-                            </p>
-                          ) : null}
+                    <div className="entry-row" key={entry.id}>
+                      <div className="thumb">
+                        <img src={foodPhoto(entry.foodName)} alt="" />
+                      </div>
+                      <div className="desc">
+                        {entry.foodName}
+                        <div className="meal-tag">
+                          {MEAL_LABELS[entry.mealType]} · {entry.quantity} {entry.quantityUnit} ·{' '}
+                          {formatConsumedAt(entry.consumedAt)}
+                          {entry.micronutrients.length > 0
+                            ? ` · ${entry.micronutrients
+                                .map((nutrient) => `${nutrient.nutrientKey} ${nutrient.amount}${nutrient.unit}`)
+                                .join(', ')}`
+                            : ''}
                         </div>
                       </div>
-                      <div className="action-row">
-                        <button
-                          type="button"
-                          className="button button-secondary"
-                          onClick={() => {
-                            setEditor(entry);
-                            setFormError(null);
-                            setSuccess(null);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="button button-danger"
-                          onClick={() => {
-                            if (window.confirm(`Delete ${entry.foodName}?`)) {
-                              deleteMutation.mutate(entry.id);
-                            }
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </li>
+                      <div className="kcal">{entry.calories} kcal</div>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          setEditor(entry);
+                          setFormError(null);
+                          setSuccess(null);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-link"
+                        onClick={() => {
+                          if (window.confirm(`Delete ${entry.foodName}?`)) {
+                            deleteMutation.mutate(entry.id);
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   ))}
-                </ul>
-              </section>
-            );
-          })
-        : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {pagination && pagination.totalPages > 1 ? (
         <div className="pagination-bar">
@@ -343,6 +346,7 @@ export function MealsPage() {
           </div>
         </div>
       ) : null}
-    </section>
+      </div>
+    </div>
   );
 }

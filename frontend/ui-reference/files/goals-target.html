@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalorieTracker — Goals & Target</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+
+  .top-row{display:flex;justify-content:space-between;align-items:flex-start;margin:24px 0 24px;}
+  h2{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin:0 0 6px 0;}
+  .sub{font-size:13.5px;color:#4E4B47;margin:0 0 24px 0;line-height:1.5;max-width:640px;}
+  .hero-num{position:relative;background:var(--black);color:var(--white);border-radius:16px;padding:28px 32px;height:150px;display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;overflow:hidden;}
+  .hero-num .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:crossfade2 12s infinite;}
+  .hero-num .slide:nth-child(1){animation-delay:0s;}
+  .hero-num .slide:nth-child(2){animation-delay:4s;}
+  .hero-num .slide:nth-child(3){animation-delay:8s;}
+  @keyframes crossfade2{0%{opacity:0;}4%{opacity:0.32;}30%{opacity:0.32;}36%{opacity:0;}100%{opacity:0;}}
+  .hero-num::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg, rgba(10,10,10,0.94) 30%, rgba(10,10,10,0.55) 100%);z-index:1;}
+  .hero-num .content{position:relative;z-index:2;}
+  .hero-num .l{font-size:12.5px;color:#C9C6C2;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .hero-num .n{font-family:'Fraunces',serif;font-size:56px;font-weight:600;line-height:1;}
+  .hero-num .n span{font-size:18px;font-weight:400;color:#D8D5D0;margin-left:6px;font-family:'Inter',sans-serif;}
+  .steam{position:relative;z-index:2;width:70px;height:70px;flex-shrink:0;}
+  .steam path{stroke:#D8D5D0;stroke-width:3;fill:none;stroke-linecap:round;opacity:0;animation:rise 3s ease-in infinite;}
+  .steam path:nth-child(2){animation-delay:1s;}
+  .steam path:nth-child(3){animation-delay:2s;}
+  @keyframes rise{0%{ opacity:0; transform:translateY(6px) scaleY(0.7); }25%{ opacity:.8; }80%{ opacity:0; }100%{ opacity:0; transform:translateY(-14px) scaleY(1.1); }}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:24px;}
+  .panel{border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .macro-row{margin-bottom:22px;}
+  .macro-row:last-child{margin-bottom:0;}
+  .macro-head{display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:8px;}
+  .macro-head b{font-weight:700;}
+  .bar-bg{height:8px;border-radius:99px;background:var(--paper);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:99px;background:var(--crimson);width:0;animation:fillbar 1.3s ease-out forwards;}
+  .bar-fill.p1{animation-delay:.1s; --w:62%;}
+  .bar-fill.p2{animation-delay:.3s; --w:70%;}
+  .bar-fill.p3{animation-delay:.5s; --w:57%;}
+  @keyframes fillbar{ to{ width:var(--w); } }
+  .actions{display:flex;gap:10px;margin-top:26px;position:relative;}
+  .actions .btn-primary{position:relative;overflow:visible;}
+  .confetti{position:absolute; top:50%; left:50%; width:1px; height:1px; pointer-events:none;}
+  .confetti i{position:absolute; width:6px; height:10px; top:0; left:0;background:var(--crimson); opacity:0; border-radius:1px;animation:burst 1.6s ease-out 1.8s forwards;}
+  .confetti i:nth-child(1){background:#A8112A; transform:rotate(10deg); --tx:-60px; --ty:-40px;}
+  .confetti i:nth-child(2){background:#0A0A0A; transform:rotate(-15deg); --tx:-20px; --ty:-55px;}
+  .confetti i:nth-child(3){background:#A8112A; transform:rotate(30deg); --tx:20px; --ty:-58px;}
+  .confetti i:nth-child(4){background:#7A0C1F; transform:rotate(-5deg); --tx:55px; --ty:-38px;}
+  .confetti i:nth-child(5){background:#0A0A0A; transform:rotate(50deg); --tx:-40px; --ty:-20px;}
+  .confetti i:nth-child(6){background:#A8112A; transform:rotate(-40deg); --tx:40px; --ty:-15px;}
+  @keyframes burst{0%{ opacity:0; transform:translate(0,0) rotate(0deg) scale(0.4); }15%{ opacity:1; }100%{ opacity:0; transform:translate(var(--tx), var(--ty)) rotate(180deg) scale(1); }}
+  .pct-card .pct-row{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .pct-row:last-child{border-bottom:none;}
+  .pct-row b{font-weight:700;}
+  .warn-card{background:#FBEAEC;border:1px solid #EFC0C7;}
+  .warn-card .t{font-weight:700;color:var(--crimson-dark);font-size:14px;margin-bottom:8px;}
+  .warn-card p{font-size:13px;color:#5C2A31;line-height:1.55;margin:0;}
+  .streak-card{background:var(--black); display:flex; align-items:center; gap:16px;}
+  .flame-wrap{position:relative;width:58px;height:76px;flex-shrink:0;}
+  .flame{width:100%;height:100%;transform-origin:50% 100%;animation:flicker 1.6s ease-in-out infinite;}
+  @keyframes flicker{0%,100%{ transform:scaleY(1) scaleX(1) rotate(0deg); }25%{ transform:scaleY(1.06) scaleX(0.95) rotate(-2deg); }50%{ transform:scaleY(0.94) scaleX(1.05) rotate(1.5deg); }75%{ transform:scaleY(1.04) scaleX(0.97) rotate(-1deg); }}
+  .spark{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--crimson);opacity:0;animation:sparkrise 2.2s ease-in infinite;}
+  .spark.s1{left:8px;bottom:14px;animation-delay:0s;}
+  .spark.s2{left:28px;bottom:8px;animation-delay:.7s;}
+  .spark.s3{left:44px;bottom:16px;animation-delay:1.4s;}
+  @keyframes sparkrise{0%{ opacity:0; transform:translateY(0) scale(1); }25%{ opacity:1; }100%{ opacity:0; transform:translateY(-46px) scale(0.4); }}
+  .streak-text .n{font-weight:700;font-size:15px;color:var(--white);margin-bottom:4px;}
+  .streak-text .s{font-size:12.5px;color:#C9C6C2;line-height:1.45;}
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="mark" width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="36" height="36" rx="9" fill="#0A0A0A"/>
+  <path d="M11 8v7a2.6 2.6 0 0 0 2.6 2.6h0" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 8v6M13.6 8v6M16.2 8v6" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M13.6 17.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M23.5 8c-2.6 0-4.4 2.6-4.4 6.2s1.8 5.4 4.4 5.4" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M23.5 19.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
+      <div class="word">CalorieTracker<small>powered by Typeface</small></div>
+    </div>
+    <div class="nav-label">Track</div>
+    <nav>
+      <a href="today.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6.5 8 2l6 4.5V14a1 1 0 0 1-1 1h-3v-4H6v4H3a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Today</a>
+      <a href="log-meal.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Log meal</a>
+      <a href="entries-log.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3h10M3 8h10M3 13h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Entries log</a>
+      <a href="#"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13V7M7.3 13V3M11.7 13V9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Reports & trends</a>
+      <a href="goals-target.html" class="active"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg>Goals & target</a>
+    </nav>
+    <div class="nav-label">Tools</div>
+    <nav>
+      <a href="chat.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 4.5h11v7h-6L4.5 14v-2.5h-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Chat with Sage</a>
+      <a href="my-family.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="5.5" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="5.5" r="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-2.2 1.6-3.8 3.5-3.8S9 11.8 9 14M9.2 14c0-1.9 1.3-3.2 2.9-3.2S14.8 12.1 14.8 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>My family</a>
+      <a href="water-intake.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 2s4.2 4.8 4.2 8a4.2 4.2 0 1 1-8.4 0C3.8 6.8 8 2 8 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Water intake</a>
+      <a href="bmi-info-centre.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 9.5 7 11l3.5-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>BMI info centre</a>
+      <a href="barcode-scanner.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 3v10M5 3v10M6.6 3v10M9 3v10M10.6 3v10M13.5 3v10" stroke="currentColor" stroke-width="1.2"/></svg>Barcode & label scan</a>
+      <a href="portion-calculator.html"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 8V2.5M8 8l4 2.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Portion calculator</a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="sage-pill"><span class="dot"></span> Sage assistant active</div>
+      <div class="user-row">
+        <img src="https://picsum.photos/seed/asterling/64/64" alt="">
+        <div>
+          <div class="name">A. Sterling</div>
+          <div class="tier">Free tier</div>
+        </div>
+        <a class="signout" href="login.html">Sign out</a>
+      </div>
+    </div>
+  </aside>
+  <main>
+    <div class="site-header">
+      <div class="crumb">Ration ledger &nbsp;/&nbsp; <b>Goals & target</b></div>
+      <div class="header-search">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#7A756E" stroke-width="1.3"/><path d="M9.5 9.5 13 13" stroke="#7A756E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search foods, entries, or ask Sage…">
+      </div>
+      <div class="header-actions">
+        <button class="header-icon-btn" title="Notifications">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6.5a4 4 0 0 1 8 0c0 3 1.2 3.8 1.2 4.3H2.8C2.8 10.3 4 9.5 4 6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.3 13a1.8 1.8 0 0 0 3.4 0" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="badge">2</span>
+        </button>
+        <button class="header-icon-btn" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 2.5v1.4M8 12.1v1.4M13.5 8h-1.4M3.9 8H2.5M11.7 4.3l-1 1M5.3 10.7l-1 1M11.7 11.7l-1-1M5.3 5.3l-1-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="header-powered">Powered by <b>Typeface</b></div>
+      </div>
+    </div>
+    <div class="main-inner">
+      <div class="top-row">
+        <div>
+          <div class="kicker">Goal configuration</div>
+          <h1 class="page-title">Targets &amp; macro calculator</h1>
+        </div>
+        <button class="btn-link">Clear goal / run no-goal mode</button>
+      </div>
+
+      <h2>The 4/4/9 calorie model</h2>
+      <p class="sub">Protein contains 4 kcal/g. Carbohydrates contain 4 kcal/g. Fats contain 9 kcal/g. Your total daily calorie pool adapts live as you update macro limits. Prefer we do the math per meal instead? Try the <a href="portion-calculator.html" style="color:var(--crimson);">portion calculator</a>.</p>
+
+      <div class="hero-num">
+        <img class="slide" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000&q=80&auto=format&fit=crop"
+             onerror="this.onerror=null;this.src='https://picsum.photos/seed/mealprep1/1000/300'" alt="">
+        <img class="slide" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1000&q=80&auto=format&fit=crop"
+             onerror="this.onerror=null;this.src='https://picsum.photos/seed/mealprep2/1000/300'" alt="">
+        <img class="slide" src="https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1000&q=80&auto=format&fit=crop"
+             onerror="this.onerror=null;this.src='https://picsum.photos/seed/mealprep3/1000/300'" alt="">
+        <div class="content">
+          <div class="l">Computed target pool</div>
+          <div class="n">2,044<span>kcal / day</span></div>
+        </div>
+        <svg class="steam" viewBox="0 0 70 70">
+          <path d="M20 55 C 14 45, 26 40, 20 30 C 14 20, 26 15, 22 5"/>
+          <path d="M35 55 C 29 45, 41 40, 35 30 C 29 20, 41 15, 37 5"/>
+          <path d="M50 55 C 44 45, 56 40, 50 30 C 44 20, 56 15, 52 5"/>
+        </svg>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h2 style="font-size:16px;margin-bottom:18px;">Macro allotment inputs</h2>
+
+          <div class="macro-row">
+            <div class="macro-head"><span>Protein target</span><b>150g (600 kcal)</b></div>
+            <div class="bar-bg"><div class="bar-fill p1"></div></div>
+          </div>
+          <div class="macro-row">
+            <div class="macro-head"><span>Carbohydrates target</span><b>180g (720 kcal)</b></div>
+            <div class="bar-bg"><div class="bar-fill p2"></div></div>
+          </div>
+          <div class="macro-row">
+            <div class="macro-head"><span>Fats target</span><b>80g (720 kcal)</b></div>
+            <div class="bar-bg"><div class="bar-fill p3"></div></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-secondary">Reset to previous</button>
+            <button class="btn-primary">
+              Commit new goal target
+              <span class="confetti">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </span>
+            </button>
+          </div>
+          <div class="note">Bars fill live on load; a small confetti burst plays once near "Commit" to confirm the goal locked in.</div>
+        </div>
+
+        <div>
+          <div class="side-card streak-card">
+            <div class="flame-wrap">
+              <svg class="flame" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="flameGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#D6415A"/>
+                    <stop offset="55%" stop-color="#A8112A"/>
+                    <stop offset="100%" stop-color="#7A0C1F"/>
+                  </linearGradient>
+                </defs>
+                <path fill="url(#flameGrad)" d="M30 4
+                  C 14 24, 18 38, 24 46
+                  C 16 42, 12 54, 22 64
+                  C 18 52, 30 52, 30 66
+                  C 44 54, 48 42, 38 34
+                  C 46 26, 38 14, 30 4 Z"/>
+              </svg>
+              <div class="spark s1"></div>
+              <div class="spark s2"></div>
+              <div class="spark s3"></div>
+            </div>
+            <div class="streak-text">
+              <div class="n">12-day streak</div>
+              <div class="s">You've logged every day this week. Keep it going today to hit two weeks straight.</div>
+            </div>
+          </div>
+
+          <div class="side-card pct-card">
+            <h2 style="font-size:15px;margin-bottom:12px;">Percentage allocation</h2>
+            <div class="pct-row"><span>Protein (g)</span><b>29%</b></div>
+            <div class="pct-row"><span>Carbohydrates (g)</span><b>35%</b></div>
+            <div class="pct-row"><span>Fats (g)</span><b>35%</b></div>
+          </div>
+
+          <div class="side-card warn-card">
+            <div class="t">Validation warning</div>
+            <p>"Your carbohydrate and fat targets result in a combined 70% calorie ratio. Consider setting carbohydrates to at least 40% of overall calories to align with high daily activity."</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <footer class="site-footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand" style="color:var(--black)">
+      <svg class="mark" width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="36" height="36" rx="9" fill="#0A0A0A"/>
+  <path d="M11 8v7a2.6 2.6 0 0 0 2.6 2.6h0" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 8v6M13.6 8v6M16.2 8v6" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M13.6 17.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M23.5 8c-2.6 0-4.4 2.6-4.4 6.2s1.8 5.4 4.4 5.4" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M23.5 19.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
+      <div class="word">CalorieTracker<small>powered by Typeface</small></div>
+    </div>
+          <p>A calmer way to track food, water, and family nutrition — with Sage keeping quiet, useful watch in the background.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Track</h4>
+          <a href="today.html">Today</a>
+          <a href="log-meal.html">Log meal</a>
+          <a href="entries-log.html">Entries log</a>
+          <a href="goals-target.html">Goals &amp; target</a>
+        </div>
+        <div class="footer-col">
+          <h4>Tools</h4>
+          <a href="chat.html">Chat with Sage</a>
+          <a href="my-family.html">My family</a>
+          <a href="water-intake.html">Water intake</a>
+          <a href="bmi-info-centre.html">BMI info centre</a>
+          <a href="barcode-scanner.html">Barcode &amp; label scan</a>
+          <a href="portion-calculator.html">Portion calculator</a>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <a href="login.html">Sign in</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Help centre</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 CalorieTracker. All rights reserved.</span>
+        <span class="powered">CalorieTracker powered by <b>Typeface</b></span>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

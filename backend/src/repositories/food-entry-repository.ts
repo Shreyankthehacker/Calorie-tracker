@@ -377,6 +377,17 @@ export class FoodEntryRepository {
       ];
     });
   }
+
+  async sumCalories(userId: string, from: Date, to: Date): Promise<number> {
+    const result = await prisma.foodEntry.aggregate({
+      where: {
+        userId,
+        consumedAt: { gte: from, lte: to },
+      },
+      _sum: { calories: true },
+    });
+    return result._sum.calories ?? 0;
+  }
 }
 
 export const foodEntryRepository = new FoodEntryRepository();

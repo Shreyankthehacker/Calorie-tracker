@@ -4,16 +4,14 @@ import { listFoodItems, logFoodItem } from '../../api/food-items';
 import { ApiError, type FoodItem, type MealType } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { Alert, FormField } from '../layout/AppShell';
-import { FoodThumb } from './FoodThumb';
-import { Coffee, Cookie, LayoutGrid, Moon, Sun } from 'lucide-react';
-import { LayoutGroup, motion } from 'framer-motion';
+import { foodPhoto } from '../../lib/food-photos';
 
-const mealTabs: Array<{ value: MealType | ''; label: string; icon: typeof Sun }> = [
-  { value: '', label: 'All', icon: LayoutGrid },
-  { value: 'BREAKFAST', label: 'Breakfast', icon: Coffee },
-  { value: 'LUNCH', label: 'Lunch', icon: Sun },
-  { value: 'DINNER', label: 'Dinner', icon: Moon },
-  { value: 'SNACKS', label: 'Snacks', icon: Cookie },
+const mealTabs: Array<{ value: MealType | ''; label: string }> = [
+  { value: '', label: 'All' },
+  { value: 'BREAKFAST', label: 'Breakfast' },
+  { value: 'LUNCH', label: 'Lunch' },
+  { value: 'DINNER', label: 'Dinner' },
+  { value: 'SNACKS', label: 'Snacks' },
 ];
 
 const mealLabels: Record<MealType, string> = {
@@ -38,7 +36,7 @@ function defaultMealType(item: FoodItem, selectedTab: MealType | ''): MealType {
 }
 
 export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void }) {
-  const [mealType, setMealType] = useState<MealType | ''>('BREAKFAST');
+  const [mealType, setMealType] = useState<MealType | ''>('');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState('1');
@@ -117,10 +115,8 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
 
   return (
     <section className="catalog-panel">
-      <h2>Add from catalog</h2>
-      <p className="muted small">Choose a food, enter how much you ate, and nutrition is calculated for you.</p>
+      <h2>Quick add common foods</h2>
 
-      <LayoutGroup>
       <div className="catalog-tabs" role="tablist" aria-label="Catalog meal">
         {mealTabs.map((tab) => (
           <button
@@ -131,20 +127,18 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
             className={`catalog-tab ${mealType === tab.value ? 'is-active' : ''}`}
             onClick={() => setMealType(tab.value)}
           >
-            {mealType === tab.value ? <motion.span className="catalog-tab-pill" layoutId="catalog-tab-pill" /> : null}
-            <tab.icon size={15} aria-hidden="true" />
             {tab.label}
           </button>
         ))}
       </div>
-      </LayoutGroup>
 
-      <label className="field catalog-search">
-        <span className="field-label">Search food</span>
+      <label>
+        <span className="sr-only">Search food</span>
         <input
-          type="search"
+          className="search"
+          type="text"
           value={search}
-          placeholder="Search food..."
+          placeholder="Search 2,400+ common ingredients…"
           onChange={(event) => setSearch(event.target.value)}
         />
       </label>
@@ -159,19 +153,31 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
       ) : null}
 
       {items.length > 0 ? (
-        <div className="catalog-grid">
+        <div className="food-grid">
           {items.map((item) => (
             <button
               key={item.id}
               type="button"
-              className="catalog-card"
+              className="food-card"
               onClick={() => openItem(item)}
             >
-              <FoodThumb name={item.name} imageUrl={item.imageUrl} />
-              <span className="catalog-card-name">{item.name}</span>
-              <span className="muted small">
-                {item.calories} kcal / {item.servingSize} {item.servingUnit}
-              </span>
+              {item.imageUrl ? (
+                <img src={item.imageUrl} alt="" />
+              ) : (
+                <img
+                  src={foodPhoto(item.name)}
+                  alt=""
+                  onError={(event) => {
+                    event.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/180`;
+                  }}
+                />
+              )}
+              <div className="body">
+                <div className="title">{item.name}</div>
+                <div className="meta">
+                  {item.servingSize} {item.servingUnit} · <b>{item.calories} kcal</b>
+                </div>
+              </div>
             </button>
           ))}
         </div>

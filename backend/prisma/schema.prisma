@@ -28,19 +28,33 @@ enum FoodItemSource {
   AI
 }
 
+model Family {
+  id        String   @id @default(cuid())
+  name      String   @default("Household")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members User[]
+
+  @@map("families")
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
   // IANA timezone identifier used for daily report bucketing.
   timezone     String   @default("UTC")
+  familyId     String?  @map("family_id")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  family        Family?        @relation(fields: [familyId], references: [id], onDelete: SetNull)
   goal          Goal?
   foodEntries   FoodEntry[]
   refreshTokens RefreshToken[]
 
+  @@index([familyId])
   @@map("users")
 }
 

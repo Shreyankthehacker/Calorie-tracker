@@ -5,6 +5,7 @@ export type PublicUser = {
   id: string;
   email: string;
   timezone: string;
+  familyId: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -14,6 +15,7 @@ export function toPublicUser(user: User): PublicUser {
     id: user.id,
     email: user.email,
     timezone: user.timezone,
+    familyId: user.familyId,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -39,6 +41,20 @@ export class UserRepository {
         passwordHash: input.passwordHash,
         timezone: input.timezone,
       },
+    });
+  }
+
+  async setFamilyId(userId: string, familyId: string | null): Promise<User> {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { familyId },
+    });
+  }
+
+  async findByFamilyId(familyId: string): Promise<User[]> {
+    return prisma.user.findMany({
+      where: { familyId },
+      orderBy: { createdAt: 'asc' },
     });
   }
 }

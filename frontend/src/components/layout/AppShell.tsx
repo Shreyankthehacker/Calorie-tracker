@@ -1,34 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import {
-  Camera,
-  FileUp,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  MessageCircle,
-  Plus,
-  Target,
-  TrendingUp,
-  UtensilsCrossed,
-  type LucideIcon,
-} from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
-import { LogFoodProvider, useLogFood } from '../meals/LogFoodProvider';
-import { FloatingFoods } from '../../lib/food-art';
-
-const primaryNav: Array<{ to: string; label: string; icon: LucideIcon }> = [
-  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { to: '/meals', label: 'Food', icon: UtensilsCrossed },
-  { to: '/reports', label: 'Progress', icon: TrendingUp },
-  { to: '/goals', label: 'Goals', icon: Target },
-];
-
-const extraNav: Array<{ to: string; label: string; icon: LucideIcon }> = [
-  { to: '/scan', label: 'Scan', icon: Camera },
-  { to: '/chat', label: 'Chat', icon: MessageCircle },
-  { to: '/import', label: 'Import', icon: FileUp },
-];
+import { LogFoodProvider } from '../meals/LogFoodProvider';
+import { BrandMark, BrandWord } from './BrandMark';
+import { crumbs, toolsNav, trackNav } from './nav-config';
+import { SiteFooter } from './SiteFooter';
 
 export function AppShell() {
   return (
@@ -41,9 +17,10 @@ export function AppShell() {
 function AppShellInner() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { openLogFood } = useLogFood();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
   const [loggingOut, setLoggingOut] = useState(false);
+  const crumb = crumbs[location.pathname] ?? 'Today';
+  const displayName = user?.email?.split('@')[0] ?? 'You';
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -56,134 +33,99 @@ function AppShellInner() {
   }
 
   return (
-    <div className="app-shell">
-      <aside className={`sidebar ${mobileOpen ? 'is-open' : ''}`}>
-        <div className="sidebar-brand">
-          <span className="brand-mark">CT</span>
-          <div>
-            <p className="brand-name">Calorie Tracker</p>
-            <p className="brand-sub">Personal nutrition</p>
-          </div>
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <BrandMark />
+          <BrandWord />
         </div>
-        <nav className="sidebar-nav" aria-label="Primary">
-          {primaryNav.map((item) => (
+        <div className="nav-label">Track</div>
+        <nav aria-label="Track">
+          {trackNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => `nav-link ${isActive ? 'is-active' : ''}`}
-              onClick={() => setMobileOpen(false)}
+              {...(item.end ? { end: true } : {})}
+              className={({ isActive }) => (isActive ? 'active' : undefined)}
             >
-              <item.icon size={18} aria-hidden="true" />
+              {item.icon}
               {item.label}
             </NavLink>
           ))}
         </nav>
-        <nav className="sidebar-nav sidebar-nav-extra" aria-label="More">
-          {extraNav.map((item) => (
+        <div className="nav-label">Tools</div>
+        <nav aria-label="Tools">
+          {toolsNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => `nav-link ${isActive ? 'is-active' : ''}`}
-              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) => (isActive ? 'active' : undefined)}
             >
-              <item.icon size={18} aria-hidden="true" />
+              {item.icon}
               {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="sidebar-foot">
-          <p className="topbar-email">{user?.email}</p>
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={() => void handleLogout()}
-            disabled={loggingOut}
-          >
-            <LogOut size={16} aria-hidden="true" />
-            {loggingOut ? 'Signing out…' : 'Log out'}
-          </button>
+          <div className="sage-pill">
+            <span className="dot" /> Sage assistant active
+          </div>
+          <div className="user-row">
+            <img src={`https://picsum.photos/seed/${encodeURIComponent(displayName)}/64/64`} alt="" />
+            <div>
+              <div className="name">{displayName}</div>
+              <div className="tier">Free tier</div>
+            </div>
+            <button type="button" className="signout" onClick={() => void handleLogout()} disabled={loggingOut}>
+              {loggingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
         </div>
       </aside>
-
-      {mobileOpen && (
-        <button
-          type="button"
-          className="sidebar-backdrop"
-          aria-label="Close navigation"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <div className="shell-main">
-        <header className="topbar">
-          <button
-            type="button"
-            className="icon-button mobile-only"
-            aria-label="Open navigation"
-            onClick={() => setMobileOpen(true)}
-          >
-            <Menu size={18} />
-          </button>
-        </header>
-        <main className="content">
-          <Outlet />
-        </main>
-      </div>
-
-      <nav className="bottom-nav" aria-label="Mobile">
-        <NavLink to="/dashboard" className={({ isActive }) => `bottom-nav-link ${isActive ? 'is-active' : ''}`}>
-          <LayoutDashboard size={20} />
-          Home
-        </NavLink>
-        <button type="button" className="bottom-nav-log" onClick={openLogFood}>
-          <Plus size={22} />
-          Log
-        </button>
-        <NavLink to="/reports" className={({ isActive }) => `bottom-nav-link ${isActive ? 'is-active' : ''}`}>
-          <TrendingUp size={20} />
-          Progress
-        </NavLink>
-        <NavLink to="/goals" className={({ isActive }) => `bottom-nav-link ${isActive ? 'is-active' : ''}`}>
-          <Target size={20} />
-          Goals
-        </NavLink>
-      </nav>
-    </div>
-  );
-}
-
-export function AuthLayout({
-  title,
-  subtitle,
-  children,
-  footer,
-}: {
-  title: string;
-  subtitle: string;
-  children: ReactNode;
-  footer?: ReactNode;
-}) {
-  return (
-    <div className="auth-layout">
-      <div className="auth-atmosphere" aria-hidden="true">
-        <span className="auth-blob auth-blob-1" />
-        <span className="auth-blob auth-blob-2" />
-        {FloatingFoods.map((Art, index) => (
-          <span className={`auth-float auth-float-${index + 1}`} key={index}>
-            <Art />
-          </span>
-        ))}
-      </div>
-      <div className="auth-main">
-        <div className="auth-panel">
-          <span className="brand-mark">CT</span>
-          <p className="brand-name">Calorie Tracker</p>
-          <h1>{title}</h1>
-          <p className="muted">{subtitle}</p>
-          {children}
-          {footer}
+      <main>
+        <div className="site-header">
+          <div className="crumb">
+            Ration ledger &nbsp;/&nbsp; <b>{crumb}</b>
+          </div>
+          <div className="header-search">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <circle cx="6" cy="6" r="4.5" stroke="#7A756E" strokeWidth="1.3" />
+              <path d="M9.5 9.5 13 13" stroke="#7A756E" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <input type="text" placeholder="Search foods, entries, or ask Sage…" />
+          </div>
+          <div className="header-actions">
+            <button type="button" className="header-icon-btn" title="Notifications">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M4 6.5a4 4 0 0 1 8 0c0 3 1.2 3.8 1.2 4.3H2.8C2.8 10.3 4 9.5 4 6.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
+                <path d="M6.3 13a1.8 1.8 0 0 0 3.4 0" stroke="currentColor" strokeWidth="1.3" />
+              </svg>
+              <span className="badge">2</span>
+            </button>
+            <button type="button" className="header-icon-btn" title="Settings">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1.3" />
+                <path
+                  d="M8 2.5v1.4M8 12.1v1.4M13.5 8h-1.4M3.9 8H2.5M11.7 4.3l-1 1M5.3 10.7l-1 1M11.7 11.7l-1-1M5.3 5.3l-1-1"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <div className="header-powered">
+              Powered by <b>Typeface</b>
+            </div>
+          </div>
         </div>
-      </div>
+        <Outlet />
+        <SiteFooter />
+      </main>
     </div>
   );
 }
@@ -225,40 +167,6 @@ export function Alert({
   return (
     <div className={`alert alert-${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
       {children}
-    </div>
-  );
-}
-
-export function ProgressBar({
-  label,
-  current,
-  target,
-  unit,
-}: {
-  label: string;
-  current: number;
-  target: number;
-  unit: string;
-}) {
-  const pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
-  return (
-    <div className="progress-row">
-      <div className="progress-meta">
-        <span>{label}</span>
-        <strong>
-          {current} / {target} {unit}
-        </strong>
-      </div>
-      <div
-        className="progress-track"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${label} progress`}
-      >
-        <div className="progress-fill" style={{ width: `${pct}%` }} />
-      </div>
     </div>
   );
 }

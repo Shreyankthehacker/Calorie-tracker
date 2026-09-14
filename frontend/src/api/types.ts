@@ -24,6 +24,7 @@ export type PublicUser = {
   id: string;
   email: string;
   timezone: string;
+  familyId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -322,4 +323,44 @@ export type PdfPreviewResponse = {
 export type PdfConfirmResponse = {
   importedCount: number;
   foodEntries: FoodEntry[];
+};
+
+export type BarcodeProduct = {
+  barcode: string;
+  name: string;
+  brand: string | null;
+  quantity: number;
+  quantityUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  micronutrients: Micronutrient[];
+  imageUrl: string | null;
+  source: 'open_food_facts';
+};
+
+export type BarcodeLookupResponse = {
+  product: BarcodeProduct;
+};
+
+export type FamilyMemberProfile = {
+  id: string;
+  email: string;
+  timezone: string;
+  createdAt: string;
+  isCurrentUser: boolean;
+  todayCalories: number;
+};
+
+export type Family = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  members: FamilyMemberProfile[];
+};
+
+export type FamilyResponse = {
+  family: Family | null;
 };

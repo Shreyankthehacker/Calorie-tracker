@@ -5,12 +5,15 @@ import type { Env } from './config/env.js';
 import type { NutritionExtractionProvider } from './ai/nutrition-provider.js';
 import type { FoodSearchProvider } from './ai/food-search-provider.js';
 import type { LlmProvider } from './ai/llm-provider.js';
+import type { BarcodeLookupProvider } from './barcode/barcode-provider.js';
 import { createCorsOriginDelegate, parseCorsOrigins } from './lib/cors.js';
 import { authPlugin } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { aiExtractionRoutes } from './routes/ai.js';
+import { barcodeLookupRoutes } from './routes/barcode.js';
 import { chatRoutes } from './routes/chat.js';
 import { authRoutes } from './routes/auth.js';
+import { familyRoutes } from './routes/family.js';
 import { foodEntryRoutes } from './routes/food-entries.js';
 import { foodItemRoutes } from './routes/food-items.js';
 import { goalRoutes } from './routes/goals.js';
@@ -22,6 +25,7 @@ export type AppDependencies = {
   nutritionProvider?: NutritionExtractionProvider;
   llmProvider?: LlmProvider;
   foodSearchProvider?: FoodSearchProvider;
+  barcodeProvider?: BarcodeLookupProvider;
 };
 
 export async function buildApp(env: Env, deps: AppDependencies = {}) {
@@ -64,6 +68,12 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
     ...(deps.foodSearchProvider ? { foodSearchProvider: deps.foodSearchProvider } : {}),
   });
   await app.register(pdfImportRoutes, { prefix: '/api/v1', env });
+  await app.register(barcodeLookupRoutes, {
+    prefix: '/api/v1',
+    env,
+    ...(deps.barcodeProvider ? { barcodeProvider: deps.barcodeProvider } : {}),
+  });
+  await app.register(familyRoutes, { prefix: '/api/v1' });
 
   return app;
 }

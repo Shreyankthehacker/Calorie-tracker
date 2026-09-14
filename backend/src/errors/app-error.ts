@@ -8,6 +8,7 @@ export type AppErrorCode =
   | 'PAYLOAD_TOO_LARGE'
   | 'UNSUPPORTED_MEDIA_TYPE'
   | 'AI_PROVIDER_ERROR'
+  | 'BARCODE_PROVIDER_ERROR'
   | 'INTERNAL_SERVER_ERROR';
 
 export class AppError extends Error {

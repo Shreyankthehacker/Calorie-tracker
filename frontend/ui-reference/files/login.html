@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalorieTracker — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0A0A0A; --white:#FFFFFF; --crimson:#A8112A; --crimson-dark:#7A0C1F;
+    --paper:#F6F4F1; --line:#E7E3DD; --muted:#7A756E; --ink-soft:#3C3A37;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',sans-serif;background:var(--white);color:var(--black);}
+  .split{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
+
+  /* Left: photographic brand panel */
+  .brand-panel{
+    position:relative;background:var(--black);color:var(--white);
+    padding:44px 48px;display:flex;flex-direction:column;justify-content:space-between;
+    overflow:hidden;
+  }
+  .brand-panel .bgimg{
+    position:absolute;inset:0;opacity:.4;
+  }
+  .brand-panel .bgimg img{width:100%;height:100%;object-fit:cover;}
+  .brand-panel::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.94) 100%);
+  }
+  .brand-panel > *{position:relative;z-index:2;}
+
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .word{font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.15;}
+  .brand .word small{display:block;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:#8B8880;letter-spacing:.3px;}
+
+  .brand-panel .pitch{max-width:400px;}
+  .brand-panel .pitch .eyebrow{font-size:12.5px;color:#C9C6C2;margin-bottom:12px;}
+  .brand-panel .pitch h1{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.15;margin:0 0 14px;}
+  .brand-panel .pitch p{font-size:14px;color:#D8D5D0;line-height:1.6;margin:0;}
+
+  .stat-row{display:flex;gap:28px;}
+  .stat-row .stat .n{font-family:'Fraunces',serif;font-size:24px;font-weight:600;}
+  .stat-row .stat .l{font-size:11.5px;color:#C9C6C2;margin-top:2px;}
+
+  /* Right: form panel */
+  .form-panel{display:flex;align-items:center;justify-content:center;padding:40px;}
+  .form-wrap{width:100%;max-width:360px;}
+  .form-wrap .kicker{font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .form-wrap h2{font-family:'Fraunces',serif;font-size:28px;font-weight:600;margin:0 0 8px;}
+  .form-wrap .sub{font-size:13.5px;color:var(--muted);margin:0 0 28px;line-height:1.5;}
+
+  label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .field{margin-bottom:16px;}
+  input[type=email], input[type=password], input[type=text]{
+    width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:9px;
+    font-size:14px;font-family:'Inter',sans-serif;background:var(--white);
+  }
+  input:focus{outline:none;border-color:var(--crimson);}
+
+  .row-between{display:flex;align-items:center;justify-content:space-between;margin:2px 0 22px;font-size:13px;}
+  .row-between a{color:var(--crimson);text-decoration:none;font-weight:600;}
+  .remember{display:flex;align-items:center;gap:8px;color:var(--ink-soft);}
+  .remember input{width:15px;height:15px;accent-color:var(--crimson);}
+
+  .btn-primary{
+    width:100%;background:var(--black);color:var(--white);border:none;padding:13px 18px;
+    border-radius:9px;font-size:14.5px;font-weight:600;cursor:pointer;transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--crimson);}
+
+  .divider{display:flex;align-items:center;gap:12px;margin:22px 0;font-size:12px;color:var(--muted);}
+  .divider::before, .divider::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .btn-outline{
+    width:100%;background:var(--white);border:1px solid var(--line);color:var(--black);
+    padding:12px 18px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;
+  }
+  .btn-outline:hover{border-color:var(--crimson);color:var(--crimson);}
+
+  .switch-line{text-align:center;font-size:13.5px;color:var(--muted);margin-top:26px;}
+  .switch-line a{color:var(--crimson);font-weight:600;text-decoration:none;}
+
+  .powered-note{text-align:center;font-size:11.5px;color:var(--muted);margin-top:34px;}
+  .powered-note b{color:var(--black);}
+
+  @media (max-width:860px){
+    .split{grid-template-columns:1fr;}
+    .brand-panel{min-height:280px;}
+  }
+</style>
+</head>
+<body>
+<div class="split">
+
+  <div class="brand-panel">
+    <div class="bgimg">
+      <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&auto=format&fit=crop"
+           onerror="this.onerror=null;this.src='https://picsum.photos/seed/loginhero/1200/900'" alt="">
+    </div>
+
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="9" fill="#0A0A0A"/>
+        <path d="M11 8v7a2.6 2.6 0 0 0 2.6 2.6h0" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M11 8v6M13.6 8v6M16.2 8v6" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M13.6 17.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M23.5 8c-2.6 0-4.4 2.6-4.4 6.2s1.8 5.4 4.4 5.4" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M23.5 19.6V28" stroke="#A8112A" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div class="word">CalorieTracker<small>powered by Typeface</small></div>
+    </div>
+
+    <div class="pitch">
+      <div class="eyebrow">Welcome back</div>
+      <h1>Your ledger, your pace.</h1>
+      <p>Log meals in seconds, scan barcodes for instant macros, track family nutrition together, and let Sage give you grounded, specific guidance — never a generic limit unless you set one.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n">2,400+</div><div class="l">ingredients indexed</div></div>
+      <div class="stat"><div class="n">400K+</div><div class="l">barcodes recognized</div></div>
+      <div class="stat"><div class="n">12-day</div><div class="l">average active streak</div></div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-wrap">
+      <div class="kicker">Sign in</div>
+      <h2>Welcome back</h2>
+      <p class="sub">Enter your details to get back to your ledger.</p>
+
+      <form onsubmit="return false;">
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" placeholder="you@example.com" value="a.sterling@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" value="••••••••">
+        </div>
+
+        <div class="row-between">
+          <label class="remember"><input type="checkbox" checked> Remember me</label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button class="btn-primary" type="submit">Sign in</button>
+      </form>
+
+      <div class="divider">or continue with</div>
+
+      <button class="btn-outline">
+        <svg width="16" height="16" viewBox="0 0 16 16"><path fill="#4285F4" d="M15.7 8.2c0-.55-.05-1.08-.14-1.6H8v3.02h4.32a3.7 3.7 0 0 1-1.6 2.43v2h2.6c1.52-1.4 2.38-3.47 2.38-5.85z"/><path fill="#34A853" d="M8 16c2.16 0 3.97-.72 5.3-1.93l-2.6-2c-.72.48-1.63.77-2.7.77-2.07 0-3.83-1.4-4.46-3.28H.85v2.07A8 8 0 0 0 8 16z"/><path fill="#FBBC05" d="M3.54 9.56A4.8 4.8 0 0 1 3.28 8c0-.54.1-1.07.26-1.56V4.37H.85A8 8 0 0 0 0 8c0 1.29.31 2.5.85 3.63l2.69-2.07z"/><path fill="#EA4335" d="M8 3.18c1.18 0 2.23.4 3.06 1.2l2.3-2.3A7.98 7.98 0 0 0 8 0 8 8 0 0 0 .85 4.37l2.69 2.07C4.17 4.58 5.93 3.18 8 3.18z"/></svg>
+        Continue with Google
+      </button>
+      <button class="btn-outline">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.3 1c.1.9-.25 1.8-.75 2.44-.52.65-1.38 1.15-2.2 1.08-.12-.87.3-1.78.78-2.34C9.66 1.5 10.53 1.05 11.3 1zM13.9 11.2c-.3.7-.45 1-.83 1.6-.53.85-1.28 1.9-2.2 1.9-.82.02-1.03-.53-2.14-.53-1.12 0-1.35.52-2.16.55-.9.03-1.6-.93-2.13-1.77-1.46-2.27-1.6-4.93-.71-6.35.63-1 1.62-1.6 2.55-1.6.95 0 1.55.55 2.34.55.76 0 1.23-.55 2.34-.55.83 0 1.71.45 2.34 1.24-2.05 1.13-1.72 4.06.6 4.96z" fill="#0A0A0A"/></svg>
+        Continue with Apple
+      </button>
+
+      <div class="switch-line">New to CalorieTracker? <a href="#">Create an account</a></div>
+      <div class="powered-note"><b>CalorieTracker</b> powered by Typeface</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

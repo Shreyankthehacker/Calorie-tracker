@@ -4,8 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { ScanFoodPage } from './ScanFoodPage';
 import { renderWithProviders } from '../test/render';
-import { ApiError, type NutritionExtraction } from '../api/types';
+import { ApiError, type BarcodeProduct, type NutritionExtraction } from '../api/types';
 import * as aiApi from '../api/ai';
+import * as barcodeApi from '../api/barcode';
 import * as foodEntriesApi from '../api/food-entries';
 import * as authApi from '../api/auth';
 import { tokenStorage } from '../api/tokenStorage';
@@ -17,6 +18,9 @@ vi.mock('../api/ai', async () => {
     extractNutrition: vi.fn(),
   };
 });
+vi.mock('../api/barcode', () => ({
+  lookupBarcode: vi.fn(),
+}));
 vi.mock('../api/food-entries');
 vi.mock('../api/auth', async () => {
   const actual = await vi.importActual<typeof import('../api/auth')>('../api/auth');
@@ -33,8 +37,24 @@ const user = {
   id: 'u1',
   email: 'ada@example.com',
   timezone: 'UTC',
+  familyId: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+};
+
+const barcodeProduct: BarcodeProduct = {
+  barcode: '3017620422003',
+  name: 'Nutella',
+  brand: 'Ferrero',
+  quantity: 100,
+  quantityUnit: 'g',
+  calories: 539,
+  protein: 6.3,
+  carbs: 57.5,
+  fat: 30.9,
+  micronutrients: [],
+  imageUrl: null,
+  source: 'open_food_facts',
 };
 
 const extraction: NutritionExtraction = {
@@ -235,6 +255,19 @@ describe('ScanFoodPage', () => {
     await userEvt.click(await screen.findByRole('button', { name: /cancel/i }));
     expect(foodEntriesApi.createFoodEntry).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: /analyze nutrition/i })).toBeInTheDocument();
+  });
+
+  it('looks up a barcode and fills the shared meal form', async () => {
+    const userEvt = userEvent.setup();
+    vi.mocked(barcodeApi.lookupBarcode).mockResolvedValue(barcodeProduct);
+    renderScan();
+    await userEvt.type(screen.getByLabelText(/^barcode$/i), '3017620422003');
+    await userEvt.click(screen.getByRole('button', { name: /look up barcode/i }));
+    expect(await screen.findByRole('heading', { name: /product nutrition/i })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Nutella')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('539')).toBeInTheDocument();
+    expect(aiApi.extractNutrition).not.toHaveBeenCalled();
+    expect(foodEntriesApi.createFoodEntry).not.toHaveBeenCalled();
   });
 
   it('does not automatically save after extraction', async () => {

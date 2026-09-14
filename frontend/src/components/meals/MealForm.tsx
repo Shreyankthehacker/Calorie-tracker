@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { FoodEntry, FoodEntryWritePayload, MealType, Micronutrient } from '../../api/types';
 import { FormField } from '../layout/AppShell';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
+import { formatAmount, scaleMacrosFromBase, scaleNutrition, type NutritionBase } from '../../lib/nutrition';
 
 const mealTypes: Array<{ value: MealType; label: string }> = [
   { value: 'BREAKFAST', label: 'Breakfast' },
@@ -24,6 +25,8 @@ type FormState = {
   consumedAt: string;
   nutrients: NutrientRow[];
 };
+
+type MacroKey = 'calories' | 'protein' | 'carbs' | 'fat';
 
 function emptyForm(entry?: FoodEntry): FormState {
   return {
@@ -51,6 +54,66 @@ function parseNumber(value: string): number {
   return Number(value);
 }
 
+function parseOptionalNumber(value: string): number | null {
+  if (value.trim() === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function snapshotFromForm(form: FormState): NutritionBase | null {
+  const quantity = parseOptionalNumber(form.quantity);
+  const calories = parseOptionalNumber(form.calories);
+  const protein = parseOptionalNumber(form.protein);
+  const carbs = parseOptionalNumber(form.carbs);
+  const fat = parseOptionalNumber(form.fat);
+  if (quantity == null || quantity <= 0) {
+    return null;
+  }
+  if ([calories, protein, carbs, fat].some((value) => value == null || value < 0)) {
+    return null;
+  }
+  return {
+    quantity,
+    calories: calories as number,
+    protein: protein as number,
+    carbs: carbs as number,
+    fat: fat as number,
+  };
+}
+
+function draftFromForm(form: FormState): FoodEntryWritePayload {
+  return {
+    mealType: form.mealType,
+    foodName: form.foodName.trim(),
+    quantity: parseOptionalNumber(form.quantity) ?? 0,
+    quantityUnit: form.quantityUnit.trim(),
+    calories: parseOptionalNumber(form.calories) ?? 0,
+    protein: parseOptionalNumber(form.protein) ?? 0,
+    carbs: parseOptionalNumber(form.carbs) ?? 0,
+    fat: parseOptionalNumber(form.fat) ?? 0,
+    consumedAt: form.consumedAt ? fromDateTimeLocalValue(form.consumedAt) : new Date().toISOString(),
+    micronutrients: form.nutrients
+      .filter((row) => row.nutrientKey.trim())
+      .map((row) => ({
+        nutrientKey: row.nutrientKey.trim(),
+        amount: parseOptionalNumber(row.amount) ?? 0,
+        unit: row.unit.trim() || 'mg',
+      })),
+  };
+}
+
+function scaleNutrientRows(rows: NutrientRow[], quantity: number, baseQuantity: number): NutrientRow[] {
+  return rows.map((row) => {
+    const amount = parseOptionalNumber(row.amount);
+    if (amount == null) {
+      return row;
+    }
+    return { ...row, amount: formatAmount(scaleNutrition(amount, quantity, baseQuantity)) };
+  });
+}
+
 export function MealForm({
   initial,
   submitting,
@@ -58,6 +121,7 @@ export function MealForm({
   submitLabel,
   onSubmit,
   onCancel,
+  onDraftChange,
 }: {
   initial?: FoodEntry;
   submitting: boolean;
@@ -65,20 +129,65 @@ export function MealForm({
   submitLabel?: string;
   onSubmit: (payload: FoodEntryWritePayload) => void;
   onCancel: () => void;
+  onDraftChange?: (payload: FoodEntryWritePayload) => void;
 }) {
   const [form, setForm] = useState<FormState>(() => emptyForm(initial));
   const [showMicros, setShowMicros] = useState((initial?.micronutrients.length ?? 0) > 0);
   const [localError, setLocalError] = useState<string | null>(null);
+  const baseRef = useRef<NutritionBase | null>(snapshotFromForm(emptyForm(initial)));
+  const nutrientBaseRef = useRef<NutrientRow[]>(emptyForm(initial).nutrients);
+
+  useEffect(() => {
+    onDraftChange?.(draftFromForm(form));
+  }, [form, onDraftChange]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handleQuantityChange(value: string) {
+    setForm((prev) => {
+      const next = { ...prev, quantity: value };
+      const quantity = Number(value);
+      const base = baseRef.current;
+      if (!base || !Number.isFinite(quantity) || quantity <= 0) {
+        return next;
+      }
+      const scaled = scaleMacrosFromBase(base, quantity);
+      next.calories = formatAmount(scaled.calories);
+      next.protein = formatAmount(scaled.protein);
+      next.carbs = formatAmount(scaled.carbs);
+      next.fat = formatAmount(scaled.fat);
+      next.nutrients = scaleNutrientRows(nutrientBaseRef.current, quantity, base.quantity);
+      return next;
+    });
+  }
+
+  function handleMacroChange(key: MacroKey, value: string) {
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      const snapshot = snapshotFromForm(next);
+      if (snapshot) {
+        baseRef.current = snapshot;
+        nutrientBaseRef.current = next.nutrients;
+      }
+      return next;
+    });
+  }
+
   function updateNutrient(index: number, patch: Partial<NutrientRow>) {
-    setForm((prev) => ({
-      ...prev,
-      nutrients: prev.nutrients.map((row, i) => (i === index ? { ...row, ...patch } : row)),
-    }));
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        nutrients: prev.nutrients.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+      };
+      const snapshot = snapshotFromForm(next);
+      if (snapshot) {
+        baseRef.current = snapshot;
+        nutrientBaseRef.current = next.nutrients;
+      }
+      return next;
+    });
   }
 
   function handleSubmit(event: FormEvent) {
@@ -179,38 +288,39 @@ export function MealForm({
         </select>
       </FormField>
 
-      <FormField label="Food" htmlFor="meal-food">
-        <input
-          id="meal-food"
-          value={form.foodName}
-          onChange={(event) => update('foodName', event.target.value)}
-          required
-        />
-      </FormField>
-
       <div className="field-row">
-        <FormField label="Quantity" htmlFor="meal-quantity">
+        <FormField label="Food" htmlFor="meal-food">
           <input
-            id="meal-quantity"
-            type="number"
-            min={0.01}
-            step="any"
-            value={form.quantity}
-            onChange={(event) => update('quantity', event.target.value)}
+            id="meal-food"
+            value={form.foodName}
+            onChange={(event) => update('foodName', event.target.value)}
             required
           />
         </FormField>
-        <FormField label="Unit" htmlFor="meal-unit">
-          <input
-            id="meal-unit"
-            value={form.quantityUnit}
-            onChange={(event) => update('quantityUnit', event.target.value)}
-            required
-          />
-        </FormField>
+        <div className="field-row">
+          <FormField label="Quantity" htmlFor="meal-quantity">
+            <input
+              id="meal-quantity"
+              type="number"
+              min={0.01}
+              step="any"
+              value={form.quantity}
+              onChange={(event) => handleQuantityChange(event.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label="Unit" htmlFor="meal-unit">
+            <input
+              id="meal-unit"
+              value={form.quantityUnit}
+              onChange={(event) => update('quantityUnit', event.target.value)}
+              required
+            />
+          </FormField>
+        </div>
       </div>
 
-      <div className="field-row">
+      <div className="field-row four">
         <FormField label="Calories (kcal)" htmlFor="meal-calories">
           <input
             id="meal-calories"
@@ -218,7 +328,7 @@ export function MealForm({
             min={0}
             step="any"
             value={form.calories}
-            onChange={(event) => update('calories', event.target.value)}
+            onChange={(event) => handleMacroChange('calories', event.target.value)}
             required
           />
         </FormField>
@@ -229,13 +339,10 @@ export function MealForm({
             min={0}
             step="any"
             value={form.protein}
-            onChange={(event) => update('protein', event.target.value)}
+            onChange={(event) => handleMacroChange('protein', event.target.value)}
             required
           />
         </FormField>
-      </div>
-
-      <div className="field-row">
         <FormField label="Carbs (g)" htmlFor="meal-carbs">
           <input
             id="meal-carbs"
@@ -243,7 +350,7 @@ export function MealForm({
             min={0}
             step="any"
             value={form.carbs}
-            onChange={(event) => update('carbs', event.target.value)}
+            onChange={(event) => handleMacroChange('carbs', event.target.value)}
             required
           />
         </FormField>
@@ -254,7 +361,7 @@ export function MealForm({
             min={0}
             step="any"
             value={form.fat}
-            onChange={(event) => update('fat', event.target.value)}
+            onChange={(event) => handleMacroChange('fat', event.target.value)}
             required
           />
         </FormField>
