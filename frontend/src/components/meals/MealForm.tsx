@@ -297,7 +297,7 @@ export function MealForm({
             required
           />
         </FormField>
-        <div className="field-row">
+        <div className="qty-unit">
           <FormField label="Quantity" htmlFor="meal-quantity">
             <input
               id="meal-quantity"
@@ -388,7 +388,7 @@ export function MealForm({
       {showMicros ? (
         <div className="micro-editor">
           {form.nutrients.map((row, index) => (
-            <div className="field-row" key={index}>
+            <div className="field-row three" key={index}>
               <FormField label="Nutrient" htmlFor={`micro-key-${index}`}>
                 <input
                   id={`micro-key-${index}`}

@@ -26,6 +26,7 @@
 .alert-error { background: var(--crimson-soft); color: var(--crimson-dark); }
 .alert-success { background: #E7EEE8; color: var(--ink-soft); }
 .alert-info { background: var(--paper); color: var(--ink-soft); }
+.empty-panel { background: var(--paper); border-radius: 14px; padding: 24px; }
 
 .skeleton {
   height: 0.85rem;
@@ -45,8 +46,9 @@
 .modal-panel {
   width: min(100%, 40rem); max-height: calc(100vh - 2rem); overflow: auto;
   background: var(--white); border-radius: 16px; padding: 24px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line); display: grid; gap: 12px;
 }
+.modal-panel h2 { margin: 0; font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
 
 .toast-region { position: fixed; right: 1rem; bottom: 1.25rem; z-index: 60; display: grid; gap: 0.5rem; }
 .toast { margin: 0; background: var(--black); color: var(--white); padding: 0.7rem 1rem; border-radius: 8px; }
@@ -129,8 +131,6 @@
   background: var(--paper); border-radius: 12px; padding: 14px 16px; gap: 4px;
 }
 .meal-live { display: grid; gap: 6px; }
-.modal-panel { display: grid; gap: 12px; }
-.modal-panel h2 { margin: 0; font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
 .meal-live .eyebrow { margin: 0; font-size: 12.5px; color: var(--muted); }
 .hero-stat { margin: 0; font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; line-height: 1.1; }
 .hero-stat .unit { margin-left: 6px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: var(--muted); }
@@ -242,11 +242,15 @@ input[type='checkbox']:checked::after {
 .inline-actions {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;
 }
+.barcode-lookup, .join-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;
+}
+.barcode-lookup .field, .join-row .field { margin: 0; }
 .inline-actions .btn-primary,
 .inline-actions .button-primary,
 .barcode-lookup .btn-primary,
 .join-row .btn-primary {
-  height: 42px; padding: 0 16px; white-space: nowrap; flex-shrink: 0;
+  height: 42px; padding: 0 16px; white-space: nowrap;
 }
 
 .step-track {

@@ -164,7 +164,7 @@ export function ImportPdfPage() {
 
   if (importedCount !== null) {
     return (
-      <section className="page-reports">
+      <section className="page-import">
         <div className="main-inner">
         <div className="top-row">
           <div className="kicker">Account</div>
@@ -196,7 +196,7 @@ export function ImportPdfPage() {
   }
 
   return (
-    <section className="page-reports">
+    <section className="page-import">
       <div className="main-inner">
       <div className="top-row">
         <div className="kicker">Account</div>
@@ -275,138 +275,133 @@ export function ImportPdfPage() {
 
       {rows && rows.length > 0 ? (
         <>
-          <div className="panel import-table-wrap">
-            <table className="import-table">
-              <thead>
-                <tr>
-                  <th>Import</th>
-                  <th>Status</th>
-                  <th>Date/time</th>
-                  <th>Meal</th>
-                  <th>Food</th>
-                  <th>Qty</th>
-                  <th>Unit</th>
-                  <th>Cal</th>
-                  <th>P</th>
-                  <th>C</th>
-                  <th>F</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        aria-label={`Include ${row.foodName ?? row.id}`}
-                        checked={row.include}
-                        onChange={(event) => updateRow(row.id, { include: event.target.checked })}
-                      />
-                    </td>
-                    <td>
-                      <span className={`status-pill ${row.status === 'valid' && !row.duplicate ? 'status-valid' : row.status === 'unparsed' ? 'status-unparsed' : 'status-warning'}`}>
-                        {statusLabel(row)}
-                      </span>
-                      {row.issues[0] ? <p className="muted small">{row.issues[0]}</p> : null}
-                    </td>
-                    <td>
-                      <input
-                        type="datetime-local"
-                        aria-label={`Time for ${row.foodName ?? row.id}`}
-                        value={row.consumedAt ? toDateTimeLocalValue(row.consumedAt) : ''}
-                        onChange={(event) =>
-                          updateRow(row.id, {
-                            consumedAt: event.target.value ? fromDateTimeLocalValue(event.target.value) : null,
-                          })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <select
-                        aria-label={`Meal for ${row.foodName ?? row.id}`}
-                        value={row.mealType ?? ''}
-                        onChange={(event) =>
-                          updateRow(row.id, {
-                            mealType: (event.target.value || null) as MealType | null,
-                          })
-                        }
-                      >
-                        <option value="">Select</option>
-                        {mealTypes.map((meal) => (
-                          <option key={meal.value} value={meal.value}>
-                            {meal.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Food for ${row.id}`}
-                        value={row.foodName ?? ''}
-                        onChange={(event) => updateRow(row.id, { foodName: event.target.value })}
-                      />
-                    </td>
-                    <td>
+          <p className="import-count">
+            {readyRows.length} meal{readyRows.length === 1 ? '' : 's'} will be imported.
+          </p>
+          <div className="import-list">
+            {rows.map((row) => (
+              <article className="import-card" key={row.id}>
+                <header className="import-card-head">
+                  <input
+                    type="checkbox"
+                    aria-label={`Include ${row.foodName ?? row.id}`}
+                    checked={row.include}
+                    onChange={(event) => updateRow(row.id, { include: event.target.checked })}
+                  />
+                  <div className="status-copy">
+                    <span className={`status-pill ${row.status === 'valid' && !row.duplicate ? 'status-valid' : row.status === 'unparsed' ? 'status-unparsed' : 'status-warning'}`}>
+                      {statusLabel(row)}
+                    </span>
+                    {row.issues[0] ? <p className="muted small">{row.issues[0]}</p> : null}
+                  </div>
+                  <button type="button" className="button button-ghost" onClick={() => removeRow(row.id)}>
+                    Remove
+                  </button>
+                </header>
+                <div className="field-row">
+                  <label className="field">
+                    <span className="field-label">Food</span>
+                    <input
+                      aria-label={`Food for ${row.id}`}
+                      value={row.foodName ?? ''}
+                      onChange={(event) => updateRow(row.id, { foodName: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Meal</span>
+                    <select
+                      aria-label={`Meal for ${row.foodName ?? row.id}`}
+                      value={row.mealType ?? ''}
+                      onChange={(event) =>
+                        updateRow(row.id, {
+                          mealType: (event.target.value || null) as MealType | null,
+                        })
+                      }
+                    >
+                      <option value="">Select</option>
+                      {mealTypes.map((meal) => (
+                        <option key={meal.value} value={meal.value}>
+                          {meal.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="field-row">
+                  <label className="field">
+                    <span className="field-label">When eaten</span>
+                    <input
+                      type="datetime-local"
+                      aria-label={`Time for ${row.foodName ?? row.id}`}
+                      value={row.consumedAt ? toDateTimeLocalValue(row.consumedAt) : ''}
+                      onChange={(event) =>
+                        updateRow(row.id, {
+                          consumedAt: event.target.value ? fromDateTimeLocalValue(event.target.value) : null,
+                        })
+                      }
+                    />
+                  </label>
+                  <div className="qty-unit">
+                    <label className="field">
+                      <span className="field-label">Quantity</span>
                       <input
                         aria-label={`Quantity for ${row.foodName ?? row.id}`}
                         inputMode="decimal"
                         value={row.quantity ?? ''}
                         onChange={(event) => updateRow(row.id, { quantity: parseOptionalNumber(event.target.value) })}
                       />
-                    </td>
-                    <td>
+                    </label>
+                    <label className="field">
+                      <span className="field-label">Unit</span>
                       <input
                         aria-label={`Unit for ${row.foodName ?? row.id}`}
                         value={row.quantityUnit ?? ''}
                         onChange={(event) => updateRow(row.id, { quantityUnit: event.target.value })}
                       />
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Calories for ${row.foodName ?? row.id}`}
-                        inputMode="decimal"
-                        value={row.calories ?? ''}
-                        onChange={(event) => updateRow(row.id, { calories: parseOptionalNumber(event.target.value) })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Protein for ${row.foodName ?? row.id}`}
-                        inputMode="decimal"
-                        value={row.protein ?? ''}
-                        onChange={(event) => updateRow(row.id, { protein: parseOptionalNumber(event.target.value) })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Carbs for ${row.foodName ?? row.id}`}
-                        inputMode="decimal"
-                        value={row.carbs ?? ''}
-                        onChange={(event) => updateRow(row.id, { carbs: parseOptionalNumber(event.target.value) })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`Fat for ${row.foodName ?? row.id}`}
-                        inputMode="decimal"
-                        value={row.fat ?? ''}
-                        onChange={(event) => updateRow(row.id, { fat: parseOptionalNumber(event.target.value) })}
-                      />
-                    </td>
-                    <td>
-                      <button type="button" className="button button-ghost" onClick={() => removeRow(row.id)}>
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </label>
+                  </div>
+                </div>
+                <div className="field-row four">
+                  <label className="field">
+                    <span className="field-label">Cal</span>
+                    <input
+                      aria-label={`Calories for ${row.foodName ?? row.id}`}
+                      inputMode="decimal"
+                      value={row.calories ?? ''}
+                      onChange={(event) => updateRow(row.id, { calories: parseOptionalNumber(event.target.value) })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">P</span>
+                    <input
+                      aria-label={`Protein for ${row.foodName ?? row.id}`}
+                      inputMode="decimal"
+                      value={row.protein ?? ''}
+                      onChange={(event) => updateRow(row.id, { protein: parseOptionalNumber(event.target.value) })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">C</span>
+                    <input
+                      aria-label={`Carbs for ${row.foodName ?? row.id}`}
+                      inputMode="decimal"
+                      value={row.carbs ?? ''}
+                      onChange={(event) => updateRow(row.id, { carbs: parseOptionalNumber(event.target.value) })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">F</span>
+                    <input
+                      aria-label={`Fat for ${row.foodName ?? row.id}`}
+                      inputMode="decimal"
+                      value={row.fat ?? ''}
+                      onChange={(event) => updateRow(row.id, { fat: parseOptionalNumber(event.target.value) })}
+                    />
+                  </label>
+                </div>
+              </article>
+            ))}
           </div>
-          <p>
-            {readyRows.length} meal{readyRows.length === 1 ? '' : 's'} will be imported.
-          </p>
           <div className="action-row">
             <button
               type="button"

@@ -203,16 +203,19 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
             </ul>
 
             <FormField label="Quantity" htmlFor="catalog-quantity">
-              <input
-                id="catalog-quantity"
-                type="number"
-                min="0.1"
-                step="any"
-                value={quantity}
-                onChange={(event) => setQuantity(event.target.value)}
-              />
+              <div className="qty-unit">
+                <input
+                  id="catalog-quantity"
+                  aria-label="Quantity"
+                  type="number"
+                  min="0.1"
+                  step="any"
+                  value={quantity}
+                  onChange={(event) => setQuantity(event.target.value)}
+                />
+                <span className="unit-suffix">{selected.servingUnit}</span>
+              </div>
             </FormField>
-            <p className="muted small">Unit: {selected.servingUnit}</p>
 
             <FormField label="Add to meal" htmlFor="catalog-meal-type">
               <select
