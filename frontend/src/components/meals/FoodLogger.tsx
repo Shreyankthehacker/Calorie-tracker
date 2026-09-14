@@ -258,7 +258,7 @@ export function FoodLogger({
               <button type="button" className="icon-button" aria-label="Increase quantity" onClick={() => bumpQuantity(1)}>
                 <Plus size={16} />
               </button>
-              <span className="muted small">{preview.unit}</span>
+              <span className="unit-suffix">{preview.unit}</span>
             </div>
 
             <label className="field">

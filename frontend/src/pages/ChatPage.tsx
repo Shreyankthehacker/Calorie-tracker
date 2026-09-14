@@ -219,7 +219,7 @@ export function ChatPage() {
                 placeholder="Ask Sage about meals, swaps, or your numbers…"
                 disabled={busy}
               />
-              <button type="submit" disabled={busy || input.trim() === ''}>
+              <button type="submit" className="btn-primary" disabled={busy || input.trim() === ''}>
                 {chatMutation.isPending ? 'Sending…' : 'Send'}
               </button>
             </form>

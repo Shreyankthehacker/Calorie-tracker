@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { BrandMark, BrandWord } from './BrandMark';
-import { toolsNav, trackNav } from './nav-config';
+import { bonusNav, toolsNav, trackNav } from './nav-config';
 
 export function SiteFooter() {
   return (
@@ -26,6 +26,11 @@ export function SiteFooter() {
         </div>
         <div className="footer-col">
           <h4>Tools</h4>
+          {bonusNav.map((item) => (
+            <NavLink key={item.to} to={item.to}>
+              {item.label}
+            </NavLink>
+          ))}
           {toolsNav.map((item) => (
             <NavLink key={item.to} to={item.to}>
               {item.label}

@@ -20,17 +20,17 @@ export function PortionPage() {
           <div className="panel">
             <h2>Fit a meal to your remaining calories</h2>
             <div className="field-row">
-              <div>
-                <label htmlFor="portion-food">Food or dish</label>
+              <label className="field" htmlFor="portion-food">
+                <span className="field-label">Food or dish</span>
                 <input
                   id="portion-food"
                   type="text"
                   value={food}
                   onChange={(event) => setFood(event.target.value)}
                 />
-              </div>
-              <div>
-                <label htmlFor="portion-slot">Meal slot</label>
+              </label>
+              <label className="field" htmlFor="portion-slot">
+                <span className="field-label">Meal slot</span>
                 <select
                   id="portion-slot"
                   value={mealSlot}
@@ -40,26 +40,26 @@ export function PortionPage() {
                   <option>Lunch</option>
                   <option>Snack</option>
                 </select>
-              </div>
+              </label>
             </div>
             <div className="field-row">
-              <div>
-                <label htmlFor="portion-remaining">Calories remaining today</label>
+              <label className="field" htmlFor="portion-remaining">
+                <span className="field-label">Calories remaining today</span>
                 <input
                   id="portion-remaining"
                   type="number"
                   value={remaining}
                   onChange={(event) => setRemaining(event.target.value)}
                 />
-              </div>
-              <div>
-                <label htmlFor="portion-split">Preferred protein-lean split</label>
+              </label>
+              <label className="field" htmlFor="portion-split">
+                <span className="field-label">Preferred protein-lean split</span>
                 <select id="portion-split" value={split} onChange={(event) => setSplit(event.target.value)}>
                   <option>Balanced</option>
                   <option>High protein</option>
                   <option>Lower carb</option>
                 </select>
-              </div>
+              </label>
             </div>
 
             <div className="plate-wrap">

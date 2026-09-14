@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 import { LogFoodProvider } from '../meals/LogFoodProvider';
 import { BrandMark, BrandWord } from './BrandMark';
-import { crumbs, toolsNav, trackNav } from './nav-config';
+import { bonusNav, crumbs, toolsNav, trackNav, type NavItem } from './nav-config';
 import { SiteFooter } from './SiteFooter';
 
 export function AppShell() {
@@ -39,33 +39,9 @@ function AppShellInner() {
           <BrandMark />
           <BrandWord />
         </div>
-        <div className="nav-label">Track</div>
-        <nav aria-label="Track">
-          {trackNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              {...(item.end ? { end: true } : {})}
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="nav-label">Tools</div>
-        <nav aria-label="Tools">
-          {toolsNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        <SidebarNav label="Track" items={trackNav} />
+        <SidebarNav label="Bonus" items={bonusNav} />
+        <SidebarNav label="Tools" items={toolsNav} />
         <div className="sidebar-foot">
           <div className="sage-pill">
             <span className="dot" /> Sage assistant active
@@ -127,6 +103,27 @@ function AppShellInner() {
         <SiteFooter />
       </main>
     </div>
+  );
+}
+
+function SidebarNav({ label, items }: { label: string; items: NavItem[] }) {
+  return (
+    <>
+      <div className="nav-label">{label}</div>
+      <nav aria-label={label}>
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            {...(item.end ? { end: true } : {})}
+            className={({ isActive }) => (isActive ? 'active' : undefined)}
+          >
+            {item.icon}
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+    </>
   );
 }
 

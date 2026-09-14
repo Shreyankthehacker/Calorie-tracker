@@ -221,19 +221,14 @@ export function LogMealPage() {
                   setDraft(payload);
                   createMutation.mutate(payload);
                 }}
-              />
+              >
               <div className="scan-card" id="log-from-image">
                 <div className="viewfinder">
-                  <img
-                    src={
-                      imagePreview ??
-                      'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=300&q=80&auto=format&fit=crop'
-                    }
-                    onError={(event) => {
-                      event.currentTarget.src = 'https://picsum.photos/seed/avocadotoast/300/300';
-                    }}
-                    alt={imagePreview ? 'Selected meal photo' : 'Avocado toast being scanned'}
-                  />
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Selected meal photo" />
+                  ) : (
+                    <div className="viewfinder-idle" />
+                  )}
                   <div className="scanline" />
                   <div className="frame">
                     <span />
@@ -247,15 +242,11 @@ export function LogMealPage() {
                   <div className="s">
                     Point your camera at the plate — Sage estimates calories and macros from the image in seconds. For
                     packaged food, look up a barcode here or try{' '}
-                    <Link to="/scan" style={{ color: '#fff', textDecoration: 'underline' }}>
-                      barcode &amp; label scanning
-                    </Link>
-                    .
+                    <Link to="/scan">barcode &amp; label scanning</Link>.
                   </div>
                   <button
                     type="button"
                     className="btn-outline"
-                    style={{ background: 'var(--white)' }}
                     onClick={() => imageInputRef.current?.click()}
                   >
                     Choose image
@@ -280,19 +271,12 @@ export function LogMealPage() {
                   ) : null}
                 </div>
               </div>
+              </MealForm>
             </div>
           </div>
           <div>
             <h2>This meal tray</h2>
             <div className="tray">
-              <img
-                className="tray-img"
-                src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500&q=80&auto=format&fit=crop"
-                onError={(event) => {
-                  event.currentTarget.src = 'https://picsum.photos/seed/salmon-fillet/500/300';
-                }}
-                alt="Wild-caught salmon fillet"
-              />
               <div className="tray-row">
                 <span>Calories</span>
                 <b>{draft?.calories ?? 0} kcal</b>
@@ -313,11 +297,13 @@ export function LogMealPage() {
             <div className="side-card" id="log-from-barcode">
               <div className="who">Barcode lookup</div>
               <p>Packaged products use a barcode lookup, not the meal-photo vision flow.</p>
-              <div className="barcode-lookup">
-                <label className="field">
-                  <span className="field-label">Barcode</span>
+              <div className="field">
+                <span className="field-label">Barcode</span>
+                <div className="barcode-lookup">
                   <input
                     ref={barcodeInputRef}
+                    id="log-barcode"
+                    aria-label="Barcode"
                     value={barcode}
                     inputMode="numeric"
                     autoComplete="off"
@@ -330,15 +316,15 @@ export function LogMealPage() {
                       }
                     }}
                   />
-                </label>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  disabled={barcodeMutation.isPending || barcode.trim().length < 6}
-                  onClick={() => barcodeMutation.mutate(barcode.trim())}
-                >
-                  {barcodeMutation.isPending ? 'Looking up…' : 'Look up'}
-                </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={barcodeMutation.isPending || barcode.trim().length < 6}
+                    onClick={() => barcodeMutation.mutate(barcode.trim())}
+                  >
+                    {barcodeMutation.isPending ? 'Looking up…' : 'Look up'}
+                  </button>
+                </div>
               </div>
               {barcodeError ? (
                 <p className="error-text" role="alert">

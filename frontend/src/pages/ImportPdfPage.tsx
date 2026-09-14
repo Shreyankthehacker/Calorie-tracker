@@ -167,7 +167,7 @@ export function ImportPdfPage() {
       <section className="page-import">
         <div className="main-inner">
         <div className="top-row">
-          <div className="kicker">Account</div>
+          <div className="kicker">Bonus</div>
           <h1 className="page-title">Import PDF</h1>
         </div>
         <Alert tone="success">
@@ -199,7 +199,7 @@ export function ImportPdfPage() {
     <section className="page-import">
       <div className="main-inner">
       <div className="top-row">
-        <div className="kicker">Account</div>
+        <div className="kicker">Bonus</div>
         <h1 className="page-title">Import PDF</h1>
         <p className="muted">Upload a text-based food diary. Review every meal before anything is saved.</p>
       </div>
@@ -233,22 +233,23 @@ export function ImportPdfPage() {
             acceptFile(event.dataTransfer.files[0] ?? null);
           }}
         >
-          <label className="field">
+          <label className="file-picker">
             <span className="field-label">PDF file</span>
+            <span className="file-picker-row">
+              <span className="file-picker-btn">Choose file</span>
+              <span className="file-picker-name">
+                {file ? `${file.name} (${(file.size / 1024).toFixed(1)} KB)` : 'No file selected'}
+              </span>
+            </span>
             <input
+              className="sr-only"
               type="file"
               accept="application/pdf,.pdf"
               onChange={handleFile}
               disabled={parsing || confirmMutation.isPending}
             />
           </label>
-          {file ? (
-            <p className="muted">
-              {file.name} ({(file.size / 1024).toFixed(1)} KB)
-            </p>
-          ) : (
-            <p className="muted">No file selected. Drop a PDF here or choose one to parse.</p>
-          )}
+          <p className="muted">Drop a PDF here or choose one to parse.</p>
           <button className="button button-primary" type="submit" disabled={!file || parsing || confirmMutation.isPending}>
             {parsing ? 'Parsing PDF…' : 'Parse PDF'}
           </button>

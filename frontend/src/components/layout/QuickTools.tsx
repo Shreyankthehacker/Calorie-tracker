@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { toolsNav } from './nav-config';
+import { bonusNav, toolsNav } from './nav-config';
 
 export function QuickTools() {
   return (
@@ -9,7 +9,7 @@ export function QuickTools() {
         <span className="strip-sub">Everything beyond the daily ledger, one tap away</span>
       </div>
       <div className="tools-grid">
-        {toolsNav.map((item) => (
+        {[...bonusNav, ...toolsNav].map((item) => (
           <Link className="tool-card" to={item.to} key={item.to}>
             <div className="ic">{item.icon}</div>
             <div className="t">{item.label}</div>

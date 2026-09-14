@@ -7,7 +7,6 @@ import { createFoodEntry } from '../api/food-entries';
 import { ApiError, type FoodEntryWritePayload, type NutritionExtraction } from '../api/types';
 import { MealForm } from '../components/meals/MealForm';
 import { nutritionToDraftEntry } from '../lib/meal-draft';
-import { recentScans, staticScanResult } from '../mock/scan';
 
 function sourceMessage(source: NutritionExtraction['source']): string {
   if (source === 'label') {
@@ -185,16 +184,11 @@ export function ScanFoodPage() {
           <>
             <div className="scan-hero">
               <div className="viewfinder">
-                <img
-                  src={
-                    previewUrl ??
-                    'https://images.unsplash.com/photo-1580913428023-02c429014861?w=300&q=80&auto=format&fit=crop'
-                  }
-                  onError={(event) => {
-                    event.currentTarget.src = 'https://picsum.photos/seed/barcodepack/300/300';
-                  }}
-                  alt={previewUrl ? 'Selected food to analyze' : 'Packaged food being scanned'}
-                />
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Selected food to analyze" />
+                ) : (
+                  <div className="viewfinder-idle" />
+                )}
                 <div className="scanline" />
                 <div className="frame">
                   <span />
@@ -275,35 +269,11 @@ export function ScanFoodPage() {
             <div className="grid">
               <div>
                 <h2>Last scan result</h2>
-                <div className="result-card">
-                  <img
-                    src={staticScanResult.image}
-                    onError={(event) => {
-                      event.currentTarget.src = staticScanResult.fallback;
-                    }}
-                    alt={staticScanResult.alt}
-                  />
-                  <div className="info">
-                    <div className="title">{staticScanResult.title}</div>
-                    <div className="brand">{staticScanResult.brand}</div>
-                    <div className="macro-mini">
-                      <div>
-                        <b>{staticScanResult.calories}</b>kcal
-                      </div>
-                      <div>
-                        <b>{staticScanResult.protein}g</b>protein
-                      </div>
-                      <div>
-                        <b>{staticScanResult.carbs}g</b>carbs
-                      </div>
-                      <div>
-                        <b>{staticScanResult.fat}g</b>fat
-                      </div>
-                    </div>
-                    <button type="button" className="btn-primary add" onClick={() => barcodeInputRef.current?.focus()}>
-                      Add to today's log
-                    </button>
-                  </div>
+                <div className="empty-panel">
+                  <p>No scan yet.</p>
+                  <p className="muted">
+                    Look up a barcode or analyze a nutrition label. Review the values here before anything is saved.
+                  </p>
                 </div>
               </div>
               <div>
@@ -314,28 +284,11 @@ export function ScanFoodPage() {
                     nutrition label instead and Sage will read it."
                   </p>
                 </div>
-                <div className="side-card">
-                  <h2 style={{ fontSize: 15, marginBottom: 6 }}>Recent scans</h2>
-                  {recentScans.map((item) => (
-                    <div key={item.name} className="history-row">
-                      <img
-                        src={item.image}
-                        onError={(event) => {
-                          event.currentTarget.src = item.fallback;
-                        }}
-                        alt=""
-                      />
-                      <div className="n">{item.name}</div>
-                      <div className="k">{item.kcal} kcal</div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="grid">
-            <div>
+          <div className="review-stack">
               <h2>{extraction ? 'Extracted nutrition' : 'Product nutrition'}</h2>
               <p className="muted">
                 {extraction ? 'AI estimate — please review before saving.' : 'Product lookup — please review before saving.'}
@@ -354,7 +307,7 @@ export function ScanFoodPage() {
                 </p>
               )}
               {previewUrl && extraction ? (
-                <div className="result-card" style={{ marginBottom: 16 }}>
+                <div className="result-card">
                   <img src={previewUrl} alt="Analyzed food" />
                   <div className="info">
                     <div className="title">{extraction.foodName}</div>
@@ -378,28 +331,27 @@ export function ScanFoodPage() {
                   </div>
                 </div>
               ) : null}
-              <MealForm
-                key={extraction ? `extract-${extraction.foodName}` : `barcode-${productMeta?.barcode}`}
-                initial={reviewDraft}
-                submitting={saveMutation.isPending}
-                error={saveError}
-                submitLabel="Use this information"
-                onSubmit={handleSave}
-                onCancel={handleCancel}
-              />
-            </div>
-            <div>
+              <div className="panel">
+                <MealForm
+                  key={extraction ? `extract-${extraction.foodName}` : `barcode-${productMeta?.barcode}`}
+                  initial={reviewDraft}
+                  submitting={saveMutation.isPending}
+                  error={saveError}
+                  submitLabel="Use this information"
+                  onSubmit={handleSave}
+                  onCancel={handleCancel}
+                />
+              </div>
               <div className="side-card">
                 <div className="who">🐾 Sage on scanning</div>
                 <p>
-                  "Review the extracted values before they hit your ledger. You can still swap the meal slot or fix
-                  macros here."
+                  Review the extracted values before they hit your ledger. You can still swap the meal slot or fix
+                  macros here.
                 </p>
-                <Link to="/log-meal" style={{ color: 'var(--crimson)' }}>
+                <Link to="/log-meal" className="ask-sage">
                   Or enter the meal by hand
                 </Link>
               </div>
-            </div>
           </div>
         )}
       </div>

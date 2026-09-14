@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { FoodEntry, FoodEntryWritePayload, MealType, Micronutrient } from '../../api/types';
 import { FormField } from '../layout/AppShell';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
@@ -104,16 +104,6 @@ function draftFromForm(form: FormState): FoodEntryWritePayload {
   };
 }
 
-function scaleNutrientRows(rows: NutrientRow[], quantity: number, baseQuantity: number): NutrientRow[] {
-  return rows.map((row) => {
-    const amount = parseOptionalNumber(row.amount);
-    if (amount == null) {
-      return row;
-    }
-    return { ...row, amount: formatAmount(scaleNutrition(amount, quantity, baseQuantity)) };
-  });
-}
-
 export function MealForm({
   initial,
   submitting,
@@ -122,6 +112,7 @@ export function MealForm({
   onSubmit,
   onCancel,
   onDraftChange,
+  children,
 }: {
   initial?: FoodEntry;
   submitting: boolean;
@@ -130,6 +121,7 @@ export function MealForm({
   onSubmit: (payload: FoodEntryWritePayload) => void;
   onCancel: () => void;
   onDraftChange?: (payload: FoodEntryWritePayload) => void;
+  children?: ReactNode;
 }) {
   const [form, setForm] = useState<FormState>(() => emptyForm(initial));
   const [showMicros, setShowMicros] = useState((initial?.micronutrients.length ?? 0) > 0);
@@ -158,7 +150,17 @@ export function MealForm({
       next.protein = formatAmount(scaled.protein);
       next.carbs = formatAmount(scaled.carbs);
       next.fat = formatAmount(scaled.fat);
-      next.nutrients = scaleNutrientRows(nutrientBaseRef.current, quantity, base.quantity);
+      next.nutrients = prev.nutrients.map((row, index) => {
+        const baseRow = nutrientBaseRef.current[index];
+        if (!baseRow) {
+          return row;
+        }
+        const amount = parseOptionalNumber(baseRow.amount);
+        if (amount == null) {
+          return row;
+        }
+        return { ...row, amount: formatAmount(scaleNutrition(amount, quantity, base.quantity)) };
+      });
       return next;
     });
   }
@@ -288,36 +290,35 @@ export function MealForm({
         </select>
       </FormField>
 
-      <div className="field-row">
-        <FormField label="Food" htmlFor="meal-food">
+      <FormField label="Food" htmlFor="meal-food">
+        <input
+          id="meal-food"
+          value={form.foodName}
+          onChange={(event) => update('foodName', event.target.value)}
+          required
+        />
+      </FormField>
+
+      <div className="qty-unit">
+        <FormField label="Quantity" htmlFor="meal-quantity">
           <input
-            id="meal-food"
-            value={form.foodName}
-            onChange={(event) => update('foodName', event.target.value)}
+            id="meal-quantity"
+            type="number"
+            min={0.01}
+            step="any"
+            value={form.quantity}
+            onChange={(event) => handleQuantityChange(event.target.value)}
             required
           />
         </FormField>
-        <div className="qty-unit">
-          <FormField label="Quantity" htmlFor="meal-quantity">
-            <input
-              id="meal-quantity"
-              type="number"
-              min={0.01}
-              step="any"
-              value={form.quantity}
-              onChange={(event) => handleQuantityChange(event.target.value)}
-              required
-            />
-          </FormField>
-          <FormField label="Unit" htmlFor="meal-unit">
-            <input
-              id="meal-unit"
-              value={form.quantityUnit}
-              onChange={(event) => update('quantityUnit', event.target.value)}
-              required
-            />
-          </FormField>
-        </div>
+        <FormField label="Unit" htmlFor="meal-unit">
+          <input
+            id="meal-unit"
+            value={form.quantityUnit}
+            onChange={(event) => update('quantityUnit', event.target.value)}
+            required
+          />
+        </FormField>
       </div>
 
       <div className="field-row four">
@@ -421,16 +422,22 @@ export function MealForm({
             type="button"
             className="button button-secondary"
             onClick={() =>
-              setForm((prev) => ({
-                ...prev,
-                nutrients: [...prev.nutrients, { nutrientKey: '', amount: '', unit: 'mg' }],
-              }))
+              setForm((prev) => {
+                const next = {
+                  ...prev,
+                  nutrients: [...prev.nutrients, { nutrientKey: '', amount: '', unit: 'mg' }],
+                };
+                nutrientBaseRef.current = next.nutrients;
+                return next;
+              })
             }
           >
             Add nutrient
           </button>
         </div>
       ) : null}
+
+      {children}
 
       <div className="action-row">
         <button className="button button-primary" type="submit" disabled={submitting}>

@@ -36,28 +36,28 @@ export function BmiPage() {
         <div className="panel">
           <h2>Calculate your BMI</h2>
           <div className="field-row">
-            <div>
-              <label htmlFor="bmi-height">Height (cm)</label>
+            <label className="field" htmlFor="bmi-height">
+              <span className="field-label">Height (cm)</span>
               <input
                 id="bmi-height"
                 type="number"
                 value={heightCm}
                 onChange={(event) => setHeightCm(event.target.value)}
               />
-            </div>
-            <div>
-              <label htmlFor="bmi-weight">Weight (kg)</label>
+            </label>
+            <label className="field" htmlFor="bmi-weight">
+              <span className="field-label">Weight (kg)</span>
               <input
                 id="bmi-weight"
                 type="number"
                 value={weightKg}
                 onChange={(event) => setWeightKg(event.target.value)}
               />
-            </div>
-            <div>
-              <label htmlFor="bmi-age">Age</label>
+            </label>
+            <label className="field" htmlFor="bmi-age">
+              <span className="field-label">Age</span>
               <input id="bmi-age" type="number" value={age} onChange={(event) => setAge(event.target.value)} />
-            </div>
+            </label>
           </div>
 
           <div className="result-band">

@@ -8,7 +8,9 @@ function Icon({ path }: { path: string }) {
   );
 }
 
-export const trackNav: Array<{ to: string; label: string; icon: ReactNode; end?: boolean }> = [
+export type NavItem = { to: string; label: string; icon: ReactNode; end?: boolean; sub?: string };
+
+export const trackNav: NavItem[] = [
   {
     to: '/dashboard',
     label: 'Today',
@@ -50,13 +52,28 @@ export const trackNav: Array<{ to: string; label: string; icon: ReactNode; end?:
   },
 ];
 
-export const toolsNav: Array<{ to: string; label: string; icon: ReactNode; sub: string }> = [
+export const bonusNav: NavItem[] = [
   {
     to: '/chat',
     label: 'Chat with Sage',
     sub: 'Ask about meals, swaps or your numbers',
     icon: <Icon path="M2.5 4.5h11v7h-6L4.5 14v-2.5h-2z" />,
   },
+  {
+    to: '/import',
+    label: 'Bulk logging',
+    sub: 'Import a PDF food diary in one pass',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 2.5h5.5L12.5 6v7.5H4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M9.5 2.5V6h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M6 9h4M6 11.5h2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
+export const toolsNav: NavItem[] = [
   {
     to: '/family',
     label: 'My family',
@@ -126,5 +143,5 @@ export const crumbs: Record<string, string> = {
   '/bmi': 'BMI info centre',
   '/scan': 'Barcode & label scan',
   '/portions': 'Portion calculator',
-  '/import': 'Import',
+  '/import': 'Bulk logging',
 };

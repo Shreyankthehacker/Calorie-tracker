@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFamily, getFamily, joinFamily, leaveFamily } from '../api/family';
 import { ApiError, type FamilyMemberProfile } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
-import { sharedMeals } from '../mock/family';
 
 function displayName(email: string): string {
   const local = email.split('@')[0] ?? email;
@@ -19,6 +18,11 @@ function memberRole(member: FamilyMemberProfile): string {
 
 function formatKcal(value: number): string {
   return `${Math.round(value).toLocaleString()} kcal`;
+}
+
+function initials(email: string): string {
+  const name = displayName(email);
+  return name.slice(0, 1).toUpperCase();
 }
 
 export function FamilyPage() {
@@ -138,7 +142,9 @@ export function FamilyPage() {
               onClick={() => setSelectedId(member.id)}
             >
               <div className="fam-head">
-                <img src={`https://picsum.photos/seed/${member.id}/64/64`} alt="" />
+                <div className="fam-avatar" aria-hidden="true">
+                  {initials(member.email)}
+                </div>
                 <div>
                   <div className="n">{displayName(member.email)}</div>
                   <div className="r">{memberRole(member)}</div>
@@ -173,22 +179,35 @@ export function FamilyPage() {
 
         <div className="grid">
           <div>
-            <h2>Shared meals this week</h2>
-            {sharedMeals.map((meal) => (
-              <div key={meal.title} className="shared-meal">
-                <img
-                  src={meal.image}
-                  onError={(event) => {
-                    event.currentTarget.src = meal.fallback;
-                  }}
-                  alt={meal.alt}
-                />
-                <div className="info">
-                  <div className="t">{meal.title}</div>
-                  <div className="s">{meal.detail}</div>
-                </div>
+            <h2>Household today</h2>
+            {members.length === 0 ? (
+              <div className="empty-panel">
+                <p>No household totals yet.</p>
+                <p className="muted">
+                  Create or join a family to see each member&apos;s logged calories. Meals stay on each person&apos;s
+                  own log.
+                </p>
               </div>
-            ))}
+            ) : (
+              members.map((member) => (
+                <button
+                  type="button"
+                  key={`today-${member.id}`}
+                  className="shared-meal"
+                  onClick={() => setSelectedId(member.id)}
+                >
+                  <div className="fam-avatar" aria-hidden="true">
+                    {initials(member.email)}
+                  </div>
+                  <div className="info">
+                    <div className="t">{displayName(member.email)}</div>
+                    <div className="s">
+                      {formatKcal(member.todayCalories)} logged today · {member.timezone}
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
           <div>
             {selected ? (
@@ -206,7 +225,7 @@ export function FamilyPage() {
             <div className="side-card">
               <div className="who">Join with family ID</div>
               <form
-                className="join-row"
+                className="field"
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (joinId.trim()) {
@@ -214,18 +233,19 @@ export function FamilyPage() {
                   }
                 }}
               >
-                <label className="field">
-                  <span className="field-label">Family ID</span>
+                <span className="field-label">Family ID</span>
+                <div className="join-row">
                   <input
                     value={joinId}
                     onChange={(event) => setJoinId(event.target.value)}
                     placeholder="Paste a family ID"
                     autoComplete="off"
+                    aria-label="Family ID"
                   />
-                </label>
-                <button type="submit" className="btn-primary" disabled={joinMutation.isPending || !joinId.trim()}>
-                  {joinMutation.isPending ? 'Joining…' : 'Join'}
-                </button>
+                  <button type="submit" className="btn-primary" disabled={joinMutation.isPending || !joinId.trim()}>
+                    {joinMutation.isPending ? 'Joining…' : 'Join'}
+                  </button>
+                </div>
               </form>
               {family ? (
                 <button
@@ -242,7 +262,7 @@ export function FamilyPage() {
               <div className="who">🐾 Sage on family</div>
               <p>
                 {family
-                  ? `"${members.length} member${members.length === 1 ? '' : 's'} share this household ID. Each person still keeps their own meals and goals."`
+                  ? `"${members.length} member${members.length === 1 ? '' : 's'} ${members.length === 1 ? 'shares' : 'share'} this household ID. Each person still keeps their own meals and goals."`
                   : '"Create a family to get a unique ID. Anyone you share it with can join and keep their own log."'}
               </p>
             </div>

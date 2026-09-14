@@ -53,7 +53,14 @@
 .toast-region { position: fixed; right: 1rem; bottom: 1.25rem; z-index: 60; display: grid; gap: 0.5rem; }
 .toast { margin: 0; background: var(--black); color: var(--white); padding: 0.7rem 1rem; border-radius: 8px; }
 
-.stack-form { display: grid; gap: 12px; }
+.stack-form { display: grid; gap: 14px; min-width: 0; }
+.stack-form > .button,
+.stack-form > .button-ghost,
+.stack-form > .button-secondary {
+  justify-self: start;
+  width: auto;
+}
+.stack-form > .scan-card { justify-self: stretch; width: 100%; }
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .pagination-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; }
 
@@ -141,10 +148,61 @@
   background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.button { font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
 .button:disabled, .btn-primary:disabled, .button-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
-.field { display: grid; gap: 6px; }
+.panel, .panel-quiet {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+  background: var(--white);
+}
+.catalog-panel { margin: 22px 0 8px; }
+.catalog-panel .search, input.search {
+  width: 100%;
+  margin: 0 0 18px;
+}
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.food-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  background: var(--white);
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+.food-card:hover { border-color: var(--crimson); box-shadow: 0 4px 18px rgba(0,0,0,0.06); }
+.food-card img, .food-card svg { width: 100%; height: 90px; object-fit: cover; display: block; }
+.food-card .body { padding: 10px 12px; }
+.food-card .title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.food-card .meta { font-size: 12px; color: var(--muted); }
+.food-card .meta b { color: var(--black); }
+
+.file-picker { display: grid; gap: 8px; cursor: pointer; }
+.file-picker-row {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--white);
+}
+.file-picker-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 34px; padding: 0 14px; border-radius: 8px;
+  background: var(--black); color: var(--white);
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.file-picker-name { font-size: 13px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-picker:hover .file-picker-row { border-color: var(--crimson); }
+
+.field { display: grid; gap: 6px; min-width: 0; }
 .field-label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 input[type='text'],
 input[type='number'],
@@ -228,10 +286,23 @@ input[type='checkbox']:checked::after {
   transform: rotate(-45deg) translate(0, -1px);
 }
 
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .field-row.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.field-row.three { grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) 88px; }
-.qty-unit { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 12px; }
+.field-row.three { grid-template-columns: minmax(0, 1fr) 120px 88px; }
+.field-row > *, .field-row.three > * { min-width: 0; }
+.qty-unit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(96px, 140px);
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.qty-unit > * { min-width: 0; }
+
+@media (max-width: 720px) {
+  .field-row.four { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
 .unit-suffix {
   min-height: 42px; display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--line); border-radius: 9px; background: var(--paper);
@@ -243,7 +314,8 @@ input[type='checkbox']:checked::after {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;
 }
 .barcode-lookup, .join-row {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  width: 100%;
 }
 .barcode-lookup .field, .join-row .field { margin: 0; }
 .inline-actions .btn-primary,
