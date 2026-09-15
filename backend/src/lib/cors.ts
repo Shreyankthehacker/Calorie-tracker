@@ -1,8 +1,18 @@
+export const DEFAULT_CORS_ORIGINS = [
+  'http://localhost:5173',
+  'https://calorie-tracker-frontend-tau.vercel.app',
+] as const;
+
 export function parseCorsOrigins(value: string): string[] {
   return value
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
+}
+
+/** Env origins plus the known local and production frontends. */
+export function resolveCorsOrigins(value: string): string[] {
+  return [...new Set([...DEFAULT_CORS_ORIGINS, ...parseCorsOrigins(value)])];
 }
 
 export function assertSafeCorsOrigins(origins: string[]): void {

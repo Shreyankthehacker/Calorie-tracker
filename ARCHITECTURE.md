@@ -738,7 +738,7 @@ Enforce:
 - JWT security (short-lived access tokens, default 15 minutes, strong secrets)
 - refresh token security: CSPRNG tokens, SHA-256 hashes at rest with `JWT_REFRESH_SECRET` as pepper, rotation on use, revocation on logout
 - ownership checks on all user-owned resources; never trust a client `userId`
-- CORS allowlist from `CORS_ORIGIN` (comma-separated origins; `*` is rejected)
+- CORS allowlist from `CORS_ORIGIN` plus the local Vite origin and the Vercel production origin (`*` is rejected)
 - upload validation for AI endpoints (MIME, magic bytes, 5MB cap)
 - rate limiting for authentication, AI extraction, and AI chat endpoints
 - generic HTTP 500 responses without stack traces, Prisma errors, Gemini payloads, or secrets

@@ -1,7 +1,6 @@
 import { ApiError, type ApiErrorBody } from './types';
 import { tokenStorage } from './tokenStorage';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
+import { API_BASE_URL } from './base-url';
 
 type RequestOptions = {
   method?: string;

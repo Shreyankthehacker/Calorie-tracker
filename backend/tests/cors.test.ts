@@ -7,6 +7,7 @@ import {
   assertSafeCorsOrigins,
   createCorsOriginDelegate,
   parseCorsOrigins,
+  resolveCorsOrigins,
 } from '../src/lib/cors.js';
 
 describe('CORS origin parsing', () => {
@@ -15,6 +16,14 @@ describe('CORS origin parsing', () => {
       'http://localhost:5173',
       'https://app.example.com',
     ]);
+  });
+
+  it('merges env origins with the local and Vercel defaults', () => {
+    expect(resolveCorsOrigins('http://localhost:5173')).toEqual([
+      'http://localhost:5173',
+      'https://calorie-tracker-frontend-tau.vercel.app',
+    ]);
+    expect(resolveCorsOrigins('https://preview.example')).toContain('https://preview.example');
   });
 
   it('rejects wildcard origins', () => {
@@ -81,6 +90,45 @@ describe('CORS headers', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+  });
+
+  it('answers login preflight from the local Vite origin', async () => {
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/auth/login',
+      headers: {
+        origin: 'http://localhost:5173',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type, authorization',
+      },
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+    expect(String(response.headers['access-control-allow-methods'])).toMatch(/POST/);
+    expect(String(response.headers['access-control-allow-headers']).toLowerCase()).toMatch(
+      /content-type/,
+    );
+    expect(String(response.headers['access-control-allow-headers']).toLowerCase()).toMatch(
+      /authorization/,
+    );
+  });
+
+  it('answers login preflight from the Vercel frontend even if CORS_ORIGIN is local-only', async () => {
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/auth/login',
+      headers: {
+        origin: 'https://calorie-tracker-frontend-tau.vercel.app',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type, authorization',
+      },
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-origin']).toBe(
+      'https://calorie-tracker-frontend-tau.vercel.app',
+    );
   });
 
   it('allows a configured production origin', async () => {

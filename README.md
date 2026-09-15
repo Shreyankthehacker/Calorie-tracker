@@ -193,7 +193,7 @@ Root `.env.example` points at package-specific examples. Application secrets liv
 | `PORT` / `HOST` | HTTP bind address (default `3001` / `0.0.0.0`) |
 | `DATABASE_URL` | Pooled PostgreSQL URL for the running app |
 | `DIRECT_URL` | Direct PostgreSQL URL for Prisma migrations |
-| `CORS_ORIGIN` | Comma-separated frontend origin allowlist. Do **not** use `*` |
+| `CORS_ORIGIN` | Extra frontend origins (comma-separated). Local Vite and the Vercel production origin are always allowed. Do **not** use `*` |
 | `JWT_ACCESS_SECRET` | Access-token signing secret (≥ 32 characters) |
 | `JWT_REFRESH_SECRET` | Refresh hashing pepper and related secret (≥ 32 characters) |
 | `JWT_ACCESS_EXPIRES_IN` | Short-lived access JWT lifetime (default `15m`) |
@@ -315,7 +315,7 @@ Backend AI tests inject mock `NutritionExtractionProvider` and `LlmProvider` imp
 - Ownership is enforced server-side from the access token; client `userId` is ignored
 - Zod validation at API boundaries, including AI output
 - Rate limits on auth (default 20 / 60s), AI extraction/chat (default 10 / 60s), and PDF preview (default 10 / 60s)
-- CORS allowlist via `CORS_ORIGIN` (no `*`)
+- CORS allowlist via `CORS_ORIGIN` plus local Vite and Vercel production origins (no `*`)
 - Upload validation for AI images and PDF diaries; oversized uploads return 413; unsupported types return 415
 - Generic HTTP 500 bodies never include stack traces, Prisma errors, provider payloads, or secrets
 

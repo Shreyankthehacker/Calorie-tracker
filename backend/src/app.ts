@@ -6,7 +6,7 @@ import type { NutritionExtractionProvider } from './ai/nutrition-provider.js';
 import type { FoodSearchProvider } from './ai/food-search-provider.js';
 import type { LlmProvider } from './ai/llm-provider.js';
 import type { BarcodeLookupProvider } from './barcode/barcode-provider.js';
-import { createCorsOriginDelegate, parseCorsOrigins } from './lib/cors.js';
+import { createCorsOriginDelegate, resolveCorsOrigins } from './lib/cors.js';
 import { authPlugin } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { aiExtractionRoutes } from './routes/ai.js';
@@ -38,7 +38,10 @@ export async function buildApp(env: Env, deps: AppDependencies = {}) {
   registerErrorHandler(app);
 
   await app.register(cors, {
-    origin: createCorsOriginDelegate(parseCorsOrigins(env.CORS_ORIGIN)),
+    origin: createCorsOriginDelegate(resolveCorsOrigins(env.CORS_ORIGIN)),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false,
   });
 
   await app.register(multipart, {

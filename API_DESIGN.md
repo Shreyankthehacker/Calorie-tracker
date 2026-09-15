@@ -36,7 +36,7 @@ GET  /auth/me                                         → 200 { user }
 
 `timezone` is an IANA name (default `UTC`). Duplicate email returns `409 CONFLICT`. Invalid credentials and reused/revoked refresh tokens return `401 UNAUTHORIZED`. Access tokens are short-lived JWTs (default `15m`). Refresh tokens last 30 days by default (`JWT_REFRESH_EXPIRES_IN`), are rotated on use, and stored hashed. The browser keeps the session in `localStorage` so other tabs stay signed in.
 
-CORS: browsers may call these endpoints only from origins listed in `CORS_ORIGIN` (comma-separated). `*` is not allowed.
+CORS: browsers may call these endpoints from `http://localhost:5173`, `https://calorie-tracker-frontend-tau.vercel.app`, and any extra origins listed in `CORS_ORIGIN` (comma-separated). `*` is not allowed.
 
 ---
 
