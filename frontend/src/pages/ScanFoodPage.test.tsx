@@ -171,8 +171,9 @@ describe('ScanFoodPage', () => {
     await userEvt.upload(screen.getByLabelText(/upload image/i), jpegFile());
     await userEvt.click(screen.getByRole('button', { name: /analyze nutrition/i }));
     await screen.findByLabelText(/^meal$/i);
-    await userEvt.selectOptions(screen.getByLabelText(/^meal$/i), 'DINNER');
-    expect(screen.getByLabelText(/^meal$/i)).toHaveValue('DINNER');
+    await userEvt.click(screen.getByLabelText(/^meal$/i));
+    await userEvt.click(screen.getByRole('option', { name: 'Dinner' }));
+    expect(screen.getByLabelText(/^meal$/i)).toHaveTextContent('Dinner');
   });
 
   it('lets the user set consumedAt', async () => {
@@ -208,7 +209,8 @@ describe('ScanFoodPage', () => {
     renderScan();
     await userEvt.upload(screen.getByLabelText(/upload image/i), jpegFile());
     await userEvt.click(screen.getByRole('button', { name: /analyze nutrition/i }));
-    await userEvt.selectOptions(await screen.findByLabelText(/^meal$/i), 'DINNER');
+    await userEvt.click(await screen.findByLabelText(/^meal$/i));
+    await userEvt.click(screen.getByRole('option', { name: 'Dinner' }));
     await userEvt.click(screen.getByRole('button', { name: /use this information/i }));
     await waitFor(() => {
       expect(foodEntriesApi.createFoodEntry).toHaveBeenCalledWith(

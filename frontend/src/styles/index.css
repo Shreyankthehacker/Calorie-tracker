@@ -14,6 +14,7 @@
 @import './components/panels.css';
 @import './components/feedback.css';
 @import './components/date-field.css';
+@import './components/select-field.css';
 @import './components/meal-form.css';
 @import './components/food-catalog.css';
 @import './components/food-logger.css';

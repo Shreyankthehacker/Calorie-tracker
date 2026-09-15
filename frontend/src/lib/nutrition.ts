@@ -14,6 +14,10 @@ export const MEAL_LABELS: Record<MealType, string> = {
   SNACKS: 'Snacks',
 };
 
+export function isMealType(value: unknown): value is MealType {
+  return value === 'BREAKFAST' || value === 'LUNCH' || value === 'DINNER' || value === 'SNACKS';
+}
+
 export function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }

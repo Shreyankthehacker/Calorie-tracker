@@ -79,7 +79,7 @@ export function DashboardPage() {
             <div className="kicker">Daily ledger</div>
             <h1 className="page-title">{formatTodayTitle(new Date())}</h1>
           </div>
-          <button type="button" className="btn-primary" onClick={openLogFood}>
+          <button type="button" className="btn-primary" onClick={() => openLogFood()}>
             + Log new item
           </button>
         </div>
@@ -147,7 +147,7 @@ export function DashboardPage() {
                         type="button"
                         className="empty-slot"
                         key={section.type}
-                        onClick={openLogFood}
+                        onClick={() => openLogFood(section.type)}
                       >
                         <span>{section.label}</span>
                         <span className="plus">
@@ -164,7 +164,16 @@ export function DashboardPage() {
                         <div className="time">Logged at {formatLoggedAt(grouped.time)}</div>
                         <div className="desc">{grouped.desc}</div>
                       </div>
-                      <div className="meal-kcal">{Math.round(grouped.calories)} kcal</div>
+                      <div className="meal-side">
+                        <div className="meal-kcal">{Math.round(grouped.calories)} kcal</div>
+                        <button
+                          type="button"
+                          className="meal-card-add"
+                          onClick={() => openLogFood(section.type)}
+                        >
+                          {section.type === 'SNACKS' ? '+ Add snack' : '+ Add'}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}

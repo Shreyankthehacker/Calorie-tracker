@@ -5,6 +5,7 @@ import { listFoodItems, logFoodItem } from '../../api/food-items';
 import { ApiError, type FoodItem, type MealType } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { Alert, FormField } from '../layout/AppShell';
+import { SelectField } from '../ui/SelectField';
 import { FoodThumb } from './FoodThumb';
 import { unusualQuantityWarning } from '../../lib/quantity-warning';
 
@@ -201,18 +202,12 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
       ) : null}
 
       {selected ? (
-        <div
-          className="modal-backdrop"
-          onClick={() => {
-            if (!logMutation.isPending) closeSelected();
-          }}
-        >
+        <div className="modal-backdrop">
           <div
             className="modal-panel catalog-dialog"
             role="dialog"
             aria-modal="true"
             aria-labelledby="catalog-food-title"
-            onClick={(event) => event.stopPropagation()}
           >
             <div className="modal-head">
               <div>
@@ -258,21 +253,15 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
               ) : null}
             </FormField>
 
-            <FormField label="Add to meal" htmlFor="catalog-meal-type">
-              <select
-                id="catalog-meal-type"
-                value={logMealType}
-                onChange={(event) => setLogMealType(event.target.value as MealType)}
-              >
-                {mealTabs
-                  .filter((tab) => tab.value)
-                  .map((tab) => (
-                    <option key={tab.value} value={tab.value}>
-                      {tab.label}
-                    </option>
-                  ))}
-              </select>
-            </FormField>
+            <SelectField
+              id="catalog-meal-type"
+              label="Add to meal"
+              value={logMealType}
+              onChange={setLogMealType}
+              options={mealTabs
+                .filter((tab): tab is { value: MealType; label: string } => Boolean(tab.value))
+                .map((tab) => ({ value: tab.value, label: tab.label }))}
+            />
 
             <FormField label="When you ate this" htmlFor="catalog-consumed-at">
               <input

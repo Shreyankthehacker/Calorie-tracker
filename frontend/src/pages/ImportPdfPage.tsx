@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirmFoodDiary, isPdfOversized, isSupportedPdf, previewFoodDiary } from '../api/pdf-import';
 import { ApiError, type FoodEntryWritePayload, type MealType, type PdfPreviewRecord } from '../api/types';
 import { Alert } from '../components/layout/AppShell';
+import { SelectField } from '../components/ui/SelectField';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../lib/dates';
 
 type DraftRow = PdfPreviewRecord & { include: boolean };
@@ -309,25 +310,20 @@ export function ImportPdfPage() {
                       onChange={(event) => updateRow(row.id, { foodName: event.target.value })}
                     />
                   </label>
-                  <label className="field">
-                    <span className="field-label">Meal</span>
-                    <select
-                      aria-label={`Meal for ${row.foodName ?? row.id}`}
-                      value={row.mealType ?? ''}
-                      onChange={(event) =>
-                        updateRow(row.id, {
-                          mealType: (event.target.value || null) as MealType | null,
-                        })
-                      }
-                    >
-                      <option value="">Select</option>
-                      {mealTypes.map((meal) => (
-                        <option key={meal.value} value={meal.value}>
-                          {meal.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <SelectField
+                    id={`meal-${row.id}`}
+                    label="Meal"
+                    value={(row.mealType ?? '') as MealType | ''}
+                    onChange={(next) =>
+                      updateRow(row.id, {
+                        mealType: (next || null) as MealType | null,
+                      })
+                    }
+                    options={[
+                      { value: '', label: 'Select' },
+                      ...mealTypes,
+                    ]}
+                  />
                 </div>
                 <div className="field-row">
                   <label className="field">

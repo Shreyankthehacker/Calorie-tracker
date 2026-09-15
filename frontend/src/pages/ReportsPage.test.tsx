@@ -240,7 +240,8 @@ describe('ReportsPage', () => {
       endDate: '2026-09-13',
     });
 
-    await userEvt.selectOptions(screen.getByLabelText(/period/i), 'today');
+    await userEvt.click(screen.getByLabelText(/period/i));
+    await userEvt.click(screen.getByRole('option', { name: 'Today' }));
 
     await waitFor(() => {
       expect(reportsApi.getCalorieReport).toHaveBeenCalledWith({

@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FoodLogger } from './FoodLogger';
+import { useLogFood } from './LogFoodProvider';
 import { renderWithProviders } from '../../test/render';
 import type { FoodItem, RecentFood } from '../../api/types';
 import * as foodItemsApi from '../../api/food-items';
@@ -93,5 +94,94 @@ describe('FoodLogger', () => {
       );
     });
     expect(onLogged).toHaveBeenCalled();
+  });
+
+  it('opens from a click handler without treating the event as a meal type', async () => {
+    const userEvt = userEvent.setup();
+    function Trigger() {
+      const { openLogFood } = useLogFood();
+      return (
+        <button type="button" onClick={openLogFood}>
+          Log new item
+        </button>
+      );
+    }
+
+    renderWithProviders(<Trigger />, { route: '/dashboard', withAuth: false });
+    await userEvt.click(screen.getByRole('button', { name: 'Log new item' }));
+    expect(await screen.findByRole('dialog', { name: /log food/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add to breakfast/i })).toBeInTheDocument();
+  });
+
+  it('lets the user edit protein on a recent food before saving', async () => {
+    const userEvt = userEvent.setup();
+    const onLogged = vi.fn();
+    vi.mocked(foodEntriesApi.createFoodEntry).mockResolvedValue({
+      id: 'e2',
+      mealType: 'BREAKFAST',
+      foodName: 'Overnight oats',
+      quantity: 1,
+      quantityUnit: 'bowl',
+      calories: 340,
+      protein: 20,
+      carbs: 54,
+      fat: 6,
+      consumedAt: '2026-09-13T08:00:00.000Z',
+      createdAt: '2026-09-13T08:00:00.000Z',
+      updatedAt: '2026-09-13T08:00:00.000Z',
+      micronutrients: [],
+    });
+
+    renderWithProviders(<FoodLogger onClose={vi.fn()} onLogged={onLogged} />, {
+      route: '/dashboard',
+      withAuth: false,
+    });
+
+    await userEvt.click(await screen.findByRole('button', { name: /overnight oats/i }));
+    const protein = screen.getByLabelText(/^protein$/i);
+    await userEvt.clear(protein);
+    await userEvt.type(protein, '20');
+    await userEvt.click(screen.getByRole('button', { name: /add to breakfast/i }));
+
+    await waitFor(() => {
+      expect(foodEntriesApi.createFoodEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          foodName: 'Overnight oats',
+          protein: 20,
+          calories: 340,
+        }),
+      );
+    });
+    expect(foodItemsApi.logFoodItem).not.toHaveBeenCalled();
+    expect(onLogged).toHaveBeenCalled();
+  });
+
+  it('keeps the editor open when quantity is cleared', async () => {
+    const userEvt = userEvent.setup();
+    const onClose = vi.fn();
+    renderWithProviders(<FoodLogger onClose={onClose} onLogged={vi.fn()} />, {
+      route: '/dashboard',
+      withAuth: false,
+    });
+
+    await userEvt.click(await screen.findByRole('button', { name: /overnight oats/i }));
+    const quantity = screen.getByLabelText(/^quantity$/i);
+    await userEvt.clear(quantity);
+
+    expect(screen.getByRole('heading', { name: 'Overnight oats' })).toBeInTheDocument();
+    expect(screen.getByLabelText(/^meal$/i)).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('uses the meal slot the user opened from Today', async () => {
+    const userEvt = userEvent.setup();
+    renderWithProviders(
+      <FoodLogger initialMealType="DINNER" onClose={vi.fn()} onLogged={vi.fn()} />,
+      { route: '/dashboard', withAuth: false },
+    );
+
+    await userEvt.click(await screen.findByRole('button', { name: /overnight oats/i }));
+    expect(screen.getByLabelText(/^meal$/i)).toHaveTextContent('Dinner');
+    expect(screen.getByRole('button', { name: /add to dinner/i })).toBeInTheDocument();
   });
 });

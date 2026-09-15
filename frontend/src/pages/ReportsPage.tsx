@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../auth/AuthProvider';
 import { SkeletonBlock } from '../components/layout/AppShell';
 import { DateField } from '../components/ui/DateField';
+import { SelectField } from '../components/ui/SelectField';
 import {
   calendarDateInTimeZone,
   clipSeriesToToday,
@@ -149,19 +150,19 @@ export function ReportsPage() {
       </div>
       <header className="page-header-row">
         <div className="range-controls">
-          <label className="field">
-            <span className="field-label">Period</span>
-            <select
-              value={preset}
-              onChange={(event) => setPreset(event.target.value as ReportRangePreset)}
-            >
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="this_week">This week</option>
-              <option value="last_week">Last week</option>
-              <option value="custom">Custom range</option>
-            </select>
-          </label>
+          <SelectField<ReportRangePreset>
+            id="report-period"
+            label="Period"
+            value={preset}
+            onChange={setPreset}
+            options={[
+              { value: 'today', label: 'Today' },
+              { value: 'yesterday', label: 'Yesterday' },
+              { value: 'this_week', label: 'This week' },
+              { value: 'last_week', label: 'Last week' },
+              { value: 'custom', label: 'Custom range' },
+            ]}
+          />
           {preset === 'custom' ? (
             <>
               <DateField id="report-start" label="Start" value={customStart} onChange={setCustomStart} />

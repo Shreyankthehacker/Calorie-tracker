@@ -13,6 +13,7 @@ import { MealForm } from '../components/meals/MealForm';
 import { FoodThumb } from '../components/meals/FoodThumb';
 import { useLogFood } from '../components/meals/LogFoodProvider';
 import { DateField } from '../components/ui/DateField';
+import { SelectField } from '../components/ui/SelectField';
 import { useAuth } from '../auth/AuthProvider';
 import { calendarDateInTimeZone, formatConsumedAt, formatDateLabel } from '../lib/dates';
 import { MEAL_LABELS, MEAL_SECTIONS } from '../lib/nutrition';
@@ -163,7 +164,7 @@ export function MealsPage() {
       </div>
 
       <div className="action-row">
-        <button type="button" className="btn-secondary" onClick={openLogFood}>
+        <button type="button" className="btn-secondary" onClick={() => openLogFood()}>
           Log food
         </button>
         <button
@@ -198,23 +199,19 @@ export function MealsPage() {
             setPage(1);
           }}
         />
-        <label className="field">
-          <span className="field-label">Meal type</span>
-          <select
-            value={mealType}
-            onChange={(event) => {
-              setMealType(event.target.value as MealType | '');
-              setPage(1);
-            }}
-          >
-            <option value="">All</option>
-            {MEAL_SECTIONS.map((section) => (
-              <option key={section.type} value={section.type}>
-                {section.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectField<MealType | ''>
+          id="meal-type-filter"
+          label="Meal type"
+          value={mealType}
+          onChange={(next) => {
+            setMealType(next);
+            setPage(1);
+          }}
+          options={[
+            { value: '', label: 'All' },
+            ...MEAL_SECTIONS.map((section) => ({ value: section.type, label: section.label })),
+          ]}
+        />
       </form>
 
       {success ? <Alert tone="success">{success}</Alert> : null}

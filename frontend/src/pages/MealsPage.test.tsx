@@ -126,7 +126,8 @@ describe('MealsPage', () => {
     renderWithProviders(<MealsPage />, { route: '/meals' });
     await screen.findByText('Oatmeal');
 
-    await userEvt.selectOptions(screen.getByLabelText(/meal type/i), 'LUNCH');
+    await userEvt.click(screen.getByLabelText(/meal type/i));
+    await userEvt.click(screen.getByRole('option', { name: 'Lunch' }));
     await waitFor(() => {
       expect(foodEntriesApi.listFoodEntries).toHaveBeenCalledWith(
         expect.objectContaining({ mealType: 'LUNCH', page: 1 }),

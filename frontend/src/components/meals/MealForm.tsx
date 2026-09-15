@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { FoodEntry, FoodEntryWritePayload, MealType, Micronutrient } from '../../api/types';
 import { FormField } from '../layout/AppShell';
+import { SelectField } from '../ui/SelectField';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { formatAmount, scaleMacrosFromBase, scaleNutrition, type NutritionBase } from '../../lib/nutrition';
 
@@ -276,19 +277,13 @@ export function MealForm({
         </p>
       )}
 
-      <FormField label="Meal" htmlFor="meal-type">
-        <select
-          id="meal-type"
-          value={form.mealType}
-          onChange={(event) => update('mealType', event.target.value as MealType)}
-        >
-          {mealTypes.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </FormField>
+      <SelectField
+        id="meal-type"
+        label="Meal"
+        value={form.mealType}
+        onChange={(next) => update('mealType', next)}
+        options={mealTypes}
+      />
 
       {/* <FormField label="Food" htmlFor="meal-food">
         <input

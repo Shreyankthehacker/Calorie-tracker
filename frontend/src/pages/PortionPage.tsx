@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SelectField } from '../components/ui/SelectField';
 import { nutritionToDraftEntry } from '../lib/meal-draft';
 import { portionDefaults } from '../mock/portions';
 
@@ -54,18 +55,17 @@ export function PortionPage() {
                   onChange={(event) => setFood(event.target.value)}
                 />
               </label>
-              <label className="field" htmlFor="portion-slot">
-                <span className="field-label">Meal slot</span>
-                <select
-                  id="portion-slot"
-                  value={mealSlot}
-                  onChange={(event) => setMealSlot(event.target.value)}
-                >
-                  <option>Dinner</option>
-                  <option>Lunch</option>
-                  <option>Snack</option>
-                </select>
-              </label>
+              <SelectField
+                id="portion-slot"
+                label="Meal slot"
+                value={mealSlot}
+                onChange={setMealSlot}
+                options={[
+                  { value: 'Dinner', label: 'Dinner' },
+                  { value: 'Lunch', label: 'Lunch' },
+                  { value: 'Snack', label: 'Snack' },
+                ]}
+              />
             </div>
             <div className="field-row">
               <label className="field" htmlFor="portion-remaining">
@@ -77,14 +77,17 @@ export function PortionPage() {
                   onChange={(event) => setRemaining(event.target.value)}
                 />
               </label>
-              <label className="field" htmlFor="portion-split">
-                <span className="field-label">Preferred protein-lean split</span>
-                <select id="portion-split" value={split} onChange={(event) => setSplit(event.target.value)}>
-                  <option>Balanced</option>
-                  <option>High protein</option>
-                  <option>Lower carb</option>
-                </select>
-              </label>
+              <SelectField
+                id="portion-split"
+                label="Preferred protein-lean split"
+                value={split}
+                onChange={setSplit}
+                options={[
+                  { value: 'Balanced', label: 'Balanced' },
+                  { value: 'High protein', label: 'High protein' },
+                  { value: 'Lower carb', label: 'Lower carb' },
+                ]}
+              />
             </div>
 
             <p className="muted small">Calories remaining today, before this meal. The meal slot does not subtract anything by itself.</p>
