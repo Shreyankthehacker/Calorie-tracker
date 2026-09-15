@@ -1,5 +1,24 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
+import { LandingPage } from '../pages/LandingPage';
+
+export function HomeRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="center-state" role="status">
+        <p>Loading…</p>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <LandingPage />;
+}
 
 export function ProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -14,7 +33,7 @@ export function ProtectedRoute() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/" replace state={{ from: location.pathname }} />;
   }
 
   return <Outlet />;

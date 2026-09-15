@@ -26,7 +26,7 @@ function AppShellInner() {
     setLoggingOut(true);
     try {
       await logout();
-      navigate('/login', { replace: true });
+      navigate('/', { replace: true });
     } finally {
       setLoggingOut(false);
     }
@@ -40,8 +40,8 @@ function AppShellInner() {
           <BrandWord />
         </div>
         <SidebarNav label="Track" items={trackNav} />
-        <SidebarNav label="Bonus" items={bonusNav} />
-        <SidebarNav label="Tools" items={toolsNav} />
+        <SidebarNav label="Tools" items={bonusNav} />
+        <SidebarNav label="Additionals" items={toolsNav} />
         <div className="sidebar-foot">
           <div className="sage-pill">
             <span className="dot" /> Sage assistant active

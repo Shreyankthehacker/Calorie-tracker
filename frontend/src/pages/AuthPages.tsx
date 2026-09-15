@@ -134,23 +134,13 @@ export function LoginPage() {
             required
           />
         </div>
-        <div className="row-between">
-          <label className="remember">
-            <input type="checkbox" defaultChecked /> Remember me
-          </label>
-          <a href="#forgot">Forgot password?</a>
-        </div>
         <button className="btn-primary" type="submit" disabled={submitting}>
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-      <div className="divider">or continue with</div>
-      <button type="button" className="btn-outline">
-        Continue with Google
-      </button>
-      <button type="button" className="btn-outline">
-        Continue with Apple
-      </button>
+      <p className="auth-persist">
+        Stay signed in on this browser for 30 days. Open another tab and you will still be in.
+      </p>
     </AuthSplit>
   );
 }

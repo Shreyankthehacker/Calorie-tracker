@@ -20,4 +20,5 @@ if (typeof URL.revokeObjectURL !== 'function') {
 afterEach(() => {
   cleanup();
   sessionStorage.clear();
+  localStorage.clear();
 });

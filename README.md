@@ -173,7 +173,7 @@ Listens on `PORT` (default `3001`). `tsx watch` does not reload `.env`; restart 
 pnpm dev:frontend
 ```
 
-Vite defaults to `http://localhost:5173`.
+Vite defaults to `http://localhost:5173`, which opens the public landing page. Sign in goes to `/login`. Get started opens a short walkthrough at `/get-started`.
 
 ## 6. Run tests
 
@@ -197,7 +197,7 @@ Root `.env.example` points at package-specific examples. Application secrets liv
 | `JWT_ACCESS_SECRET` | Access-token signing secret (≥ 32 characters) |
 | `JWT_REFRESH_SECRET` | Refresh hashing pepper and related secret (≥ 32 characters) |
 | `JWT_ACCESS_EXPIRES_IN` | Short-lived access JWT lifetime (default `15m`) |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token lifetime (default `7d`) |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token lifetime (default `30d`) |
 | `AUTH_RATE_LIMIT_MAX` | Auth requests per window (default `20`) |
 | `AUTH_RATE_LIMIT_TIME_WINDOW_MS` | Auth window in ms (default `60000`) |
 | `GEMINI_API_KEY` | Gemini key. Backend only. Leave empty to disable live extraction |

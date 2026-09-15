@@ -215,11 +215,11 @@ describe('MealsPage', () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/meals" element={<MealsPage />} />
         </Route>
-        <Route path="/login" element={<p>Login screen</p>} />
+        <Route path="/" element={<p>Home landing</p>} />
       </Routes>,
       { route: '/meals' },
     );
-    expect(await screen.findByText('Login screen')).toBeInTheDocument();
+    expect(await screen.findByText('Home landing')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Meals' })).not.toBeInTheDocument();
   });
 

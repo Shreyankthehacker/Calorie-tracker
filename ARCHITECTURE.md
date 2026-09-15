@@ -412,8 +412,9 @@ Implement:
 Mechanisms:
 
 - password hashing
-- short-lived access JWT
-- refresh token mechanism with secure handling (for example hashed refresh tokens at rest, rotation on use)
+- short-lived access JWT (default 15 minutes)
+- refresh token mechanism with secure handling (hashed refresh tokens at rest, rotation on use, default 30-day lifetime)
+- browser session stored in `localStorage` so a second tab reuses the same login
 - authenticated identity derived only from the auth mechanism
 
 Services operate on the authenticated user identity resolved at the backend boundary.

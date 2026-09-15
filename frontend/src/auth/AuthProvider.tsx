@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import * as authApi from '../api/auth';
 import { ApiError, type PublicUser } from '../api/types';
 import { tokenStorage } from '../api/tokenStorage';
@@ -25,19 +26,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [sessionVersion, setSessionVersion] = useState(0);
-  const hasAccessToken = Boolean(tokenStorage.getAccessToken());
-  const [bootstrapped, setBootstrapped] = useState(() => !hasAccessToken);
+  const hasSession = tokenStorage.hasSession();
+  const [bootstrapped, setBootstrapped] = useState(() => !hasSession);
 
   const meQuery = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: authApi.getCurrentUser,
-    enabled: hasAccessToken,
+    enabled: hasSession,
     retry: false,
   });
 
   useEffect(() => {
-    if (!tokenStorage.getAccessToken()) {
+    if (!tokenStorage.hasSession()) {
       setBootstrapped(true);
       return;
     }
@@ -49,9 +51,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (meQuery.isError && meQuery.error instanceof ApiError && meQuery.error.status === 401) {
       tokenStorage.clear();
+      queryClient.removeQueries({ queryKey: ['auth', 'me'] });
       setSessionVersion((value) => value + 1);
     }
-  }, [meQuery.isError, meQuery.error]);
+  }, [meQuery.isError, meQuery.error, queryClient]);
+
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (!tokenStorage.isAuthKey(event.key)) {
+        return;
+      }
+      if (!tokenStorage.hasSession()) {
+        queryClient.removeQueries({ queryKey: ['auth', 'me'] });
+      } else {
+        void queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      }
+      setSessionVersion((value) => value + 1);
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [queryClient]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -75,22 +94,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     queryClient.clear();
+    navigate('/', { replace: true });
     setSessionVersion((value) => value + 1);
-  }, [queryClient]);
+  }, [navigate, queryClient]);
 
-  const user = hasAccessToken ? (meQuery.data ?? null) : null;
-  const isLoading = !bootstrapped || (hasAccessToken && meQuery.isPending);
+  const user = hasSession ? (meQuery.data ?? null) : null;
+  const isLoading = !bootstrapped || (hasSession && meQuery.isPending);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isLoading,
-      isAuthenticated: Boolean(user) && hasAccessToken,
+      isAuthenticated: Boolean(user) && hasSession,
       login,
       register,
       logout,
     }),
-    [user, isLoading, hasAccessToken, login, register, logout],
+    [user, isLoading, hasSession, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

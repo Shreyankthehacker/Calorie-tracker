@@ -13,11 +13,15 @@ import { PortionPage } from '../pages/PortionPage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { ScanFoodPage } from '../pages/ScanFoodPage';
 import { WaterPage } from '../pages/WaterPage';
-import { GuestRoute, ProtectedRoute } from './guards';
+import { GuestRoute, HomeRoute, ProtectedRoute } from './guards';
+import { GetStartedPage } from '../pages/GetStartedPage';
 
 export function AppRouter() {
   return (
     <Routes>
+      <Route path="/" element={<HomeRoute />} />
+      <Route path="/get-started" element={<GetStartedPage />} />
+
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -40,8 +44,7 @@ export function AppRouter() {
         </Route>
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

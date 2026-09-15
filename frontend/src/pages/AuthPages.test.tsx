@@ -77,12 +77,13 @@ describe('authentication UI', () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<p>Secret dashboard</p>} />
         </Route>
+        <Route path="/" element={<p>Home landing</p>} />
         <Route path="/login" element={<p>Login screen</p>} />
       </Routes>,
       { route: '/dashboard' },
     );
 
-    expect(await screen.findByText('Login screen')).toBeInTheDocument();
+    expect(await screen.findByText('Home landing')).toBeInTheDocument();
     expect(screen.queryByText('Secret dashboard')).not.toBeInTheDocument();
   });
 
@@ -98,6 +99,14 @@ describe('authentication UI', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/invalid email or password/i);
+  });
+
+  it('does not offer Google or Apple sign-in', async () => {
+    renderWithProviders(<LoginPage />, { route: '/login' });
+    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /continue with google/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /continue with apple/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/stay signed in on this browser/i)).toBeInTheDocument();
   });
 
   it('leaves protected pages after logout', async () => {
@@ -122,6 +131,7 @@ describe('authentication UI', () => {
             <Route path="/dashboard" element={<p>Secret dashboard</p>} />
           </Route>
         </Route>
+        <Route path="/" element={<p>Home landing</p>} />
         <Route path="/login" element={<p>Login screen</p>} />
       </Routes>,
       { route: '/dashboard' },
@@ -129,7 +139,7 @@ describe('authentication UI', () => {
 
     expect(await screen.findByText('Secret dashboard')).toBeInTheDocument();
     await userEvt.click(screen.getByRole('button', { name: /sign out/i }));
-    expect(await screen.findByText('Login screen')).toBeInTheDocument();
+    expect(await screen.findByText('Home landing')).toBeInTheDocument();
     expect(screen.queryByText('Secret dashboard')).not.toBeInTheDocument();
   });
 });
