@@ -91,12 +91,12 @@ export function GetStartedPage() {
 
   return (
     <div className="page-tour">
-      <header className="landing-nav">
-        <Link to="/" className="landing-brand" aria-label="CalorieTracker home">
+      <header className="tour-nav">
+        <Link to="/" className="tour-brand" aria-label="CalorieTracker home">
           <BrandMark />
           <BrandWord />
         </Link>
-        <Link className="landing-nav-link" to={isAuthenticated ? '/dashboard' : '/login'}>
+        <Link className="tour-nav-link" to={isAuthenticated ? '/dashboard' : '/login'}>
           {isAuthenticated ? 'Open Today' : 'Sign in'}
         </Link>
       </header>

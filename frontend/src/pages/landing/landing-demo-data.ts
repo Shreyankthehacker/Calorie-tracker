@@ -1,0 +1,43 @@
+export const landingDemo = {
+  meal: {
+    name: 'Chicken rice bowl',
+    mealType: 'Lunch',
+    calories: 620,
+    protein: 42,
+    carbs: 68,
+    fat: 18,
+  },
+  day: {
+    calories: 1840,
+    calorieGoal: 2200,
+    remaining: 360,
+    protein: 140,
+    proteinGoal: 180,
+    carbs: 198,
+    carbGoal: 250,
+    fat: 58,
+    fatGoal: 70,
+    waterGlasses: 5,
+    waterGoal: 8,
+  },
+  entries: [
+    { name: 'Oats', meal: 'Breakfast', kcal: 310, time: '8:10 AM' },
+    { name: 'Chicken breast', meal: 'Lunch', kcal: 620, time: '1:05 PM' },
+    { name: 'Salmon', meal: 'Dinner', kcal: 540, time: '7:40 PM' },
+  ],
+  week: [
+    { day: 'Mon', kcal: 1980 },
+    { day: 'Tue', kcal: 2110 },
+    { day: 'Wed', kcal: 1840 },
+    { day: 'Thu', kcal: 2050 },
+    { day: 'Fri', kcal: 1760 },
+    { day: 'Sat', kcal: 2200 },
+    { day: 'Sun', kcal: 1900 },
+  ],
+  goalForm: {
+    calories: '2200',
+    protein: '180',
+    carbs: '250',
+    fat: '70',
+  },
+};

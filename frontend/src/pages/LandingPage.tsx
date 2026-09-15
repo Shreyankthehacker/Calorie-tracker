@@ -1,72 +1,248 @@
+import { useRef, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { BrandMark, BrandWord } from '../components/layout/BrandMark';
+import { useReducedMotion } from 'framer-motion';
+import { landingMedia } from '../lib/landing-media';
+import { BrandWord } from '../components/layout/BrandMark';
+import { LandingLive } from './landing/LandingLive';
+import { LandingNav } from './landing/LandingNav';
+import { LandingPhoto } from './landing/LandingPhoto';
+import { LandingPreview } from './landing/LandingPreview';
+import { LandingTutorial } from './landing/LandingTutorial';
+import { LandingWeekChart } from './landing/LandingWeekChart';
 
-const ledgerDate = new Intl.DateTimeFormat('en-GB', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-}).format(new Date());
+const howSteps = [
+  {
+    n: '01',
+    title: 'Log your meal',
+    body: 'Choose from the catalog, scan a barcode, upload a photo, or name a homemade dish. Quantity first. Nutrition follows.',
+  },
+  {
+    n: '02',
+    title: 'Understand your nutrition',
+    body: 'Calories, protein, carbs, and fat are saved on the entry. Today and Reports read those numbers — they do not invent a second ledger.',
+  },
+  {
+    n: '03',
+    title: 'Build better habits',
+    body: 'A current goal turns the day into remaining calories and macro progress. The week is a chart of meals you actually logged.',
+  },
+];
+
+const features = [
+  {
+    label: 'Logging',
+    title: 'Four ways in. One food entry.',
+    body: 'Catalog foods scale with quantity. Custom meals take the numbers you enter. Photos go through review before anything is saved. Barcodes look up a product and still wait for you to confirm.',
+    visual: 'log' as const,
+    align: 'photo-right' as const,
+  },
+  {
+    label: 'Today',
+    title: 'A ring for the day, not a lecture.',
+    body: 'Logged calories sit against the goal you set. Macros fill as meals land. Remaining energy is subtraction, not a score.',
+    visual: 'today' as const,
+    align: 'photo-left' as const,
+  },
+  {
+    label: 'Reports',
+    title: 'The week, from entries you saved.',
+    body: 'Calorie and macro charts aggregate at request time from consumedAt, in your timezone. There is no hidden daily cache.',
+    visual: 'week' as const,
+    align: 'photo-right' as const,
+  },
+  {
+    label: 'Sage',
+    title: 'It can propose. You still press Save.',
+    body: 'Ask Sage to estimate a plate. A confirmation card appears. Nothing is written to your log until you confirm. That rule is the product, not a disclaimer.',
+    visual: 'sage' as const,
+    align: 'photo-left' as const,
+  },
+];
 
 export function LandingPage() {
+  const reduce = useReducedMotion();
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  function onHeroMove(event: MouseEvent<HTMLDivElement>) {
+    if (reduce) {
+      return;
+    }
+    const node = heroRef.current;
+    if (!node) {
+      return;
+    }
+    const rect = node.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    node.style.setProperty('--mx', String(x));
+    node.style.setProperty('--my', String(y));
+  }
+
+  function onHeroLeave() {
+    heroRef.current?.style.setProperty('--mx', '0');
+    heroRef.current?.style.setProperty('--my', '0');
+  }
+
   return (
     <div className="page-landing">
-      <header className="landing-nav">
-        <Link to="/" className="landing-brand" aria-label="CalorieTracker home">
-          <BrandMark />
-          <BrandWord />
-        </Link>
-        <Link className="landing-nav-link" to="/login">
-          Sign in
-        </Link>
-      </header>
+      <a className="lp-skip" href="#hero-heading">
+        Skip to content
+      </a>
+      <LandingNav />
 
-      <main className="landing-hero">
-        <div className="landing-copy">
-          <p className="kicker">A personal ration ledger</p>
-          <h1>Write down the meal. Then look at the day.</h1>
-          <p className="landing-lede">
-            CalorieTracker is a quiet book for what you ate — catalog, photo, barcode, or a dish you name
-            yourself. Sage can propose a plate. Nothing is saved until you say so.
-          </p>
-          <div className="landing-actions">
-            <Link className="button button-primary" to="/login">
-              Sign in
-            </Link>
-            <Link className="button button-secondary" to="/get-started">
-              Get started
-            </Link>
+      <main>
+        <section className="lp-hero" aria-labelledby="hero-heading">
+          <div className="lp-wrap lp-hero-grid">
+            <div className="lp-hero-copy">
+              <h1 id="hero-heading">
+                <span>Know what you&apos;re eating.</span>
+                <span>Make every meal count.</span>
+              </h1>
+              <p className="lp-lede">
+                Track meals, understand your nutrition, and build better eating habits without turning food into a
+                spreadsheet.
+              </p>
+              <div className="lp-actions">
+                <Link className="button button-primary" to="/register">
+                  Start tracking
+                </Link>
+                <a className="button button-secondary" href="#how-it-works">
+                  See how it works
+                </a>
+              </div>
+            </div>
+            <div
+              className="lp-hero-photo"
+              ref={heroRef}
+              onMouseMove={onHeroMove}
+              onMouseLeave={onHeroLeave}
+            >
+              <LandingPhoto
+                src={landingMedia.hero.src}
+                srcSet={landingMedia.hero.srcSet}
+                fallback={landingMedia.hero.fallback}
+                alt={landingMedia.hero.alt}
+                width={landingMedia.hero.width}
+                height={landingMedia.hero.height}
+                priority
+                sizes="(max-width: 860px) 100vw, 50vw"
+              />
+            </div>
           </div>
-          <p className="landing-aside">
-            New here? <Link to="/register">Create an account</Link>
-          </p>
-        </div>
+        </section>
 
-        <aside className="landing-ledger" aria-hidden="true">
-          <div className="ledger-spine" />
-          <div className="ledger-page">
-            <p className="ledger-date">{ledgerDate}</p>
-            <ol className="ledger-lines">
-              <li>
-                <span>Breakfast</span>
-                <span className="ledger-blank" />
-              </li>
-              <li>
-                <span>Lunch</span>
-                <span>still empty</span>
-              </li>
-              <li>
-                <span>Dinner</span>
-                <span className="ledger-blank" />
-              </li>
-              <li className="is-accent">
-                <span>The point</span>
-                <span>fill the line, not the lecture</span>
-              </li>
+        <LandingLive />
+        <LandingPreview />
+
+        <section className="lp-section" id="how-it-works" aria-labelledby="how-heading">
+          <div className="lp-wrap">
+            <p className="lp-kicker">How it works</p>
+            <h2 id="how-heading">From meal to insight in seconds.</h2>
+            <ol className="lp-how">
+              {howSteps.map((step) => (
+                <li key={step.n}>
+                  <span>{step.n}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </li>
+              ))}
             </ol>
-            <p className="ledger-foot">Stay signed in on this browser — other tabs keep the same session.</p>
           </div>
-        </aside>
+        </section>
+
+        <LandingTutorial />
+
+        <section className="lp-section" id="features" aria-labelledby="features-heading">
+          <div className="lp-wrap">
+            <p className="lp-kicker">In the product</p>
+            <h2 id="features-heading">Logging, today, and the week.</h2>
+            {features.map((feature) => (
+              <article key={feature.title} className={`lp-feature is-${feature.align}`}>
+                <div className="lp-feature-copy">
+                  <p className="lp-kicker">{feature.label}</p>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.body}</p>
+                </div>
+                <div className={`lp-feature-visual is-${feature.visual}`}>
+                  {feature.visual === 'log' ? (
+                    <LandingPhoto
+                      src={landingMedia.logMeal.src}
+                      fallback={landingMedia.logMeal.fallback}
+                      alt={landingMedia.logMeal.alt}
+                      width={landingMedia.logMeal.width}
+                      height={landingMedia.logMeal.height}
+                      sizes="(max-width: 860px) 100vw, 44vw"
+                    />
+                  ) : null}
+                  {feature.visual === 'today' ? (
+                    <div className="lp-feature-today">
+                      <strong>1,840</strong>
+                      <span>kcal of 2,200</span>
+                      <i style={{ width: '84%' }} />
+                    </div>
+                  ) : null}
+                  {feature.visual === 'week' ? (
+                    <div className="lp-feature-week">
+                      <p>Calories this week</p>
+                      <LandingWeekChart height={200} />
+                    </div>
+                  ) : null}
+                  {feature.visual === 'sage' ? (
+                    <div className="lp-feature-sage">
+                      <p>Not saved yet</p>
+                      <strong>Chole bhature</strong>
+                      <span>Save meal</span>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="lp-strip" aria-label="Food photography">
+          {landingMedia.strip.map((photo) => (
+            <figure key={photo.alt} className={`is-${photo.shape}`}>
+              <LandingPhoto
+                src={photo.src}
+                fallback={photo.fallback}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                sizes="(max-width: 860px) 70vw, 22vw"
+              />
+            </figure>
+          ))}
+        </section>
+
+        <section className="lp-finale" aria-labelledby="finale-heading">
+          <div className="lp-wrap">
+            <h2 id="finale-heading">Start understanding your food.</h2>
+            <p>Track your meals. See your nutrition. Make better decisions.</p>
+            <Link className="button button-primary" to="/register">
+              Start tracking
+            </Link>
+          </div>
+        </section>
       </main>
+
+      <footer className="lp-footer">
+        <div className="lp-wrap lp-footer-grid">
+          <div>
+            <BrandWord />
+            <p>A personal calorie tracker for meals you actually logged.</p>
+          </div>
+          <nav aria-label="Footer">
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#tutorial">Tutorial</a>
+            <Link to="/get-started">Get started</Link>
+            <Link to="/login">Sign in</Link>
+            <Link to="/register">Start tracking</Link>
+          </nav>
+          <p className="lp-copy">© {new Date().getFullYear()} CalorieTracker</p>
+        </div>
+      </footer>
     </div>
   );
 }

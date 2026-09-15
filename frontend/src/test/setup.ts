@@ -8,7 +8,17 @@ class ResizeObserverMock {
   disconnect() {}
 }
 
+class IntersectionObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+}
+
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+vi.stubGlobal('IntersectionObserver', IntersectionObserverMock);
 
 if (typeof URL.createObjectURL !== 'function') {
   URL.createObjectURL = vi.fn(() => 'blob:mock-preview');
