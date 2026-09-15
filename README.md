@@ -1,12 +1,24 @@
 # CalorieTracker
 
+### Demo Video
+
+[https://youtu.be/G3Xwr6fXBt8](https://youtu.be/G3Xwr6fXBt8)
+
+### Application URL
+
+[https://calorie-tracker-frontend-tau.vercel.app/](https://calorie-tracker-frontend-tau.vercel.app/)
+
+
+
 A full-stack personal nutrition tracker. Users set a current daily goal, log meals as snapshots, and read timezone-aware reports. AI can propose nutrition from a photo or a chat turn. **Nothing is written until the user reviews and saves.**
 
-The product is a React SPA talking to a Fastify REST API. PostgreSQL (Neon in hosted environments) is the system of record. Gemini runs only on the backend, behind provider interfaces. The browser never receives `GEMINI_API_KEY`.
+The product is a React SPA talking to a Fastify REST API. PostgreSQL (Neon in hosted environments) is the system of record. Gemini runs only on the backend, behind provider interfaces
 
-Product requirements: [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md). Schema: [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma).
+Schema: `[backend/prisma/schema.prisma](backend/prisma/schema.prisma)`.
 
 ---
+
+
 
 ## Contents
 
@@ -26,6 +38,8 @@ Product requirements: [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md). Sche
 
 ---
 
+
+
 ## Architecture
 
 Frontend and backend are separate applications. The UI talks to the API over HTTPS. The API owns the database, Gemini, and Open Food Facts. Reports are computed on read; there is no `reports` table.
@@ -38,23 +52,31 @@ Request handling is layered so routes stay thin and Prisma never appears in hand
 
 ---
 
+
+
 ## Tech stack
 
-| Layer | Choice | Why |
-| --- | --- | --- |
-| Frontend | React, TypeScript, Vite, React Router, TanStack Query, Recharts | SPA with cached server state and charts fed by report APIs |
-| Backend | Node.js, TypeScript, Fastify, Zod | Typed HTTP, schema validation at the boundary |
-| Data | PostgreSQL, Prisma | Relational ownership model; pooled `DATABASE_URL`, direct `DIRECT_URL` for migrations |
-| Hosted DB | Neon | Pooled runtime connection; tests **must not** use Neon |
-| AI | Gemini 2.5 Flash, backend only | `NutritionExtractionProvider` / `LlmProvider` so tests inject mocks |
-| Barcode | Open Food Facts | No API key. Lookup never auto-saves an entry |
-| PDF | `pdfjs-dist` | Text-based diaries only. No OCR, no Gemini |
+
+| Layer     | Choice                                                          | Why                                                                                   |
+| --------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Frontend  | React, TypeScript, Vite, React Router, TanStack Query, Recharts | SPA with cached server state and charts fed by report APIs                            |
+| Backend   | Node.js, TypeScript, Fastify, Zod                               | Typed HTTP, schema validation at the boundary                                         |
+| Data      | PostgreSQL, Prisma                                              | Relational ownership model; pooled `DATABASE_URL`, direct `DIRECT_URL` for migrations |
+| Hosted DB | Neon                                                            | Pooled runtime connection; tests **must not** use Neon                                |
+| AI        | Gemini 2.5 Flash, backend only                                  | `NutritionExtractionProvider` / `LlmProvider` so tests inject mocks                   |
+| Barcode   | Open Food Facts                                                 | No API key. Lookup never auto-saves an entry                                          |
+| PDF       | `pdfjs-dist`                                                    | Text-based diaries only. No OCR, no Gemini                                            |
+
 
 Do not introduce Express, NestJS, FastAPI, GraphQL, Redis, or other infrastructure that the assignment does not need.
 
 ---
 
+
+
 ## Features
+
+
 
 ### Core tracker
 
@@ -69,6 +91,8 @@ Do not introduce Express, NestJS, FastAPI, GraphQL, Redis, or other infrastructu
 - **PDF import.** Text-based diaries. Preview, edit, then confirm. Preview never writes. Scanned PDFs are not supported.
 - **Family.** Optional household id. Each member keeps their own meals and goals. The family view can show today’s calories; it does not share ledgers.
 - **Barcode.** Open Food Facts lookup, then the same review/save path as any other entry.
+
+
 
 ### Client tools (local UI)
 
@@ -86,34 +110,44 @@ Signed in: `/dashboard`, `/log-meal`, `/meals`, `/reports`, `/goals`, `/chat`, `
 
 ---
 
+
+
 ## Database
 
 ![PostgreSQL tables and relationships](docs/images/data-model.png)
 
 ### Tables
 
-| Table | Role |
-| --- | --- |
-| `families` | Optional household. `id` is the shareable family id. |
-| `users` | Account. Unique email, Argon2id hash, IANA `timezone` (default `UTC`), optional `family_id`. |
-| `refresh_tokens` | Hashed refresh tokens. Cascade on user delete. Rotated on use, revoked on logout. |
-| `goals` | Current goal only. `user_id` is unique (1:1). |
-| `food_entries` | What the user ate. Indexed `(user_id, consumed_at)`. **No FK to `food_items`.** |
+
+| Table                  | Role                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| `families`             | Optional household. `id` is the shareable family id.                                                  |
+| `users`                | Account. Unique email, Argon2id hash, IANA `timezone` (default `UTC`), optional `family_id`.          |
+| `refresh_tokens`       | Hashed refresh tokens. Cascade on user delete. Rotated on use, revoked on logout.                     |
+| `goals`                | Current goal only. `user_id` is unique (1:1).                                                         |
+| `food_entries`         | What the user ate. Indexed `(user_id, consumed_at)`. **No FK to** `food_items`**.**                   |
 | `food_entry_nutrients` | Child micros. Unique `(food_entry_id, nutrient_key)` so the vitamin set can grow without new columns. |
-| `food_items` | Shared catalog. Unique `(source_type, name)`. Seeded `SYSTEM` rows. |
-| `food_item_nutrients` | Catalog micros. |
-| `food_item_meal_types` | Browse tags (`BREAKFAST` / `LUNCH` / `DINNER` / `SNACKS`). |
+| `food_items`           | Shared catalog. Unique `(source_type, name)`. Seeded `SYSTEM` rows.                                   |
+| `food_item_nutrients`  | Catalog micros.                                                                                       |
+| `food_item_meal_types` | Browse tags (`BREAKFAST` / `LUNCH` / `DINNER` / `SNACKS`).                                            |
+
+
+
 
 ### Enums
 
 - `MealType`: `BREAKFAST`, `LUNCH`, `DINNER`, `SNACKS`
 - `FoodItemSource`: `SYSTEM`, `USDA`, `USER`, `PDF`, `AI`
 
+
+
 ### Intentionally absent
 
 No `reports` table, no `chat_messages` table, no invitation or permission tables. Chat history is request-scoped. Report totals are aggregates of `food_entries` at request time.
 
 ---
+
+
 
 ## API
 
@@ -139,88 +173,114 @@ Ownership misses return **404**, not 403, so other users’ ids are not confirme
 
 ### Health
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| GET | `/health` | No | Liveness / database check |
+
+| Method | Path      | Auth | Notes                     |
+| ------ | --------- | ---- | ------------------------- |
+| GET    | `/health` | No   | Liveness / database check |
+
+
+
 
 ### Auth (rate-limited, default 20 / 60s except `/me`)
 
-| Method | Path | Auth | Body / result |
-| --- | --- | --- | --- |
-| POST | `/auth/register` | No | `{ email, password, timezone? }` → 201 `{ user, accessToken, refreshToken }` |
-| POST | `/auth/login` | No | `{ email, password }` → 200 tokens |
-| POST | `/auth/refresh` | No | `{ refreshToken }` → 200 rotated tokens |
-| POST | `/auth/logout` | No | `{ refreshToken }` → 204 |
-| GET | `/auth/me` | Yes | 200 `{ user }` |
+
+| Method | Path             | Auth | Body / result                                                                |
+| ------ | ---------------- | ---- | ---------------------------------------------------------------------------- |
+| POST   | `/auth/register` | No   | `{ email, password, timezone? }` → 201 `{ user, accessToken, refreshToken }` |
+| POST   | `/auth/login`    | No   | `{ email, password }` → 200 tokens                                           |
+| POST   | `/auth/refresh`  | No   | `{ refreshToken }` → 200 rotated tokens                                      |
+| POST   | `/auth/logout`   | No   | `{ refreshToken }` → 204                                                     |
+| GET    | `/auth/me`       | Yes  | 200 `{ user }`                                                               |
+
 
 Duplicate email → 409. Bad credentials or reused refresh → 401.
 
 ### Goals (1:1 with the signed-in user)
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/goals` | 200 or 404 |
-| POST | `/goals` | 201, or 409 if a goal already exists |
-| PUT | `/goals` | Upsert / replace |
-| DELETE | `/goals` | 204 |
+
+| Method | Path     | Notes                                |
+| ------ | -------- | ------------------------------------ |
+| GET    | `/goals` | 200 or 404                           |
+| POST   | `/goals` | 201, or 409 if a goal already exists |
+| PUT    | `/goals` | Upsert / replace                     |
+| DELETE | `/goals` | 204                                  |
+
 
 Calorie target 800–6000. Protein ≤ 300g, carbs ≤ 800g, fat ≤ 250g.
 
 ### Food entries
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/food-entries` | Query: `startDate`, `endDate`, `mealType`, `page`, `pageSize` (max 50). Filters `consumedAt`. |
-| GET | `/food-entries/recents` | Distinct foods for this user. `limit` 1–20, default 12. |
-| POST | `/food-entries` | 201 snapshot |
-| GET | `/food-entries/:id` | 404 if missing or not owned |
-| PUT | `/food-entries/:id` | Partial update, at least one field |
-| DELETE | `/food-entries/:id` | 204 |
+
+| Method | Path                    | Notes                                                                                         |
+| ------ | ----------------------- | --------------------------------------------------------------------------------------------- |
+| GET    | `/food-entries`         | Query: `startDate`, `endDate`, `mealType`, `page`, `pageSize` (max 50). Filters `consumedAt`. |
+| GET    | `/food-entries/recents` | Distinct foods for this user. `limit` 1–20, default 12.                                       |
+| POST   | `/food-entries`         | 201 snapshot                                                                                  |
+| GET    | `/food-entries/:id`     | 404 if missing or not owned                                                                   |
+| PUT    | `/food-entries/:id`     | Partial update, at least one field                                                            |
+| DELETE | `/food-entries/:id`     | 204                                                                                           |
+
 
 Create body: `mealType`, `foodName`, `quantity`, `quantityUnit`, `calories`, `protein`, `carbs`, `fat`, `consumedAt`, optional `micronutrients[]`.
 
 ### Catalog
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/food-items` | Query: `mealType`, `q`, `page`, `pageSize` (max 50) |
-| GET | `/food-items/:id` | 200 `{ foodItem }` |
-| POST | `/food-items/:id/entries` | `{ quantity, mealType, consumedAt }` → scaled `FoodEntry` |
+
+| Method | Path                      | Notes                                                     |
+| ------ | ------------------------- | --------------------------------------------------------- |
+| GET    | `/food-items`             | Query: `mealType`, `q`, `page`, `pageSize` (max 50)       |
+| GET    | `/food-items/:id`         | 200 `{ foodItem }`                                        |
+| POST   | `/food-items/:id/entries` | `{ quantity, mealType, consumedAt }` → scaled `FoodEntry` |
+
+
+
 
 ### Reports (on-read aggregates)
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/reports/today` | Today in `User.timezone`. Use this for dashboard totals. |
-| GET | `/reports/calories` | `startDate` & `endDate` required, inclusive, max 93 days |
-| GET | `/reports/macros` | Per-day series + period totals |
-| GET | `/reports/micros` | Alias: `/reports/micronutrients` |
-| GET | `/reports/goals` | Alias: `/reports/goal-vs-actual` |
-| GET | `/reports/insights` | Averages, days tracked / on target / over, streak |
+
+| Method | Path                | Notes                                                    |
+| ------ | ------------------- | -------------------------------------------------------- |
+| GET    | `/reports/today`    | Today in `User.timezone`. Use this for dashboard totals. |
+| GET    | `/reports/calories` | `startDate` & `endDate` required, inclusive, max 93 days |
+| GET    | `/reports/macros`   | Per-day series + period totals                           |
+| GET    | `/reports/micros`   | Alias: `/reports/micronutrients`                         |
+| GET    | `/reports/goals`    | Alias: `/reports/goal-vs-actual`                         |
+| GET    | `/reports/insights` | Averages, days tracked / on target / over, streak        |
+
+
+
 
 ### AI
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| POST | `/ai/nutrition-extract` | Multipart image. Rate-limited (default 10 / 60s). Does **not** create an entry. |
-| POST | `/ai/chat` | `{ message, history? }`. Same AI rate limit. Tools listed below. |
-| POST | `/ai/chat/confirm-meal` | Persists a pending meal through `FoodEntryService`. Not on the chat limiter. |
+
+| Method | Path                    | Notes                                                                           |
+| ------ | ----------------------- | ------------------------------------------------------------------------------- |
+| POST   | `/ai/nutrition-extract` | Multipart image. Rate-limited (default 10 / 60s). Does **not** create an entry. |
+| POST   | `/ai/chat`              | `{ message, history? }`. Same AI rate limit. Tools listed below.                |
+| POST   | `/ai/chat/confirm-meal` | Persists a pending meal through `FoodEntryService`. Not on the chat limiter.    |
+
+
+
 
 ### Import, barcode, family
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| POST | `/imports/food-diary/preview` | Multipart PDF, rate-limited. Max 5MB, 30 pages, 100 previewed meals. |
-| POST | `/imports/food-diary/confirm` | JSON. All-or-nothing `createMany`. |
-| POST | `/barcode/lookup` | Packaged product from Open Food Facts |
-| GET | `/family` | Current household and members |
-| POST | `/family` | Create |
-| POST | `/family/join` | `{ familyId }` |
-| POST | `/family/leave` | Leave; meals stay on the user |
+
+| Method | Path                          | Notes                                                                |
+| ------ | ----------------------------- | -------------------------------------------------------------------- |
+| POST   | `/imports/food-diary/preview` | Multipart PDF, rate-limited. Max 5MB, 30 pages, 100 previewed meals. |
+| POST   | `/imports/food-diary/confirm` | JSON. All-or-nothing `createMany`.                                   |
+| POST   | `/barcode/lookup`             | Packaged product from Open Food Facts                                |
+| GET    | `/family`                     | Current household and members                                        |
+| POST   | `/family`                     | Create                                                               |
+| POST   | `/family/join`                | `{ familyId }`                                                       |
+| POST   | `/family/leave`               | Leave; meals stay on the user                                        |
+
 
 CORS: local Vite, the Vercel production origin, and extra origins in `CORS_ORIGIN`. `*` is not allowed.
 
 ---
+
+
 
 ## Agentic environment
 
@@ -232,14 +292,16 @@ Sage is an **application tool loop**, not an agent with a database.
 
 `ChatService` talks to Gemini through `LlmProvider`. Tool calls go to `ChatToolExecutor`, which calls existing services:
 
-| Tool | Service | Writes? |
-| --- | --- | --- |
-| `getGoals` | `GoalService` | No |
-| `getNutritionSummary` | `ReportService` | No |
-| `getWeeklyReport` | `ReportService` | No |
-| `listMeals` | `FoodEntryService` | No |
-| `searchFood` | catalog search | No |
-| `logMeal` | none | Returns `pendingMeal` only |
+
+| Tool                  | Service            | Writes?                    |
+| --------------------- | ------------------ | -------------------------- |
+| `getGoals`            | `GoalService`      | No                         |
+| `getNutritionSummary` | `ReportService`    | No                         |
+| `getWeeklyReport`     | `ReportService`    | No                         |
+| `listMeals`           | `FoodEntryService` | No                         |
+| `searchFood`          | catalog search     | No                         |
+| `logMeal`             | none               | Returns `pendingMeal` only |
+
 
 The model never receives a Prisma client. It never passes `userId`. `logMeal` must not claim the meal was saved.
 
@@ -259,7 +321,7 @@ There is no chat-history table. Optional `history` on `/ai/chat` is request-scop
 
 This repo is meant to be changed in small, reviewable steps.
 
-- `PROJECT_REQUIREMENTS.md` is the product source of truth.
+
 - This README is the technical source of truth (architecture, API, assumptions, agent rules).
 - Required tracker work comes before extras.
 - Do not add Express, NestJS, GraphQL, Redis, or a second ORM.
@@ -272,43 +334,32 @@ This repo is meant to be changed in small, reviewable steps.
 
 ---
 
+
+
 ## Engineering decisions and assumptions
 
 These are the v1 contracts. Changing one of them is a product decision, not a drive-by refactor.
 
 1. **Auth is core infrastructure.** Multi-user appears as a bonus in the assignment brief. The implementation treats register / login / refresh / logout / me as Phase 1 so every goal and meal has an owner.
-
 2. **One current goal.** `goals.user_id` is unique. There is no history table.
-
-3. **`consumedAt` is the nutrition clock.** Date filters and reports use when the meal was eaten. `createdAt` is audit-only.
-
+3. `consumedAt` **is the nutrition clock.** Date filters and reports use when the meal was eaten. `createdAt` is audit-only.
 4. **Timezone lives on the user.** Daily buckets use `User.timezone` (IANA, default `UTC`). Example: `2026-09-12T23:30:00Z` in `Asia/Kolkata` is **2026-09-13**. Client timezone query params are ignored.
-
 5. **Units.** Calories = kcal. Protein / carbs / fat = grams. Micros = `{ nutrientKey, amount, unit }`. Quantity = amount + `quantityUnit`.
-
 6. **Reports are on-read.** No materialized daily totals. Dashboard calories come from `GET /reports/today`, not a sum of a paginated list page.
-
 7. **Entries are snapshots.** Catalog log copies scaled macros onto `food_entries`. There is no live FK from entry to catalog item, so a later seed update cannot rewrite history.
-
 8. **Family does not share meals.** `family_id` groups profiles. Every food query is still `WHERE user_id = authenticatedUser`.
-
 9. **AI never auto-saves.** Extract → Zod → user edit → `POST /food-entries` or confirm-meal. Chat `logMeal` is a proposal.
-
 10. **PDF import is structural, not generative.** `pdfjs-dist` extracts positioned text. No OCR. No Gemini on the PDF path. Confirm is all-or-nothing.
-
 11. **Micronutrients are rows, not columns.** Adding iron vs vitamin D does not require a migration per nutrient.
-
 12. **Pagination is bounded.** List `pageSize` max 50. Report range max 93 days. Recents max 20. Unbounded “get all meals” is not an API.
-
 13. **404 for the wrong owner.** `assertOwnedByUser` hides whether another user’s resource exists.
-
 14. **Tests never hit Neon.** `backend/vitest.config.ts` loads `.env.test` and refuses `neon.tech` in `DATABASE_URL`. Isolated Postgres on port 5434 is the documented test database.
-
 15. **Goal sanity.** Daily calories below 800 or above 6000 are rejected. Extreme macro grams are rejected. Ownership tests must use values inside those limits.
-
 16. **Water / BMI / portions** are client calculators unless a later phase persists them. They must not invent backend routes.
 
 ---
+
+
 
 ## Security
 
@@ -323,6 +374,8 @@ These are the v1 contracts. Changing one of them is a product decision, not a dr
 - Generic 500 bodies: no stacks, Prisma messages, provider payloads, or secrets
 
 ---
+
+
 
 ## Setup
 
@@ -350,36 +403,48 @@ pnpm dev:frontend    # default http://localhost:5173
 
 ---
 
+
+
 ## Environment variables
+
+
 
 ### Backend (`backend/.env.example`)
 
-| Variable | Purpose |
-| --- | --- |
-| `NODE_ENV` | `development`, `test`, or `production` |
-| `PORT` / `HOST` | Default `3001` / `0.0.0.0` |
-| `DATABASE_URL` | Pooled PostgreSQL URL |
-| `DIRECT_URL` | Direct URL for Prisma migrations |
-| `CORS_ORIGIN` | Extra origins, comma-separated. No `*` |
-| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | ≥ 32 characters |
-| `JWT_ACCESS_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN` | Default `15m` / `30d` |
-| `AUTH_RATE_LIMIT_MAX` / `AUTH_RATE_LIMIT_TIME_WINDOW_MS` | Default 20 / 60000 |
-| `GEMINI_API_KEY` / `GEMINI_MODEL` | Backend only. Default model `gemini-2.5-flash` |
-| `AI_MAX_UPLOAD_BYTES` | Default 5MB |
-| `AI_RATE_LIMIT_MAX` / `AI_RATE_LIMIT_TIME_WINDOW_MS` | Default 10 / 60000 |
-| `AI_PROVIDER_TIMEOUT_MS` | Default 25000 |
-| `PDF_MAX_UPLOAD_BYTES` | Default 5MB |
-| `PDF_RATE_LIMIT_MAX` / `PDF_RATE_LIMIT_TIME_WINDOW_MS` | Default 10 / 60000 |
+
+| Variable                                                 | Purpose                                        |
+| -------------------------------------------------------- | ---------------------------------------------- |
+| `NODE_ENV`                                               | `development`, `test`, or `production`         |
+| `PORT` / `HOST`                                          | Default `3001` / `0.0.0.0`                     |
+| `DATABASE_URL`                                           | Pooled PostgreSQL URL                          |
+| `DIRECT_URL`                                             | Direct URL for Prisma migrations               |
+| `CORS_ORIGIN`                                            | Extra origins, comma-separated. No `*`         |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`               | ≥ 32 characters                                |
+| `JWT_ACCESS_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN`       | Default `15m` / `30d`                          |
+| `AUTH_RATE_LIMIT_MAX` / `AUTH_RATE_LIMIT_TIME_WINDOW_MS` | Default 20 / 60000                             |
+| `GEMINI_API_KEY` / `GEMINI_MODEL`                        | Backend only. Default model `gemini-2.5-flash` |
+| `AI_MAX_UPLOAD_BYTES`                                    | Default 5MB                                    |
+| `AI_RATE_LIMIT_MAX` / `AI_RATE_LIMIT_TIME_WINDOW_MS`     | Default 10 / 60000                             |
+| `AI_PROVIDER_TIMEOUT_MS`                                 | Default 25000                                  |
+| `PDF_MAX_UPLOAD_BYTES`                                   | Default 5MB                                    |
+| `PDF_RATE_LIMIT_MAX` / `PDF_RATE_LIMIT_TIME_WINDOW_MS`   | Default 10 / 60000                             |
+
+
+
 
 ### Frontend (`frontend/.env.example`)
 
-| Variable | Purpose |
-| --- | --- |
+
+| Variable            | Purpose                           |
+| ------------------- | --------------------------------- |
 | `VITE_API_BASE_URL` | Backend origin, no trailing slash |
+
 
 `.env` and `.env.test` are gitignored.
 
 ---
+
+
 
 ## Testing
 
@@ -413,11 +478,12 @@ Backend AI tests: injected mock providers, Fastify `inject`, no Gemini.
 
 ---
 
+
+
 ## Project structure
 
 ```text
 .
-├── PROJECT_REQUIREMENTS.md
 ├── README.md
 ├── docs/images/             architecture figures
 ├── backend/
@@ -444,6 +510,8 @@ Backend AI tests: injected mock providers, Fastify `inject`, no Gemini.
 ```
 
 ---
+
+
 
 ## Rules for coding agents
 
