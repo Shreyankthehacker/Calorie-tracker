@@ -113,6 +113,11 @@ describe('MealsPage', () => {
     expect(await screen.findByText('Oatmeal')).toBeInTheDocument();
     expect(screen.getAllByText(/320 kcal/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/iron 2mg/i)).toBeInTheDocument();
+    const dayHead = document.querySelector('.day-head');
+    expect(dayHead?.textContent).toMatch(/2026/);
+    expect(dayHead?.textContent).toMatch(/320 kcal/);
+    expect(dayHead?.textContent).not.toMatch(/2026320/);
+    expect(dayHead?.querySelector('strong')).toBeTruthy();
   });
 
   it('sends meal-type filters to the API and resets to page 1', async () => {

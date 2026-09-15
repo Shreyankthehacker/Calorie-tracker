@@ -8,6 +8,11 @@
   .msg.user { background: var(--black); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
   .msg .tag { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
   .msg.user .tag { color: #C9C6C2; }
+  .chat-turn { display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
+  .chat-turn.is-user { align-items: flex-end; }
+  .chat-turn.is-sage { align-items: flex-start; }
+  .chat-followup { margin: 10px 0 0; }
+  .chat-followup a { color: var(--crimson); font-weight: 600; }
   .chat-input-row { display: flex; gap: 10px; padding: 16px; border-top: 1px solid var(--line); background: var(--paper); }
   .chat-input-row input { flex: 1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; background: var(--white); }
   .chat-input-row input:focus { outline: none; border-color: var(--crimson); }
@@ -18,8 +23,17 @@
   .suggest-chip:hover { border-color: var(--crimson); color: var(--crimson); }
 }
 
-.pending-meal { display: grid; gap: 8px; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); }
-.msg.sage .pending-meal { background: var(--white); }
+.pending-meal {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 28rem);
+  padding: 14px 16px;
+  border: 1px solid var(--crimson);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.pending-meal-kicker { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: var(--crimson); text-transform: uppercase; }
+.pending-meal-title { margin: 0; font-weight: 700; font-size: 15px; }
 
 @media (max-width: 980px) {
   .page-chat .chat-shell { grid-template-columns: 1fr; }

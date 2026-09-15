@@ -18,11 +18,6 @@ export const chatRoutes: FastifyPluginAsync<{
   llmProvider?: LlmProvider;
   foodSearchProvider?: FoodSearchProvider;
 }> = async (app, opts) => {
-  await app.register(rateLimit, {
-    max: opts.env.AI_RATE_LIMIT_MAX,
-    timeWindow: opts.env.AI_RATE_LIMIT_TIME_WINDOW_MS,
-  });
-
   const llm = opts.llmProvider ?? new GeminiLlmProvider(opts.env);
   const foodSearch = opts.foodSearchProvider ?? new PrismaFoodSearchProvider();
   const tools = new ChatToolExecutor(
@@ -36,9 +31,15 @@ export const chatRoutes: FastifyPluginAsync<{
 
   app.addHook('preHandler', app.authenticate);
 
-  app.post('/ai/chat', async (request, reply) => {
-    const body = chatRequestSchema.parse(request.body);
-    return handler.chat(body, request, reply);
+  await app.register(async (limited) => {
+    await limited.register(rateLimit, {
+      max: opts.env.AI_RATE_LIMIT_MAX,
+      timeWindow: opts.env.AI_RATE_LIMIT_TIME_WINDOW_MS,
+    });
+    limited.post('/ai/chat', async (request, reply) => {
+      const body = chatRequestSchema.parse(request.body);
+      return handler.chat(body, request, reply);
+    });
   });
 
   app.post('/ai/chat/confirm-meal', async (request, reply) => {

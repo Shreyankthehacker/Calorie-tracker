@@ -152,6 +152,7 @@ describe('ChatPage', () => {
       expect(chatApi.confirmChatMeal).toHaveBeenCalledWith(pendingMeal, expect.anything());
     });
     expect(await screen.findByText('Saved 2 eggs to breakfast.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view it in your log/i })).toHaveAttribute('href', '/meals');
     expect(screen.queryByRole('button', { name: 'Save meal' })).not.toBeInTheDocument();
   });
 

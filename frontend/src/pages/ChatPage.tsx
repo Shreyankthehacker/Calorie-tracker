@@ -1,5 +1,6 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { confirmChatMeal, sendChat } from '../api/chat';
 import { getGoal } from '../api/goals';
 import { getTodayReport } from '../api/reports';
@@ -12,6 +13,7 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
   pendingMeal?: PendingMeal;
+  viewLog?: boolean;
 };
 
 const suggestions = [
@@ -59,10 +61,17 @@ function PendingMealActions({
   onSave: (meal: PendingMeal) => void;
   onCancel: (meal: PendingMeal) => void;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    cardRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, []);
+
   return (
-    <div className="pending-meal">
-      <p className="muted small">Save this meal?</p>
-      <p>{mealSummary(meal)}</p>
+    <div className="pending-meal" ref={cardRef}>
+      <p className="pending-meal-kicker">Not saved yet</p>
+      <p className="pending-meal-title">{meal.foodName}</p>
+      <p className="muted small">{mealSummary(meal)}</p>
       <div className="action-row">
         <button
           type="button"
@@ -140,11 +149,11 @@ export function ChatPage() {
       setError(null);
       setMessages((current) => [
         ...current.map((item) => (item.pendingMeal === meal ? withoutPendingMeal(item) : item)),
-        { id: newId(), role: 'assistant', content: result.message },
+        { id: newId(), role: 'assistant', content: result.message, viewLog: true },
       ]);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['food-entries'] }),
-        queryClient.invalidateQueries({ queryKey: ['reports'] }),
+        queryClient.invalidateQueries({ queryKey: ['food-entries'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['reports'], refetchType: 'all' }),
       ]);
     },
     onError: (err: unknown) => {
@@ -200,9 +209,19 @@ export function ChatPage() {
                 </div>
               ) : (
                 messages.map((item) => (
-                  <div key={item.id} className={`msg ${item.role === 'user' ? 'user' : 'sage'}`}>
-                    <span className="tag">{item.role === 'user' ? 'You' : '🐾 Sage'}</span>
-                    {item.content}
+                  <div
+                    key={item.id}
+                    className={`chat-turn ${item.role === 'user' ? 'is-user' : 'is-sage'}`}
+                  >
+                    <div className={`msg ${item.role === 'user' ? 'user' : 'sage'}`}>
+                      <span className="tag">{item.role === 'user' ? 'You' : '🐾 Sage'}</span>
+                      {item.content}
+                      {item.viewLog ? (
+                        <p className="chat-followup">
+                          <Link to="/meals">View it in your log</Link>
+                        </p>
+                      ) : null}
+                    </div>
                     {item.pendingMeal ? (
                       <PendingMealActions
                         meal={item.pendingMeal}

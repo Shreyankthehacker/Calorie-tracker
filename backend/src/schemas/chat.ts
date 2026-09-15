@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { dateOnlySchema, foodEntryCreateBodySchema, mealTypeSchema } from './food-entries.js';
+import { dateOnlySchema, mealTypeSchema, nutrientInputSchema } from './food-entries.js';
+import { sanitizeFoodName } from '../lib/food-name.js';
 import { inclusiveDayCount } from '../lib/calendar-date.js';
 import { MAX_REPORT_RANGE_DAYS } from './reports.js';
 
@@ -21,7 +22,48 @@ export const chatRequestSchema = z
   })
   .strict();
 
-export const logMealInputSchema = foodEntryCreateBodySchema.omit({ userId: true });
+const chatNonNegative = z.coerce.number().finite().nonnegative();
+const chatPositive = z.coerce.number().finite().positive();
+
+function consumedAtOrNow(value: unknown): Date {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const millis = value < 1e12 ? value * 1000 : value;
+    const fromNumber = new Date(millis);
+    if (!Number.isNaN(fromNumber.getTime())) {
+      return fromNumber;
+    }
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const fromString = new Date(value);
+    if (!Number.isNaN(fromString.getTime())) {
+      return fromString;
+    }
+  }
+  return new Date();
+}
+
+export const logMealInputSchema = z
+  .object({
+    mealType: mealTypeSchema,
+    foodName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .transform((value) => sanitizeFoodName(value)),
+    quantity: chatPositive,
+    quantityUnit: z.string().trim().min(1).max(64),
+    calories: chatNonNegative,
+    protein: chatNonNegative,
+    carbs: chatNonNegative,
+    fat: chatNonNegative,
+    consumedAt: z.preprocess(consumedAtOrNow, z.date()),
+    micronutrients: z.array(nutrientInputSchema).max(50).optional(),
+  })
+  .strip();
 
 export const getGoalsInputSchema = z.object({}).strict();
 
