@@ -156,6 +156,23 @@ describe('ChatPage', () => {
     expect(screen.queryByRole('button', { name: 'Save meal' })).not.toBeInTheDocument();
   });
 
+  it('keeps Save meal on the card when confirm-meal fails so you can retry', async () => {
+    const userEvt = userEvent.setup();
+    vi.mocked(chatApi.sendChat).mockResolvedValue({
+      message: 'I can log chole bhature for lunch. Save this meal?',
+      pendingMeal: { ...pendingMeal, foodName: 'chole bhature', mealType: 'LUNCH', calories: 620 },
+    });
+    vi.mocked(chatApi.confirmChatMeal).mockRejectedValue(
+      new ApiError(400, 'VALIDATION_ERROR', 'Invalid request'),
+    );
+    renderWithProviders(<ChatPage />, { route: '/chat' });
+    await userEvt.click(await screen.findByRole('button', { name: /log mutton biryani for lunch/i }));
+    await userEvt.click(await screen.findByRole('button', { name: 'Save meal' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid request');
+    expect(chatApi.confirmChatMeal).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Save meal' })).toBeInTheDocument();
+  });
+
   it('cancels a pending meal without calling confirm', async () => {
     const userEvt = userEvent.setup();
     vi.mocked(chatApi.sendChat).mockResolvedValue({

@@ -13,11 +13,13 @@ export function toConfirmMealPayload(meal: PendingMeal): PendingMeal {
     carbs: Number(meal.carbs),
     fat: Number(meal.fat),
     consumedAt: Number.isNaN(consumed.getTime()) ? new Date().toISOString() : consumed.toISOString(),
-    micronutrients: (meal.micronutrients ?? []).map((nutrient) => ({
-      nutrientKey: nutrient.nutrientKey,
-      amount: Number(nutrient.amount),
-      unit: nutrient.unit,
-    })),
+    micronutrients: (meal.micronutrients ?? [])
+      .map((nutrient) => ({
+        nutrientKey: nutrient.nutrientKey,
+        amount: Number(nutrient.amount),
+        unit: nutrient.unit,
+      }))
+      .filter((nutrient) => nutrient.nutrientKey && Number.isFinite(nutrient.amount)),
   };
 }
 

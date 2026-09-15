@@ -52,12 +52,14 @@ function PendingMealActions({
   meal,
   busy,
   saving,
+  error,
   onSave,
   onCancel,
 }: {
   meal: PendingMeal;
   busy: boolean;
   saving: boolean;
+  error: string | null;
   onSave: (meal: PendingMeal) => void;
   onCancel: (meal: PendingMeal) => void;
 }) {
@@ -72,10 +74,11 @@ function PendingMealActions({
       <p className="pending-meal-kicker">Not saved yet</p>
       <p className="pending-meal-title">{meal.foodName}</p>
       <p className="muted small">{mealSummary(meal)}</p>
+      {error ? <Alert tone="error">{error}</Alert> : null}
       <div className="action-row">
         <button
           type="button"
-          className="button button-primary"
+          className="button button-primary pending-meal-save"
           disabled={busy}
           onClick={() => onSave(meal)}
         >
@@ -166,6 +169,7 @@ export function ChatPage() {
     if (!trimmed || chatMutation.isPending || saveMutation.isPending) {
       return;
     }
+    saveMutation.reset();
     const priorHistory = history;
     const userMessage: ChatMessage = { id: newId(), role: 'user', content: trimmed };
     setMessages((current) => [...current, userMessage]);
@@ -183,6 +187,8 @@ export function ChatPage() {
   }
 
   function handleCancel(meal: PendingMeal) {
+    saveMutation.reset();
+    setError(null);
     setMessages((current) =>
       current.map((item) => (item.pendingMeal === meal ? withoutPendingMeal(item) : item)),
     );
@@ -227,7 +233,11 @@ export function ChatPage() {
                         meal={item.pendingMeal}
                         busy={busy}
                         saving={saveMutation.isPending}
-                        onSave={(meal) => saveMutation.mutate(meal)}
+                        error={saveMutation.isError ? error : null}
+                        onSave={(meal) => {
+                          setError(null);
+                          saveMutation.mutate(meal);
+                        }}
                         onCancel={handleCancel}
                       />
                     ) : null}
@@ -241,7 +251,7 @@ export function ChatPage() {
                 </div>
               ) : null}
             </div>
-            {error ? <Alert tone="error">{error}</Alert> : null}
+            {error && !saveMutation.isError ? <Alert tone="error">{error}</Alert> : null}
             <form className="chat-input-row" onSubmit={handleSubmit}>
               <label className="sr-only" htmlFor="chat-message">
                 Message

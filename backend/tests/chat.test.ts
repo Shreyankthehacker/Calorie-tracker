@@ -246,6 +246,15 @@ describe('Conversational AI chat API', () => {
     expect(second.statusCode).toBe(200);
     expect(third.statusCode).toBe(429);
     expect(third.json().error.code).toBe('RATE_LIMITED');
+
+    const confirm = await limited.inject({
+      method: 'POST',
+      url: '/api/v1/ai/chat/confirm-meal',
+      headers: auth(userA),
+      payload: { ...proposedMeal, foodName: 'rate-limit confirm plate' },
+    });
+    expect(confirm.statusCode).toBe(201);
+    expect(confirm.json().foodEntry.foodName).toBe('rate-limit confirm plate');
     await limited.close();
   });
 
@@ -411,15 +420,56 @@ describe('Conversational AI chat API', () => {
     expect(response.statusCode).toBe(401);
   });
 
-  it('rejects confirm-meal payloads that include a client userId', async () => {
+  it('creates a FoodEntry from messy Gemini-style confirm payloads', async () => {
+    const before = await prisma.foodEntry.count({ where: { userId: userA.user.id } });
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/ai/chat/confirm-meal',
       headers: auth(userA),
-      payload: { ...proposedMeal, userId: userB.user.id },
+      payload: {
+        mealType: 'lunch',
+        foodName: 'chole bhature',
+        quantity: '1',
+        quantityUnit: 'plate',
+        calories: '620',
+        protein: '18',
+        carbs: '78',
+        fat: '24',
+        consumedAt: '2026-09-15T08:30:00.000Z',
+        notes: 'typical restaurant estimate',
+        source: 'model',
+        userId: userB.user.id,
+        micronutrients: [{ nutrientKey: 'fiber', amount: '9', unit: 'g', extra: true }],
+      },
     });
-    expect(response.statusCode).toBe(400);
-    expect(response.json().error.code).toBe('VALIDATION_ERROR');
+    expect(response.statusCode).toBe(201);
+    expect(response.json().foodEntry).toMatchObject({
+      foodName: 'chole bhature',
+      mealType: 'LUNCH',
+      calories: 620,
+    });
+    expect(await prisma.foodEntry.count({ where: { userId: userA.user.id } })).toBe(before + 1);
+    expect(
+      await prisma.foodEntry.count({
+        where: { userId: userB.user.id, foodName: 'chole bhature' },
+      }),
+    ).toBe(0);
+  });
+
+  it('ignores a client userId on confirm-meal and saves for the authenticated user', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/ai/chat/confirm-meal',
+      headers: auth(userA),
+      payload: { ...proposedMeal, foodName: 'owned by A', userId: userB.user.id },
+    });
+    expect(response.statusCode).toBe(201);
+    expect(response.json().foodEntry.foodName).toBe('owned by A');
+    expect(
+      await prisma.foodEntry.count({
+        where: { userId: userB.user.id, foodName: 'owned by A' },
+      }),
+    ).toBe(0);
   });
 
   it('does not let user B read user A nutrition through tools', async () => {

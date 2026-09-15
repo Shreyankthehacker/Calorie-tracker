@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dateOnlySchema, mealTypeSchema, nutrientInputSchema } from './food-entries.js';
+import { dateOnlySchema, mealTypeSchema } from './food-entries.js';
 import { sanitizeFoodName } from '../lib/food-name.js';
 import { inclusiveDayCount } from '../lib/calendar-date.js';
 import { MAX_REPORT_RANGE_DAYS } from './reports.js';
@@ -24,8 +24,25 @@ export const chatRequestSchema = z
 
 const chatNonNegative = z.coerce.number().finite().nonnegative();
 const chatPositive = z.coerce.number().finite().positive();
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-function consumedAtOrNow(value: unknown): Date {
+const chatMealTypeSchema = z.preprocess((value) => {
+  if (typeof value === 'string') {
+    return value.trim().toUpperCase();
+  }
+  return value;
+}, mealTypeSchema);
+
+const chatNutrientSchema = z
+  .object({
+    nutrientKey: z.string().trim().min(1).max(64),
+    amount: chatNonNegative,
+    unit: z.string().trim().min(1).max(32),
+  })
+  .strip();
+
+function parseConsumedAt(value: unknown): Date | null {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value;
   }
@@ -42,12 +59,25 @@ function consumedAtOrNow(value: unknown): Date {
       return fromString;
     }
   }
-  return new Date();
+  return null;
+}
+
+function consumedAtOrNow(value: unknown): Date {
+  const parsed = parseConsumedAt(value);
+  const now = Date.now();
+  if (!parsed) {
+    return new Date(now);
+  }
+  const time = parsed.getTime();
+  if (time < now - THIRTY_DAYS_MS || time > now + ONE_DAY_MS) {
+    return new Date(now);
+  }
+  return parsed;
 }
 
 export const logMealInputSchema = z
   .object({
-    mealType: mealTypeSchema,
+    mealType: chatMealTypeSchema,
     foodName: z
       .string()
       .trim()
@@ -61,7 +91,7 @@ export const logMealInputSchema = z
     carbs: chatNonNegative,
     fat: chatNonNegative,
     consumedAt: z.preprocess(consumedAtOrNow, z.date()),
-    micronutrients: z.array(nutrientInputSchema).max(50).optional(),
+    micronutrients: z.array(chatNutrientSchema).max(50).optional(),
   })
   .strip();
 

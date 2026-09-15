@@ -36,4 +36,14 @@ describe('toConfirmMealPayload', () => {
     expect(Number.isNaN(new Date(payload.consumedAt).getTime())).toBe(false);
     expect(payload.consumedAt).not.toBe('not-a-date');
   });
+
+  it('coerces string macro values from the model into numbers', () => {
+    const payload = toConfirmMealPayload({
+      ...meal,
+      calories: '600' as unknown as number,
+      protein: '20' as unknown as number,
+    });
+    expect(payload.calories).toBe(600);
+    expect(payload.protein).toBe(20);
+  });
 });
