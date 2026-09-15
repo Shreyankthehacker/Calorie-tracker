@@ -1,4 +1,5 @@
 import { calendarWallTimeUtc } from '../lib/calendar-date.js';
+import { sanitizeFoodName } from '../lib/food-name.js';
 import type { MealType } from '../schemas/food-entries.js';
 import { assignCellsToColumns, detectColumns } from './column-detector.js';
 import type { DiaryParseWarning, ParsedDiaryRecord, ReconstructedRow } from './types.js';
@@ -282,8 +283,9 @@ function scoreRecord(input: {
 function toRecord(partial: Omit<ParsedDiaryRecord, 'status' | 'confidence' | 'micronutrients'> & {
   fromTable?: boolean;
 }): ParsedDiaryRecord {
+  const foodName = partial.foodName ? sanitizeFoodName(partial.foodName) : partial.foodName;
   const scored = scoreRecord({
-    foodName: partial.foodName,
+    foodName,
     mealType: partial.mealType,
     consumedAt: partial.consumedAt,
     calories: partial.calories,
@@ -295,7 +297,7 @@ function toRecord(partial: Omit<ParsedDiaryRecord, 'status' | 'confidence' | 'mi
     issues: partial.issues,
   });
   return {
-    foodName: partial.foodName,
+    foodName,
     quantity: partial.quantity,
     quantityUnit: partial.quantityUnit,
     mealType: partial.mealType,

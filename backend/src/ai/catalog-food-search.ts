@@ -121,6 +121,21 @@ const CATALOG: FoodSearchHit[] = [
     source: 'catalog_estimate',
     notes: 'Typical cooked Atlantic salmon. Catalog estimate, not a lab measurement.',
   },
+  {
+    foodName: 'Mutton biryani',
+    quantity: 1,
+    quantityUnit: 'plate',
+    calories: 480,
+    protein: 18,
+    carbs: 56,
+    fat: 19,
+    micronutrients: [
+      { nutrientKey: 'fiber', amount: 6, unit: 'g' },
+      { nutrientKey: 'sodium', amount: 640, unit: 'mg' },
+    ],
+    source: 'catalog_estimate',
+    notes: 'Typical restaurant plate (~250 g). Catalog estimate, not a lab measurement.',
+  },
 ];
 
 function normalize(value: string): string {

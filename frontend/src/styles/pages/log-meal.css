@@ -11,7 +11,7 @@
 
 .page-log-meal .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 28px;
   align-items: start;
 }
@@ -23,11 +23,35 @@
   min-width: 0;
 }
 
-.page-log-meal .log-ways {
+.page-log-meal .log-method-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 18px 0 8px;
+  gap: 8px;
+  margin: 18px 0 16px;
+}
+
+.page-log-meal .log-method-tab {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.page-log-meal .log-method-tab .t { font-weight: 700; font-size: 14px; }
+.page-log-meal .log-method-tab .s { font-size: 12px; color: var(--muted); }
+.page-log-meal .log-method-tab.is-active {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 1px var(--crimson);
+}
+
+.page-log-meal .log-ways {
+  display: none;
 }
 
 .page-log-meal button.tool-card {
@@ -58,13 +82,22 @@
   background: #141414;
 }
 
-.page-log-meal .viewfinder img,
 .page-log-meal .viewfinder-idle {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  text-align: center;
+  background: #2a2724;
+  color: #c9c6c2;
+  font-size: 12px;
 }
+
+.page-log-meal .viewfinder-idle span { font-weight: 700; color: #fff; }
 
 .page-log-meal .viewfinder .frame {
   position: absolute;
@@ -254,7 +287,7 @@
 
 @media (max-width: 980px) {
   .page-log-meal .grid,
-  .page-log-meal .log-ways {
+  .page-log-meal .log-method-tabs {
     grid-template-columns: 1fr;
   }
 }

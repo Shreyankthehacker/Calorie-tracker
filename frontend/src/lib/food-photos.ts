@@ -1,22 +1,52 @@
-const PHOTO_BY_KEY: Array<{ test: RegExp; src: string }> = [
-  { test: /egg|breakfast|toast|sourdough/, src: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&q=80&auto=format&fit=crop' },
-  { test: /salad|tuna|lunch|greens/, src: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80&auto=format&fit=crop' },
-  { test: /salmon|fish/, src: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&q=80&auto=format&fit=crop' },
-  { test: /chicken/, src: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&q=80&auto=format&fit=crop' },
-  { test: /oat|oatmeal|banana/, src: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?w=400&q=80&auto=format&fit=crop' },
-  { test: /rice/, src: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400&q=80&auto=format&fit=crop' },
-  { test: /yogurt/, src: 'https://images.unsplash.com/photo-1488477304112-4944851de03d?w=400&q=80&auto=format&fit=crop' },
-  { test: /avocado/, src: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&q=80&auto=format&fit=crop' },
-  { test: /wrap/, src: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&q=80&auto=format&fit=crop' },
-];
-
-export function foodPhoto(name: string): string {
-  const haystack = name.toLowerCase();
-  const match = PHOTO_BY_KEY.find((row) => row.test.test(haystack));
-  if (match) return match.src;
-  return `https://picsum.photos/seed/${encodeURIComponent(name)}/400/300`;
+function catalogPhoto(file: string): string {
+  return `/foods/${file}`;
 }
 
-export function fallbackPhoto(seed: string): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/400/300`;
+const PHOTO_BY_NAME: Record<string, string> = {
+  almonds: catalogPhoto('almonds.jpg'),
+  apple: catalogPhoto('apple.jpg'),
+  banana: catalogPhoto('banana.jpg'),
+  chapati: catalogPhoto('chapati.jpg'),
+  'chicken breast': catalogPhoto('chicken-breast.jpg'),
+  eggs: catalogPhoto('eggs.jpg'),
+  'greek yogurt': catalogPhoto('greek-yogurt.jpg'),
+  idli: catalogPhoto('idli.jpg'),
+  milk: catalogPhoto('milk.jpg'),
+  'mixed salad': catalogPhoto('mixed-salad.jpg'),
+  'mutton biryani': catalogPhoto('mutton-biryani.jpg'),
+  oats: catalogPhoto('oats.jpg'),
+  paneer: catalogPhoto('paneer.jpg'),
+  salmon: catalogPhoto('salmon.jpg'),
+  toast: catalogPhoto('toast.jpg'),
+  'white rice': catalogPhoto('white-rice.jpg'),
+};
+
+/** Most specific keywords first so "mutton biryani" is not matched as rice. */
+const PHOTO_BY_KEY: Array<{ test: RegExp; src: string }> = [
+  { test: /biryani|gosht|pulao/, src: catalogPhoto('mutton-biryani.jpg') },
+  { test: /idli/, src: catalogPhoto('idli.jpg') },
+  { test: /chapati|roti|paratha/, src: catalogPhoto('chapati.jpg') },
+  { test: /paneer/, src: catalogPhoto('paneer.jpg') },
+  { test: /almond/, src: catalogPhoto('almonds.jpg') },
+  { test: /greek yogurt|yogurt|yoghurt|dahi|\bcurd\b/, src: catalogPhoto('greek-yogurt.jpg') },
+  { test: /oatmeal|\boats\b|porridge/, src: catalogPhoto('oats.jpg') },
+  { test: /chicken/, src: catalogPhoto('chicken-breast.jpg') },
+  { test: /salmon/, src: catalogPhoto('salmon.jpg') },
+  { test: /banana/, src: catalogPhoto('banana.jpg') },
+  { test: /apple/, src: catalogPhoto('apple.jpg') },
+  { test: /\beggs?\b/, src: catalogPhoto('eggs.jpg') },
+  { test: /toast|sourdough/, src: catalogPhoto('toast.jpg') },
+  { test: /salad/, src: catalogPhoto('mixed-salad.jpg') },
+  { test: /rice/, src: catalogPhoto('white-rice.jpg') },
+  { test: /milk/, src: catalogPhoto('milk.jpg') },
+];
+
+export const FALLBACK_FOOD_PHOTO = catalogPhoto('mixed-salad.jpg');
+
+/** Real food photo for a catalog or logged name. Never returns a cartoon/emoji. */
+export function foodPhoto(name: string): string {
+  const key = name.trim().toLowerCase();
+  if (PHOTO_BY_NAME[key]) return PHOTO_BY_NAME[key];
+  const match = PHOTO_BY_KEY.find((row) => row.test.test(key));
+  return match?.src ?? FALLBACK_FOOD_PHOTO;
 }

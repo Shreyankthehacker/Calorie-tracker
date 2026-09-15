@@ -166,11 +166,33 @@ function Cheese({ className }: FoodArtProps) {
   );
 }
 
+function Coffee({ className }: FoodArtProps) {
+  return (
+    <Svg className={className}>
+      <rect width="40" height="40" rx="12" fill="#E8EEF2" />
+      <path d="M12 16h14v12a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5V16Z" fill="#F7F4EE" />
+      <path d="M26 18h3a4 4 0 0 1 0 8h-3" fill="none" stroke="#5D7A94" strokeWidth="1.6" />
+      <path d="M16 11c1 2 1 4 0 5M21 10c1 2 1 4 0 5" fill="none" stroke="#7A756E" strokeWidth="1.4" />
+    </Svg>
+  );
+}
+
+function Chips({ className }: FoodArtProps) {
+  return (
+    <Svg className={className}>
+      <rect width="40" height="40" rx="12" fill="#F4E7B0" />
+      <ellipse cx="18" cy="22" rx="8" ry="11" transform="rotate(-18 18 22)" fill="#E6C84A" />
+      <ellipse cx="24" cy="20" rx="7" ry="10" transform="rotate(16 24 20)" fill="#C9A15A" />
+    </Svg>
+  );
+}
+
 const KIND_MAP: Array<{ test: RegExp; Art: (props: FoodArtProps) => ReactElement }> = [
   { test: /banana/, Art: Banana },
   { test: /apple/, Art: Apple },
   { test: /egg/, Art: Egg },
-  { test: /oat|oatmeal/, Art: Bowl },
+  { test: /coffee|latte|espresso|cappuccino/, Art: Coffee },
+  { test: /oat|oatmeal|upma|poha/, Art: Bowl },
   { test: /toast|bread/, Art: ToastArt },
   { test: /yogurt|yoghurt/, Art: Yogurt },
   { test: /rice/, Art: Rice },
@@ -180,7 +202,8 @@ const KIND_MAP: Array<{ test: RegExp; Art: (props: FoodArtProps) => ReactElement
   { test: /salad/, Art: Salad },
   { test: /almond|nut/, Art: Nut },
   { test: /milk/, Art: Milk },
-  { test: /idli/, Art: Idli },
+  { test: /idli|dosa/, Art: Idli },
+  { test: /chip|crisp|potato/, Art: Chips },
   { test: /paneer|cheese/, Art: Cheese },
 ];
 

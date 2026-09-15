@@ -25,6 +25,13 @@ const nutella: BarcodeProductLookup = {
   source: 'open_food_facts',
 };
 
+const pricedChips: BarcodeProductLookup = {
+  ...nutella,
+  barcode: '8901234567890',
+  name: 'Potato Chips (Plain Salted flavour) 20rs',
+  brand: null,
+};
+
 class MapBarcodeProvider implements BarcodeLookupProvider {
   constructor(private readonly products: Map<string, BarcodeProductLookup>) {}
 
@@ -60,7 +67,12 @@ describe('barcode lookup API', () => {
 
   beforeAll(async () => {
     app = await buildApp(env, {
-      barcodeProvider: new MapBarcodeProvider(new Map([[nutella.barcode, nutella]])),
+      barcodeProvider: new MapBarcodeProvider(
+        new Map([
+          [nutella.barcode, nutella],
+          [pricedChips.barcode, pricedChips],
+        ]),
+      ),
     });
     await app.ready();
     userA = await register('a');
@@ -122,5 +134,17 @@ describe('barcode lookup API', () => {
     });
     expect(response.statusCode).toBe(404);
     expect(response.json().error.code).toBe('NOT_FOUND');
+  });
+
+  it('strips price tokens from barcode product names', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/barcode/lookup',
+      headers: { authorization: `Bearer ${userA.accessToken}` },
+      payload: { barcode: pricedChips.barcode },
+    });
+    expect(response.statusCode).toBe(200);
+    const body = response.json() as { product: BarcodeProductLookup };
+    expect(body.product.name).toBe('Potato Chips (Plain Salted flavour)');
   });
 });

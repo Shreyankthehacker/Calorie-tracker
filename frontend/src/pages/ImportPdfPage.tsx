@@ -168,7 +168,7 @@ export function ImportPdfPage() {
         <div className="main-inner">
         <div className="top-row">
           <div className="kicker">Bonus</div>
-          <h1 className="page-title">Import PDF</h1>
+          <h1 className="page-title">Bulk logging</h1>
         </div>
         <Alert tone="success">
           {importedCount} meal{importedCount === 1 ? '' : 's'} imported successfully.
@@ -200,8 +200,8 @@ export function ImportPdfPage() {
       <div className="main-inner">
       <div className="top-row">
         <div className="kicker">Bonus</div>
-        <h1 className="page-title">Import PDF</h1>
-        <p className="muted">Upload a text-based food diary. Review every meal before anything is saved.</p>
+        <h1 className="page-title">Bulk logging</h1>
+        <p className="muted">Upload a text-based PDF food diary. Review every meal before anything is saved.</p>
       </div>
 
       <ol className="step-track" aria-label="Import steps">
@@ -250,6 +250,7 @@ export function ImportPdfPage() {
             />
           </label>
           <p className="muted">Drop a PDF here or choose one to parse.</p>
+          <p className="muted small">Accepted format: PDF only. Maximum size: 5MB.</p>
           <button className="button button-primary" type="submit" disabled={!file || parsing || confirmMutation.isPending}>
             {parsing ? 'Parsing PDF…' : 'Parse PDF'}
           </button>

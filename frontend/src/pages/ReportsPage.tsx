@@ -23,14 +23,20 @@ import { useAuth } from '../auth/AuthProvider';
 import { SkeletonBlock } from '../components/layout/AppShell';
 import { DateField } from '../components/ui/DateField';
 import {
+  calendarDateInTimeZone,
+  clipSeriesToToday,
   reportRangeForPreset,
   type ReportRangePreset,
 } from '../lib/dates';
+import { getGoal } from '../api/goals';
+import { dailyReferenceRange } from '../lib/micronutrient-ranges';
+import { displayTimeZone } from '../lib/timezones';
+import { isPlausibleDailyCalorieTarget } from '../lib/goal-sanity';
 
 const ACCENT = '#A8112A';
 const PROTEIN = '#A8112A';
 const CARBS = '#2B2A28';
-const FAT = '#D8D5D0';
+const FAT = '#8A6A2E';
 const INK = '#0A0A0A';
 
 function formatAmount(value: number): string {
@@ -74,25 +80,35 @@ export function ReportsPage() {
   );
 
   const rangeReady = preset !== 'custom' || (Boolean(customStart) && Boolean(customEnd));
+  const today = calendarDateInTimeZone(new Date(), timeZone);
+  const queryRange = {
+    startDate: range.startDate,
+    endDate: range.endDate > today ? today : range.endDate,
+  };
 
   const calorieQuery = useQuery({
-    queryKey: ['reports', 'calories', range.startDate, range.endDate],
-    queryFn: () => getCalorieReport(range),
+    queryKey: ['reports', 'calories', queryRange.startDate, queryRange.endDate],
+    queryFn: () => getCalorieReport(queryRange),
     enabled: rangeReady,
   });
   const macroQuery = useQuery({
-    queryKey: ['reports', 'macros', range.startDate, range.endDate],
-    queryFn: () => getMacroReport(range),
+    queryKey: ['reports', 'macros', queryRange.startDate, queryRange.endDate],
+    queryFn: () => getMacroReport(queryRange),
     enabled: rangeReady,
   });
   const goalQuery = useQuery({
-    queryKey: ['reports', 'goals', range.startDate, range.endDate],
-    queryFn: () => getGoalVsActualReport(range),
+    queryKey: ['reports', 'goals', queryRange.startDate, queryRange.endDate],
+    queryFn: () => getGoalVsActualReport(queryRange),
     enabled: rangeReady,
   });
+  const currentGoalQuery = useQuery({
+    queryKey: ['goals', 'current'],
+    queryFn: getGoal,
+    retry: false,
+  });
   const microQuery = useQuery({
-    queryKey: ['reports', 'micronutrients', range.startDate, range.endDate],
-    queryFn: () => getMicronutrientReport(range),
+    queryKey: ['reports', 'micronutrients', queryRange.startDate, queryRange.endDate],
+    queryFn: () => getMicronutrientReport(queryRange),
     enabled: rangeReady,
   });
 
@@ -102,8 +118,8 @@ export function ReportsPage() {
   const error =
     calorieQuery.isError || macroQuery.isError || goalQuery.isError || microQuery.isError;
 
-  const calorieData = calorieQuery.data?.data ?? [];
-  const macroData = macroQuery.data?.data ?? [];
+  const calorieData = clipSeriesToToday(calorieQuery.data?.data ?? [], today);
+  const macroData = clipSeriesToToday(macroQuery.data?.data ?? [], today);
   const hasCalorieData = (calorieQuery.data?.totals.calories ?? 0) > 0;
   const hasMacroData =
     (macroQuery.data?.totals.protein ?? 0) +
@@ -112,6 +128,16 @@ export function ReportsPage() {
     0;
   const micros = microQuery.data?.data ?? [];
   const goalReport = goalQuery.data;
+  const savedGoal = currentGoalQuery.data;
+  const dailyGoal = savedGoal
+    ? {
+        calories: savedGoal.dailyCalorieTarget,
+        protein: savedGoal.proteinTarget,
+        carbs: savedGoal.carbTarget,
+        fat: savedGoal.fatTarget,
+      }
+    : goalReport?.dailyGoal;
+  const goalLooksOff = Boolean(dailyGoal && !isPlausibleDailyCalorieTarget(dailyGoal.calories));
 
   return (
     <div className="page-reports">
@@ -119,7 +145,7 @@ export function ReportsPage() {
       <div className="top-row">
         <div className="kicker">Track</div>
         <h1 className="page-title">Reports &amp; trends</h1>
-        <p className="muted">Nutrition trends in your timezone ({timeZone}).</p>
+        <p className="muted">Nutrition trends in your timezone ({displayTimeZone(timeZone)}).</p>
       </div>
       <header className="page-header-row">
         <div className="range-controls">
@@ -231,7 +257,7 @@ export function ReportsPage() {
                       <Legend />
                       <Bar dataKey="protein" fill={PROTEIN} name="Protein" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="carbs" fill={CARBS} name="Carbs" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="fat" fill={FAT} name="Fat" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="fat" fill={FAT} stroke="#5C4A24" strokeWidth={1} name="Fat" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -274,34 +300,58 @@ export function ReportsPage() {
                 </Link>
               </div>
             ) : (
-              <dl className="comparison-list">
-                <div>
-                  <dt>Calories</dt>
-                  <dd>
-                    {formatAmount(goalReport.actual.calories)} / {formatAmount(goalReport.goal.calories)}{' '}
-                    <span className="unit">kcal</span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>Protein</dt>
-                  <dd>
-                    {formatAmount(goalReport.actual.protein)} / {formatAmount(goalReport.goal.protein)}
-                    g
-                  </dd>
-                </div>
-                <div>
-                  <dt>Carbs</dt>
-                  <dd>
-                    {formatAmount(goalReport.actual.carbs)} / {formatAmount(goalReport.goal.carbs)}g
-                  </dd>
-                </div>
-                <div>
-                  <dt>Fat</dt>
-                  <dd>
-                    {formatAmount(goalReport.actual.fat)} / {formatAmount(goalReport.goal.fat)}g
-                  </dd>
-                </div>
-              </dl>
+              <>
+                {goalLooksOff ? (
+                  <p className="muted small">
+                    Saved targets look off ({formatAmount(dailyGoal?.calories ?? 0)} kcal/day). Edit them on the Goals
+                    page — this comparison uses that same saved goal.
+                  </p>
+                ) : null}
+                <p className="muted small">
+                  Daily targets come from your Goals page. Period totals multiply those daily numbers by{' '}
+                  {goalReport.dayCount} day{goalReport.dayCount === 1 ? '' : 's'}.
+                </p>
+                <dl className="comparison-list">
+                  <div>
+                    <dt>Calories</dt>
+                    <dd>
+                      {formatAmount(goalReport.actual.calories)} kcal this period / {formatAmount(dailyGoal?.calories ?? 0)}{' '}
+                      kcal daily
+                      {goalReport.dayCount > 1 ? (
+                        <span className="unit"> · {formatAmount(goalReport.goal.calories)} kcal period target</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Protein</dt>
+                    <dd>
+                      {formatAmount(goalReport.actual.protein)}g this period / {formatAmount(dailyGoal?.protein ?? 0)}g
+                      daily
+                      {goalReport.dayCount > 1 ? (
+                        <span className="unit"> · {formatAmount(goalReport.goal.protein)}g period target</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Carbs</dt>
+                    <dd>
+                      {formatAmount(goalReport.actual.carbs)}g this period / {formatAmount(dailyGoal?.carbs ?? 0)}g daily
+                      {goalReport.dayCount > 1 ? (
+                        <span className="unit"> · {formatAmount(goalReport.goal.carbs)}g period target</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Fat</dt>
+                    <dd>
+                      {formatAmount(goalReport.actual.fat)}g this period / {formatAmount(dailyGoal?.fat ?? 0)}g daily
+                      {goalReport.dayCount > 1 ? (
+                        <span className="unit"> · {formatAmount(goalReport.goal.fat)}g period target</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                </dl>
+              </>
             )}
           </section>
 
@@ -311,14 +361,23 @@ export function ReportsPage() {
               <p className="muted">No micronutrient data for this period.</p>
             ) : (
               <ul className="micro-summary">
-                {micros.map((row) => (
-                  <li key={`${row.nutrientKey}-${row.unit}`}>
-                    <span>{formatNutrientKey(row.nutrientKey)}</span>
-                    <span>
-                      {formatAmount(row.amount)} {row.unit}
-                    </span>
-                  </li>
-                ))}
+                {micros.map((row) => {
+                  const range = dailyReferenceRange(row.nutrientKey);
+                  return (
+                    <li key={`${row.nutrientKey}-${row.unit}`}>
+                      <span>{formatNutrientKey(row.nutrientKey)}</span>
+                      <span>
+                        {formatAmount(row.amount)} {row.unit}
+                        {range ? (
+                          <span className="micro-ref">
+                            {' '}
+                            · {range.label}: {range.amount.toLocaleString()} {range.unit}/day
+                          </span>
+                        ) : null}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { extractNutrition, isAiImageOversized, isSupportedAiImage } from '../api/ai';
 import { lookupBarcode } from '../api/barcode';
 import { createFoodEntry } from '../api/food-entries';
 import { ApiError, type FoodEntryWritePayload, type NutritionExtraction } from '../api/types';
+import { BarcodeLookup } from '../components/meals/BarcodeLookup';
 import { MealForm } from '../components/meals/MealForm';
+import { sanitizeFoodName } from '../lib/food-name';
 import { nutritionToDraftEntry } from '../lib/meal-draft';
 
 function sourceMessage(source: NutritionExtraction['source']): string {
@@ -65,7 +67,7 @@ export function ScanFoodPage() {
       setExtraction(null);
       setProductDraft(
         nutritionToDraftEntry({
-          foodName: product.name,
+          foodName: sanitizeFoodName(product.name),
           quantity: product.quantity,
           quantityUnit: product.quantityUnit,
           calories: product.calories,
@@ -129,16 +131,6 @@ export function ScanFoodPage() {
     extractMutation.mutate(file);
   }
 
-  function handleBarcodeLookup(event?: FormEvent) {
-    event?.preventDefault();
-    const value = barcode.trim();
-    if (value.length < 6) {
-      setLocalError('Enter a barcode with at least 6 digits.');
-      return;
-    }
-    barcodeMutation.mutate(value);
-  }
-
   function handleCancel() {
     setExtraction(null);
     setProductDraft(null);
@@ -187,9 +179,11 @@ export function ScanFoodPage() {
                 {previewUrl ? (
                   <img src={previewUrl} alt="Selected food to analyze" />
                 ) : (
-                  <div className="viewfinder-idle" />
+                  <div className="viewfinder-idle">
+                    <span>Camera preview</span>
+                    <small>No live feed yet. Choose a nutrition-label photo to fill this frame.</small>
+                  </div>
                 )}
-                <div className="scanline" />
                 <div className="frame">
                   <span />
                   <span />
@@ -198,46 +192,24 @@ export function ScanFoodPage() {
                 </div>
               </div>
               <div className="scan-copy">
-                <div className="t">Point your camera at a barcode or nutrition label</div>
+                <div className="t">Look up a barcode, or photograph a nutrition label</div>
                 <div className="s">
-                  Barcode lookup reads packaged codes against Open Food Facts. Label photos use Sage vision — they are
-                  separate flows.
+                  Barcode lookup reads packaged codes against Open Food Facts. A label photo is a separate Sage vision
+                  flow — pick a still image, then analyze it.
                 </div>
-                <form className="barcode-lookup" onSubmit={handleBarcodeLookup}>
-                  <label className="sr-only" htmlFor="barcode-value">
-                    Barcode
-                  </label>
-                  <input
-  id="barcode-value"
-  ref={barcodeInputRef}
-  value={barcode}
-  inputMode="numeric"
-  autoComplete="off"
-  placeholder="Enter barcode digits"
-  onChange={(event) => setBarcode(event.target.value)}
-  style={{
-    width: "100%",
-    boxSizing: "border-box",
-    padding: "12px 14px",
-    border: "1px solid #d6d3d1",
-    borderRadius: "6px",
-    background: "#ffffff",
-    color: "#292524",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    outline: "none",
-  }}
-/>
-                  <button type="submit" className="primary" disabled={barcodeMutation.isPending}>
-                    {barcodeMutation.isPending ? 'Looking up…' : 'Look up barcode'}
-                  </button>
-                </form>
+                <BarcodeLookup
+                  id="barcode-value"
+                  value={barcode}
+                  pending={barcodeMutation.isPending}
+                  error={null}
+                  onChange={setBarcode}
+                  onLookup={(value) => barcodeMutation.mutate(value)}
+                  inputRef={barcodeInputRef}
+                  description="Enter the digits under the barcode. This is the same lookup used on Log meal."
+                />
                 <div className="btns">
-                  <button type="button" className="primary" onClick={() => barcodeInputRef.current?.focus()}>
-                    Scan barcode
-                  </button>
                   <button type="button" className="secondary" onClick={openPicker}>
-                    Scan label instead
+                    Choose nutrition label photo
                   </button>
                   <button
                     type="button"
@@ -248,6 +220,9 @@ export function ScanFoodPage() {
                     {extractMutation.isPending ? 'Analyzing nutrition…' : 'Analyze nutrition'}
                   </button>
                 </div>
+                <p className="s">
+                  Choose a label photo first, then analyze. That is not the same as a barcode lookup.
+                </p>
                 <label className="sr-only" htmlFor="scan-upload">
                   Upload image
                 </label>

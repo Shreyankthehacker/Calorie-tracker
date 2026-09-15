@@ -126,6 +126,16 @@ describe('ReportsPage', () => {
     vi.mocked(authApi.getCurrentUser).mockResolvedValue(user);
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-09-13T12:00:00.000Z'));
+    vi.mocked(goalsApi.getGoal).mockResolvedValue({
+      id: 'g1',
+      dailyCalorieTarget: 2200,
+      proteinTarget: 140,
+      carbTarget: 250,
+      fatTarget: 70,
+      weightGoal: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
   });
 
   afterEach(() => {
@@ -192,10 +202,11 @@ describe('ReportsPage', () => {
     mockReports();
     renderWithProviders(<ReportsPage />, { route: '/reports' });
 
-    expect(await screen.findByText(/3940 \/ 15400/)).toBeInTheDocument();
-    expect(screen.getByText(/232 \/ 980g/)).toBeInTheDocument();
-    expect(screen.getByText(/415 \/ 1750g/)).toBeInTheDocument();
-    expect(screen.getByText(/126 \/ 490g/)).toBeInTheDocument();
+    expect(await screen.findByText(/3940 kcal this period/)).toBeInTheDocument();
+    expect(screen.getByText(/232g this period/)).toBeInTheDocument();
+    expect(screen.getByText(/415g this period/)).toBeInTheDocument();
+    expect(screen.getByText(/126g this period/)).toBeInTheDocument();
+    expect(screen.getByText(/2200 kcal daily/)).toBeInTheDocument();
   });
 
   it('renders the micronutrient summary', async () => {
@@ -203,9 +214,9 @@ describe('ReportsPage', () => {
     renderWithProviders(<ReportsPage />, { route: '/reports' });
 
     expect(await screen.findByText('Iron')).toBeInTheDocument();
-    expect(screen.getByText('42.5 mg')).toBeInTheDocument();
+    expect(screen.getByText(/42\.5 mg/)).toBeInTheDocument();
     expect(screen.getByText('Calcium')).toBeInTheDocument();
-    expect(screen.getByText('840 mg')).toBeInTheDocument();
+    expect(screen.getByText(/840 mg/)).toBeInTheDocument();
   });
 
   it('shows a no-goal state', async () => {

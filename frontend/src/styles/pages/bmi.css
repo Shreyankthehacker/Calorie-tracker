@@ -1,5 +1,7 @@
 .page-bmi {
-  .top-row { margin: 24px 0 22px; }
+  .unit-toggle { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+  .unit-toggle button { border: none; background: var(--white); padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+  .unit-toggle button.is-active { background: var(--black); color: var(--white); }
   .grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
   .panel { border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 20px; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 18px; }

@@ -43,6 +43,7 @@ export class BarcodeLookupService {
 
     return {
       ...parsed.data,
+      name: parsed.data.name,
       micronutrients: nutrients.value,
       imageUrl: parsed.data.imageUrl ?? null,
     };

@@ -73,7 +73,7 @@ describe('ChatPage', () => {
     expect(screen.getByRole('button', { name: /what did i eat this week/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /what are my nutrition goals/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /how did i do this week/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /log my breakfast/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /log mutton biryani for lunch/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
@@ -126,7 +126,7 @@ describe('ChatPage', () => {
       pendingMeal,
     });
     renderWithProviders(<ChatPage />, { route: '/chat' });
-    await userEvt.click(await screen.findByRole('button', { name: /log my breakfast/i }));
+    await userEvt.click(await screen.findByRole('button', { name: /log mutton biryani for lunch/i }));
     expect(await screen.findByRole('button', { name: 'Save meal' })).toBeInTheDocument();
     expect(screen.getByText(/~144 kcal/i)).toBeInTheDocument();
     expect(screen.getByText(/protein: 12\.6g/i)).toBeInTheDocument();
@@ -146,7 +146,7 @@ describe('ChatPage', () => {
       foodEntry: savedEntry,
     });
     renderWithProviders(<ChatPage />, { route: '/chat' });
-    await userEvt.click(await screen.findByRole('button', { name: /log my breakfast/i }));
+    await userEvt.click(await screen.findByRole('button', { name: /log mutton biryani for lunch/i }));
     await userEvt.click(await screen.findByRole('button', { name: 'Save meal' }));
     await waitFor(() => {
       expect(chatApi.confirmChatMeal).toHaveBeenCalledWith(pendingMeal, expect.anything());
@@ -162,7 +162,7 @@ describe('ChatPage', () => {
       pendingMeal,
     });
     renderWithProviders(<ChatPage />, { route: '/chat' });
-    await userEvt.click(await screen.findByRole('button', { name: /log my breakfast/i }));
+    await userEvt.click(await screen.findByRole('button', { name: /log mutton biryani for lunch/i }));
     await userEvt.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(chatApi.confirmChatMeal).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Save meal' })).not.toBeInTheDocument();

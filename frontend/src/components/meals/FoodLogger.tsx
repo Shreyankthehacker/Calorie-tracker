@@ -6,6 +6,7 @@ import { listFoodItems, logFoodItem } from '../../api/food-items';
 import { ApiError, type FoodItem, type MealType, type RecentFood } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { MEAL_LABELS, MEAL_SECTIONS, scaleNutrition } from '../../lib/nutrition';
+import { unusualQuantityWarning } from '../../lib/quantity-warning';
 import { FoodThumb } from './FoodThumb';
 
 type Selected =
@@ -260,6 +261,11 @@ export function FoodLogger({
               </button>
               <span className="unit-suffix">{preview.unit}</span>
             </div>
+            {unusualQuantityWarning(quantityValue, preview.unit) ? (
+              <p className="field-hint warn" role="status">
+                {unusualQuantityWarning(quantityValue, preview.unit)}
+              </p>
+            ) : null}
 
             <label className="field">
               <span className="field-label">Meal</span>

@@ -75,7 +75,7 @@ export const CHAT_TOOLS: LlmToolDefinition[] = [
   {
     name: 'searchFood',
     description:
-      'Search the application food catalog for estimated nutrition when the user has incomplete values. Results are catalog estimates, not lab measurements. Do not treat this as an authoritative food database.',
+      'Search the application food catalog for estimated nutrition. Call this first when logging a food. If matches is empty, still propose logMeal with a typical homemade/restaurant serving estimate — do not refuse custom dishes. Results are catalog estimates, not lab measurements.',
     parameters: {
       type: 'object',
       properties: {
@@ -88,7 +88,7 @@ export const CHAT_TOOLS: LlmToolDefinition[] = [
   {
     name: 'logMeal',
     description:
-      'Propose a food entry for the authenticated user. The application will NOT save it until the user confirms in the UI. Never pass a userId. Never claim the meal was saved.',
+      'Propose a food entry for catalog foods or custom homemade/restaurant dishes. The application will NOT save it until the user confirms in the UI. Never pass a userId. Never claim the meal was saved.',
     parameters: {
       type: 'object',
       properties: {

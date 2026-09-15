@@ -21,7 +21,8 @@
   .fam-card .add-btn { margin-top: 14px; width: 100%; }
   .add-card { border: 1px dashed var(--line); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); cursor: pointer; padding: 18px; transition: border-color .15s ease, color .15s ease; background: transparent; font-family: inherit; }
   .add-card:hover { border-color: var(--crimson); color: var(--crimson); }
-  .add-card .plus { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .add-card .invite-caption { font-size: 12px; line-height: 1.4; max-width: 16rem; text-align: center; margin: 0; }
+  .family-id .btn-link { margin-left: 6px; }
   .grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
   h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin: 0 0 14px 0; }
   .shared-meal {

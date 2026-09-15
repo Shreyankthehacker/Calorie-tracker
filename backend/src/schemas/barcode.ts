@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sanitizeFoodName } from '../lib/food-name.js';
 import { canonicalizeNutrientKey, nutrientInputSchema, positiveQuantity } from './food-entries.js';
 
 const nonNegativeNumber = z
@@ -18,7 +19,12 @@ export const barcodeLookupBodySchema = z.object({
 
 export const barcodeProductSchema = z.object({
   barcode: z.string().trim().min(6).max(14),
-  name: z.string().trim().min(1).max(200),
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .transform((value) => sanitizeFoodName(value)),
   brand: z.string().trim().max(200).nullable(),
   quantity: positiveQuantity,
   quantityUnit: z.string().trim().min(1).max(32),

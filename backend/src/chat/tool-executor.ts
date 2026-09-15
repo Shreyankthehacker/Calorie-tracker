@@ -294,7 +294,8 @@ export class ChatToolExecutor {
       query: input.query,
       source: 'catalog_estimate',
       matches,
-      note: 'Catalog estimates only. They are not a laboratory food database.',
+      note:
+        'Catalog estimates only. They are not a laboratory food database. If matches is empty, still propose logMeal with a typical homemade or restaurant serving and say it is an estimate.',
     };
   }
 }

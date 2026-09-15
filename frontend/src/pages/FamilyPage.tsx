@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFamily, getFamily, joinFamily, leaveFamily } from '../api/family';
 import { ApiError, type FamilyMemberProfile } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
+import { displayTimeZone } from '../lib/timezones';
 
 function displayName(email: string): string {
   const local = email.split('@')[0] ?? email;
@@ -31,6 +32,7 @@ export function FamilyPage() {
   const [joinId, setJoinId] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [revealFamilyId, setRevealFamilyId] = useState(false);
 
   const familyQuery = useQuery({
     queryKey: ['family'],
@@ -108,7 +110,14 @@ export function FamilyPage() {
             <h1 className="page-title">My family</h1>
             {family ? (
               <p className="family-id">
-                Family ID <code>{family.id}</code>
+                Family ID{' '}
+                <code>{revealFamilyId ? family.id : '••••••••••••'}</code>{' '}
+                <button type="button" className="btn-link" onClick={() => setRevealFamilyId((value) => !value)}>
+                  {revealFamilyId ? 'Hide' : 'Reveal'}
+                </button>
+                <button type="button" className="btn-link" onClick={() => void copyFamilyId()}>
+                  Copy
+                </button>
               </p>
             ) : (
               <p className="family-id">Create a family or join with a family ID.</p>
@@ -156,7 +165,7 @@ export function FamilyPage() {
               </div>
               <div className="fam-stat">
                 <span>Timezone</span>
-                <b>{member.timezone}</b>
+                <b>{displayTimeZone(member.timezone)}</b>
               </div>
               <div className="fam-stat">
                 <span>Member since</span>
@@ -168,6 +177,7 @@ export function FamilyPage() {
             <button type="button" className="add-card" onClick={() => void copyFamilyId()}>
               <div className="plus">+</div>
               <div>Share family ID</div>
+              <p className="invite-caption">Invite a family member to share meal tracking. They join with this ID and keep their own log.</p>
             </button>
           ) : (
             <button type="button" className="add-card" onClick={() => createMutation.mutate()}>
@@ -188,6 +198,11 @@ export function FamilyPage() {
                   own log.
                 </p>
               </div>
+            ) : members.length === 1 ? (
+              <div className="empty-panel">
+                <p>Household today appears here once two or more people have joined.</p>
+                <p className="muted">With one member, today&apos;s calories stay on the profile card.</p>
+              </div>
             ) : (
               members.map((member) => (
                 <button
@@ -202,7 +217,7 @@ export function FamilyPage() {
                   <div className="info">
                     <div className="t">{displayName(member.email)}</div>
                     <div className="s">
-                      {formatKcal(member.todayCalories)} logged today · {member.timezone}
+                      {formatKcal(member.todayCalories)} logged today · {displayTimeZone(member.timezone)}
                     </div>
                   </div>
                 </button>
@@ -218,7 +233,7 @@ export function FamilyPage() {
                   {selected.isCurrentUser ? 'Currently viewing your profile.' : 'Currently viewing this family member.'}
                 </p>
                 <p>
-                  {formatKcal(selected.todayCalories)} logged today in {selected.timezone}.
+                  {formatKcal(selected.todayCalories)} logged today in {displayTimeZone(selected.timezone)}.
                 </p>
               </div>
             ) : null}

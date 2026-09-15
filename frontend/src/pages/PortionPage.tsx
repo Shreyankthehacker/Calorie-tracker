@@ -1,12 +1,37 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { nutritionToDraftEntry } from '../lib/meal-draft';
 import { portionDefaults } from '../mock/portions';
 
+function slotToMealType(slot: string): 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACKS' {
+  if (slot === 'Lunch') return 'LUNCH';
+  if (slot === 'Snack') return 'SNACKS';
+  return 'DINNER';
+}
+
 export function PortionPage() {
+  const navigate = useNavigate();
   const [food, setFood] = useState(portionDefaults.food);
   const [mealSlot, setMealSlot] = useState(portionDefaults.mealSlot);
   const [remaining, setRemaining] = useState(String(portionDefaults.remaining));
   const [split, setSplit] = useState(portionDefaults.split);
+
+  function logThisMeal() {
+    navigate('/log-meal', {
+      state: {
+        portionDraft: nutritionToDraftEntry({
+          foodName: food,
+          quantity: 1,
+          quantityUnit: 'serving',
+          calories: portionDefaults.calories,
+          protein: portionDefaults.protein,
+          carbs: portionDefaults.carbs,
+          fat: portionDefaults.fat,
+          mealType: slotToMealType(mealSlot),
+        }),
+      },
+    });
+  }
 
   return (
     <div className="page-portion">
@@ -44,7 +69,7 @@ export function PortionPage() {
             </div>
             <div className="field-row">
               <label className="field" htmlFor="portion-remaining">
-                <span className="field-label">Calories remaining today</span>
+                <span className="field-label">Calories remaining today, before this meal</span>
                 <input
                   id="portion-remaining"
                   type="number"
@@ -62,6 +87,7 @@ export function PortionPage() {
               </label>
             </div>
 
+            <p className="muted small">Calories remaining today, before this meal. The meal slot does not subtract anything by itself.</p>
             <div className="plate-wrap">
               <div className="plate">
                 <svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true">
@@ -115,15 +141,15 @@ export function PortionPage() {
                 <span>Leaves you with</span>
                 <b>{portionDefaults.leftover} kcal</b>
               </div>
+              <button type="button" className="btn-primary" onClick={logThisMeal}>
+                Log this meal
+              </button>
             </div>
             <div className="side-card">
               <div className="who">🐾 Sage on portions</div>
               <p>
-                "This portion leaves room for a light snack later. Scan the salmon packaging with the{' '}
-                <Link className="link-accent" to="/scan">
-                  barcode scanner
-                </Link>{' '}
-                to log the exact cut you're using."
+                "This suggestion is a calculator output for the remaining calories you typed, before logging this meal.
+                Use Log this meal to review it on the Log meal page."
               </p>
             </div>
           </div>

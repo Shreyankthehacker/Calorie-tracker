@@ -9,7 +9,6 @@
   .wave-card .cap { color: #C9C6C2; font-size: 12px; margin-bottom: 2px; }
   .wave-card .n { font-family: 'Fraunces', serif; color: var(--white); font-size: 30px; font-weight: 600; }
   .wave-card .n span { font-size: 14px; font-weight: 400; color: #C9C6C2; }
-  .glass-row { display: flex; gap: 8px; margin-top: 16px; }
   .glass-btn { width: 30px; height: 36px; border-radius: 4px 4px 8px 8px; border: 1.5px solid #4A4844; background: transparent; cursor: pointer; }
   .glass-btn.filled { background: var(--crimson); border-color: var(--crimson); }
   .add-water-row { display: flex; gap: 10px; margin-top: 18px; width: 100%; }
@@ -17,11 +16,19 @@
   .add-water-row button:hover { background: var(--crimson); color: var(--white); }
   h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin: 0 0 14px 0; }
   h2.reminders-title { font-size: 15px; margin-bottom: 4px; }
-  .week-bars { display: flex; align-items: flex-end; gap: 14px; height: 140px; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 8px; }
+  .week-bars { display: flex; align-items: flex-end; gap: 14px; height: 160px; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 8px; }
   .week-bars .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
-  .week-bars .bar { width: 100%; max-width: 28px; height: 70%; background: var(--paper); border-radius: 6px 6px 0 0; position: relative; overflow: hidden; }
+  .week-bars .bar { width: 100%; max-width: 28px; height: 100%; background: var(--paper); border-radius: 6px 6px 0 0; position: relative; overflow: hidden; }
   .week-bars .bar .fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--crimson); border-radius: 6px 6px 0 0; }
-  .week-bars .lbl { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .week-bars .col.is-today .bar { box-shadow: inset 0 0 0 2px var(--black); }
+  .week-bars .col.is-today .lbl { color: var(--black); font-weight: 700; }
+  .week-bars .lbl { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; line-height: 1.25; }
+  .goal-edit input {
+    width: 3.25rem; min-height: 28px; padding: 2px 6px; border-radius: 6px; border: 1px solid #4A4844;
+    background: #1a1a1a; color: var(--white); font: inherit; font-size: 14px; text-align: center;
+  }
+  .glass-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; justify-content: center; }
+  .hint { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 4px; max-width: 28rem; }
   .reminder-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
   .reminder-row:first-of-type { border-top: none; }
   .toggle { width: 36px; height: 20px; border-radius: 999px; background: var(--paper); position: relative; cursor: pointer; border: 1px solid var(--line); padding: 0; flex-shrink: 0; }

@@ -10,15 +10,18 @@ import {
 import { ApiError, type FoodEntry, type FoodEntryWritePayload, type MealType } from '../api/types';
 import { Alert } from '../components/layout/AppShell';
 import { MealForm } from '../components/meals/MealForm';
+import { FoodThumb } from '../components/meals/FoodThumb';
 import { useLogFood } from '../components/meals/LogFoodProvider';
 import { DateField } from '../components/ui/DateField';
-import { foodPhoto } from '../lib/food-photos';
-import { formatConsumedAt } from '../lib/dates';
+import { useAuth } from '../auth/AuthProvider';
+import { calendarDateInTimeZone, formatConsumedAt, formatDateLabel } from '../lib/dates';
 import { MEAL_LABELS, MEAL_SECTIONS } from '../lib/nutrition';
 
 const PAGE_SIZE = 10;
 
 export function MealsPage() {
+  const { user } = useAuth();
+  const timeZone = user?.timezone ?? 'UTC';
   const queryClient = useQueryClient();
   const { openLogFood } = useLogFood();
   const [searchParams] = useSearchParams();
@@ -103,9 +106,30 @@ export function MealsPage() {
     },
   });
 
-  const entries = mealsQuery.data?.data ?? [];
+  const entries = [...(mealsQuery.data?.data ?? [])].sort((a, b) =>
+    b.consumedAt.localeCompare(a.consumedAt),
+  );
   const pagination = mealsQuery.data?.pagination;
   const isFiltered = Boolean(startDate || endDate || mealType);
+  const dateGroups = (() => {
+    const dates: string[] = [];
+    const byDate = new Map<string, FoodEntry[]>();
+    for (const entry of entries) {
+      const date = calendarDateInTimeZone(new Date(entry.consumedAt), timeZone);
+      if (!byDate.has(date)) {
+        dates.push(date);
+        byDate.set(date, []);
+      }
+      byDate.get(date)?.push(entry);
+    }
+    return dates.map((date) => ({
+      date,
+      meals: MEAL_SECTIONS.map((section) => ({
+        ...section,
+        items: (byDate.get(date) ?? []).filter((entry) => entry.mealType === section.type),
+      })).filter((section) => section.items.length > 0),
+    }));
+  })();
 
   return (
     <div className="page-entries">
@@ -232,23 +256,25 @@ export function MealsPage() {
       ) : null}
 
       {entries.length > 0 ? (
-        <div className="grid">
-          <div>
+        <div className="timeline">
             <h2>Timeline records</h2>
-            {MEAL_SECTIONS.map((section) => {
-              const items = entries.filter((entry) => entry.mealType === section.type);
-              if (items.length === 0) return null;
-              const total = items.reduce((sum, entry) => sum + entry.calories, 0);
-              return (
-                <div className="day-block" key={section.type}>
-                  <div className="day-head">
-                    <span>{section.label}</span>
-                    <span>{Math.round(total)} kcal total</span>
-                  </div>
-                  {items.map((entry) => (
+            {dateGroups.map((group) => (
+              <div className="day-block" key={group.date}>
+                <p className="day-head">
+                  <strong>{formatDateLabel(group.date)}</strong>
+                  {' '}
+                  {Math.round(group.meals.reduce((sum, meal) => sum + meal.items.reduce((inner, entry) => inner + entry.calories, 0), 0))} kcal
+                </p>
+                {group.meals.map((section) => (
+                  <div key={`${group.date}-${section.type}`}>
+                    <div className="meal-subhead">
+                      <span>{section.label}</span>
+                      <span>{Math.round(section.items.reduce((sum, entry) => sum + entry.calories, 0))} kcal</span>
+                    </div>
+                    {section.items.map((entry) => (
                     <div className="entry-row" key={entry.id}>
                       <div className="thumb">
-                        <img src={foodPhoto(entry.foodName)} alt="" />
+                        <FoodThumb name={entry.foodName} />
                       </div>
                       <div className="desc">
                         {entry.foodName}
@@ -286,11 +312,11 @@ export function MealsPage() {
                         Delete
                       </button>
                     </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
         </div>
       ) : null}
 
@@ -326,7 +352,22 @@ export function MealsPage() {
             aria-modal="true"
             aria-labelledby="meal-form-title"
           >
-            <h2 id="meal-form-title">{editor === 'create' ? 'Add meal' : 'Edit meal'}</h2>
+            <div className="modal-head">
+              <h2 id="meal-form-title">{editor === 'create' ? 'Add meal' : 'Edit meal'}</h2>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close"
+                onClick={() => {
+                  setEditor(null);
+                  setFormError(null);
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 2l10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
             <MealForm
               {...(editor === 'create' ? {} : { initial: editor })}
               submitting={createMutation.isPending || updateMutation.isPending}

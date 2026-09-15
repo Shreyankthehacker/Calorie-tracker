@@ -52,17 +52,24 @@ export function reportRangeForPreset(
     return { startDate: yesterday, endDate: yesterday };
   }
   if (preset === 'this_week') {
-    return isoWeekRange(today);
+    const week = isoWeekRange(today);
+    return { startDate: week.startDate, endDate: today < week.endDate ? today : week.endDate };
   }
   if (preset === 'last_week') {
     const thisWeek = isoWeekRange(today);
     const endDate = addCalendarDays(thisWeek.startDate, -1);
     return { startDate: addCalendarDays(endDate, -6), endDate };
   }
+  const startDate = custom?.startDate ?? today;
+  const endDate = custom?.endDate ?? today;
   return {
-    startDate: custom?.startDate ?? today,
-    endDate: custom?.endDate ?? today,
+    startDate,
+    endDate: endDate > today ? today : endDate,
   };
+}
+
+export function clipSeriesToToday<T extends { date: string }>(rows: T[], today: string): T[] {
+  return rows.filter((row) => row.date <= today);
 }
 
 export function toDateTimeLocalValue(iso: string): string {

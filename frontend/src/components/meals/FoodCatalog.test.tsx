@@ -60,7 +60,7 @@ const loggedEntry: FoodEntry = {
 function catalogResponse(data: FoodItem[]) {
   return {
     data,
-    pagination: { page: 1, pageSize: 50, total: data.length, totalPages: 1 },
+    pagination: { page: 1, pageSize: 8, total: data.length, totalPages: 1 },
   };
 }
 
@@ -80,7 +80,7 @@ describe('FoodCatalog', () => {
     await userEvt.click(screen.getByRole('tab', { name: 'Lunch' }));
     await waitFor(() => {
       expect(foodItemsApi.listFoodItems).toHaveBeenCalledWith(
-        expect.objectContaining({ mealType: 'LUNCH', pageSize: 50 }),
+        expect.objectContaining({ mealType: 'LUNCH', pageSize: 8 }),
       );
     });
   });
@@ -93,7 +93,7 @@ describe('FoodCatalog', () => {
     await userEvt.type(screen.getByLabelText(/search food/i), 'banana');
     await waitFor(() => {
       expect(foodItemsApi.listFoodItems).toHaveBeenCalledWith(
-        expect.objectContaining({ q: 'banana' }),
+        expect.objectContaining({ q: 'banana', pageSize: 8 }),
       );
     });
   });
@@ -122,5 +122,15 @@ describe('FoodCatalog', () => {
       );
     });
     expect(onLogged).toHaveBeenCalled();
+  });
+
+  it('closes the food dialog from the top close button', async () => {
+    const userEvt = userEvent.setup();
+    renderWithProviders(<FoodCatalog onLogged={vi.fn()} />, { route: '/meals', withAuth: false });
+    await userEvt.click(await screen.findByRole('button', { name: /eggs/i }));
+
+    expect(screen.getByRole('dialog', { name: 'Eggs' })).toBeInTheDocument();
+    await userEvt.click(screen.getByRole('button', { name: /close/i }));
+    expect(screen.queryByRole('dialog', { name: 'Eggs' })).not.toBeInTheDocument();
   });
 });

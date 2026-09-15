@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { X } from 'lucide-react';
 import { listFoodItems, logFoodItem } from '../../api/food-items';
 import { ApiError, type FoodItem, type MealType } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { Alert, FormField } from '../layout/AppShell';
-import { foodPhoto } from '../../lib/food-photos';
+import { FoodThumb } from './FoodThumb';
+import { unusualQuantityWarning } from '../../lib/quantity-warning';
 
 const mealTabs: Array<{ value: MealType | ''; label: string }> = [
   { value: '', label: 'All' },
@@ -20,6 +22,8 @@ const mealLabels: Record<MealType, string> = {
   DINNER: 'dinner',
   SNACKS: 'snacks',
 };
+
+const CATALOG_PAGE_SIZE = 8;
 
 function scaleFromServing(
   perServing: number,
@@ -47,7 +51,7 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
   const filters = useMemo(
     () => ({
       page: 1,
-      pageSize: 50,
+      pageSize: CATALOG_PAGE_SIZE,
       ...(mealType ? { mealType } : {}),
       ...(search.trim() ? { q: search.trim() } : {}),
     }),
@@ -91,6 +95,22 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
     setConsumedAt(toDateTimeLocalValue(new Date().toISOString()));
     setError(null);
   }
+
+  function closeSelected() {
+    setSelected(null);
+    setError(null);
+  }
+
+  useEffect(() => {
+    if (!selected) return undefined;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape' && !logMutation.isPending) {
+        closeSelected();
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selected, logMutation.isPending]);
 
   function submitSelected() {
     if (!selected) return;
@@ -138,7 +158,7 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
           className="search"
           type="text"
           value={search}
-          placeholder="Search 2,400+ common ingredients…"
+          placeholder="Search foods, e.g. mutton biryani"
           onChange={(event) => setSearch(event.target.value)}
         />
       </label>
@@ -153,48 +173,64 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
       ) : null}
 
       {items.length > 0 ? (
-        <div className="food-grid">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="food-card"
-              onClick={() => openItem(item)}
-            >
-              {item.imageUrl ? (
-                <img src={item.imageUrl} alt="" />
-              ) : (
-                <img
-                  src={foodPhoto(item.name)}
-                  alt=""
-                  onError={(event) => {
-                    event.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/180`;
-                  }}
-                />
-              )}
-              <div className="body">
-                <div className="title">{item.name}</div>
-                <div className="meta">
-                  {item.servingSize} {item.servingUnit} · <b>{item.calories} kcal</b>
+        <>
+          <div className="food-grid">
+            {items.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="food-card"
+                onClick={() => openItem(item)}
+              >
+                <FoodThumb name={item.name} imageUrl={item.imageUrl} />
+                <div className="body">
+                  <div className="title">{item.name}</div>
+                  <div className="meta">
+                    {item.servingSize} {item.servingUnit} · <b>{item.calories} kcal</b>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+          {!search.trim() ? (
+            <p className="muted small catalog-hint">
+              Showing {items.length} foods. Search to find dishes like mutton biryani.
+            </p>
+          ) : null}
+        </>
       ) : null}
 
       {selected ? (
-        <div className="modal-backdrop">
+        <div
+          className="modal-backdrop"
+          onClick={() => {
+            if (!logMutation.isPending) closeSelected();
+          }}
+        >
           <div
-            className="modal-panel"
+            className="modal-panel catalog-dialog"
             role="dialog"
             aria-modal="true"
             aria-labelledby="catalog-food-title"
+            onClick={(event) => event.stopPropagation()}
           >
-            <h2 id="catalog-food-title">{selected.name}</h2>
-            <p className="muted small">
-              Per {selected.servingSize} {selected.servingUnit}
-            </p>
+            <div className="modal-head">
+              <div>
+                <h2 id="catalog-food-title">{selected.name}</h2>
+                <p className="muted small">
+                  Per {selected.servingSize} {selected.servingUnit}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close"
+                onClick={closeSelected}
+                disabled={logMutation.isPending}
+              >
+                <X size={16} />
+              </button>
+            </div>
             <ul className="catalog-macros">
               <li>{selected.calories} kcal</li>
               <li>Protein {selected.protein}g</li>
@@ -215,6 +251,11 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
                 />
                 <span className="unit-suffix">{selected.servingUnit}</span>
               </div>
+              {unusualQuantityWarning(quantityValue, selected.servingUnit) ? (
+                <p className="field-hint warn" role="status">
+                  {unusualQuantityWarning(quantityValue, selected.servingUnit)}
+                </p>
+              ) : null}
             </FormField>
 
             <FormField label="Add to meal" htmlFor="catalog-meal-type">
@@ -261,10 +302,7 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => {
-                  setSelected(null);
-                  setError(null);
-                }}
+                onClick={closeSelected}
                 disabled={logMutation.isPending}
               >
                 Cancel

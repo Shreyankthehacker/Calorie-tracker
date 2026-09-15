@@ -1,8 +1,12 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createGoal, deleteGoal, getGoal, upsertGoal } from '../api/goals';
+import { getInsightsReport } from '../api/reports';
 import { ApiError, type GoalWritePayload } from '../api/types';
 import { Alert, FormField, SkeletonBlock } from '../components/layout/AppShell';
+import { useAuth } from '../auth/AuthProvider';
+import { addCalendarDays, calendarDateInTimeZone } from '../lib/dates';
+import { assessGoal, macroCaloriePool, validateGoalForSave } from '../lib/goal-sanity';
 
 type GoalFormState = {
   dailyCalorieTarget: string;
@@ -28,12 +32,41 @@ function toPayload(form: GoalFormState): GoalWritePayload {
   };
 }
 
+function streakCopy(streak: number | undefined): { title: string; body: string } {
+  if (streak == null) {
+    return { title: 'Streak', body: 'Loading logged-day history…' };
+  }
+  if (streak <= 0) {
+    return {
+      title: 'No streak yet',
+      body: 'Log a meal today to start a streak. This count only includes days with at least one food entry.',
+    };
+  }
+  if (streak === 1) {
+    return { title: '1-day streak', body: 'You logged food yesterday or today. Keep going tomorrow to make it two.' };
+  }
+  return {
+    title: `${streak}-day streak`,
+    body: `You've logged food on ${streak} consecutive days, counting back from the latest tracked day.`,
+  };
+}
+
 export function GoalsPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  const today = calendarDateInTimeZone(new Date(), user?.timezone ?? 'UTC');
   const goalQuery = useQuery({
     queryKey: ['goals', 'current'],
     queryFn: getGoal,
     retry: false,
+  });
+  const insightsQuery = useQuery({
+    queryKey: ['reports', 'insights', 'streak', today],
+    queryFn: () =>
+      getInsightsReport({
+        startDate: addCalendarDays(today, -89),
+        endDate: today,
+      }),
   });
 
   const missingGoal =
@@ -101,12 +134,9 @@ export function GoalsPage() {
     setFormError(null);
     setSuccess(null);
     const payload = toPayload(form);
-    if (
-      [payload.dailyCalorieTarget, payload.proteinTarget, payload.carbTarget, payload.fatTarget].some(
-        (n) => Number.isNaN(n),
-      )
-    ) {
-      setFormError('Enter valid numbers for all required fields.');
+    const invalid = validateGoalForSave(payload);
+    if (invalid) {
+      setFormError(invalid);
       return;
     }
     saveMutation.mutate(payload);
@@ -120,7 +150,13 @@ export function GoalsPage() {
   const proteinKcal = protein * 4;
   const carbKcal = carbs * 4;
   const fatKcal = fat * 9;
-  const pool = proteinKcal + carbKcal + fatKcal || calories;
+  const pool = macroCaloriePool(protein, carbs, fat);
+  const percentBase = pool > 0 ? pool : calories;
+  const assessment = useMemo(
+    () => assessGoal({ dailyCalorieTarget: calories, proteinTarget: protein, carbTarget: carbs, fatTarget: fat }),
+    [calories, protein, carbs, fat],
+  );
+  const streak = streakCopy(insightsQuery.isPending ? undefined : insightsQuery.data?.currentStreak ?? 0);
 
   return (
     <div className="page-goals">
@@ -176,40 +212,32 @@ export function GoalsPage() {
         <>
           <h2>The 4/4/9 calorie model</h2>
           <p className="sub">
-            Protein contains 4 kcal/g. Carbohydrates contain 4 kcal/g. Fats contain 9 kcal/g. Your total daily calorie
-            pool adapts live as you update macro limits.
+            Protein and carbohydrates contain 4 kcal/g. Fats contain 9 kcal/g. The daily calorie target is the number
+            you set. Macro grams are checked against that target — they are not divided into it.
           </p>
           <div className="hero-num">
             <img
               className="slide"
               src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000&q=80&auto=format&fit=crop"
-              onError={(event) => {
-                event.currentTarget.src = 'https://picsum.photos/seed/mealprep1/1000/300';
-              }}
               alt=""
             />
             <img
               className="slide"
               src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1000&q=80&auto=format&fit=crop"
-              onError={(event) => {
-                event.currentTarget.src = 'https://picsum.photos/seed/mealprep2/1000/300';
-              }}
               alt=""
             />
             <img
               className="slide"
               src="https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1000&q=80&auto=format&fit=crop"
-              onError={(event) => {
-                event.currentTarget.src = 'https://picsum.photos/seed/mealprep3/1000/300';
-              }}
               alt=""
             />
             <div className="content">
-              <div className="l">Computed target pool</div>
+              <div className="l">Daily calorie target</div>
               <div className="n">
                 {calories}
                 <span>kcal / day</span>
               </div>
+              <div className="l pool-note">Macros add up to {Math.round(pool)} kcal via 4/4/9</div>
             </div>
             <svg className="steam" viewBox="0 0 70 70" aria-hidden="true">
               <path d="M20 55 C 14 45, 26 40, 20 30 C 14 20, 26 15, 22 5" />
@@ -229,7 +257,7 @@ export function GoalsPage() {
                   </b>
                 </div>
                 <div className="bar-bg">
-                  <div className="bar-fill" style={{ width: pool ? `${Math.min(100, (proteinKcal / pool) * 100)}%` : '0%' }} />
+                  <div className="bar-fill" style={{ width: percentBase ? `${Math.min(100, (proteinKcal / percentBase) * 100)}%` : '0%' }} />
                 </div>
               </div>
               <div className="macro-row">
@@ -240,7 +268,7 @@ export function GoalsPage() {
                   </b>
                 </div>
                 <div className="bar-bg">
-                  <div className="bar-fill" style={{ width: pool ? `${Math.min(100, (carbKcal / pool) * 100)}%` : '0%' }} />
+                  <div className="bar-fill" style={{ width: percentBase ? `${Math.min(100, (carbKcal / percentBase) * 100)}%` : '0%' }} />
                 </div>
               </div>
               <div className="macro-row">
@@ -251,7 +279,7 @@ export function GoalsPage() {
                   </b>
                 </div>
                 <div className="bar-bg">
-                  <div className="bar-fill" style={{ width: pool ? `${Math.min(100, (fatKcal / pool) * 100)}%` : '0%' }} />
+                  <div className="bar-fill" style={{ width: percentBase ? `${Math.min(100, (fatKcal / percentBase) * 100)}%` : '0%' }} />
                 </div>
               </div>
               <div className="actions">
@@ -281,31 +309,39 @@ export function GoalsPage() {
                   <div className="spark s3" />
                 </div>
                 <div className="streak-text">
-                  <div className="n">12-day streak</div>
-                  <div className="s">You've logged every day this week. Keep it going today to hit two weeks straight.</div>
+                  <div className="n">{streak.title}</div>
+                  <div className="s">{streak.body}</div>
                 </div>
               </div>
               <div className="side-card pct-card">
                 <h2 className="panel-sub-sm">Percentage allocation</h2>
+                <p className="note">Share of macro calories ({Math.round(pool)} kcal), not the calorie target.</p>
                 <div className="pct-row">
-                  <span>Protein (g)</span>
-                  <b>{pool ? Math.round((proteinKcal / pool) * 100) : 0}%</b>
+                  <span>Protein</span>
+                  <b>{percentBase ? Math.round((proteinKcal / percentBase) * 100) : 0}%</b>
                 </div>
                 <div className="pct-row">
-                  <span>Carbohydrates (g)</span>
-                  <b>{pool ? Math.round((carbKcal / pool) * 100) : 0}%</b>
+                  <span>Carbohydrates</span>
+                  <b>{percentBase ? Math.round((carbKcal / percentBase) * 100) : 0}%</b>
                 </div>
                 <div className="pct-row">
-                  <span>Fats (g)</span>
-                  <b>{pool ? Math.round((fatKcal / pool) * 100) : 0}%</b>
+                  <span>Fats</span>
+                  <b>{percentBase ? Math.round((fatKcal / percentBase) * 100) : 0}%</b>
                 </div>
               </div>
-              <div className="side-card warn-card">
-                <div className="t">Validation warning</div>
-                <p>
-                  "Your carbohydrate and fat targets result in a combined {pool ? Math.round(((carbKcal + fatKcal) / pool) * 100) : 0}% calorie ratio. Consider setting carbohydrates to at least 40% of overall calories to align with high daily activity."
-                </p>
-              </div>
+              {assessment.warnings.length > 0 ? (
+                <div className="side-card warn-card">
+                  <div className="t">Validation warning</div>
+                  {assessment.warnings.map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="side-card">
+                  <div className="t">Looks coherent</div>
+                  <p>Calorie and macro targets are within typical daily ranges.</p>
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -318,7 +354,8 @@ export function GoalsPage() {
             <input
               id="goal-calories"
               type="number"
-              min={0}
+              min={800}
+              max={6000}
               step="any"
               value={form.dailyCalorieTarget}
               onChange={(e) => updateField('dailyCalorieTarget', e.target.value)}
@@ -330,6 +367,7 @@ export function GoalsPage() {
               id="goal-protein"
               type="number"
               min={0}
+              max={300}
               step="any"
               value={form.proteinTarget}
               onChange={(e) => updateField('proteinTarget', e.target.value)}
@@ -341,6 +379,7 @@ export function GoalsPage() {
               id="goal-carbs"
               type="number"
               min={0}
+              max={800}
               step="any"
               value={form.carbTarget}
               onChange={(e) => updateField('carbTarget', e.target.value)}
@@ -352,6 +391,7 @@ export function GoalsPage() {
               id="goal-fat"
               type="number"
               min={0}
+              max={250}
               step="any"
               value={form.fatTarget}
               onChange={(e) => updateField('fatTarget', e.target.value)}

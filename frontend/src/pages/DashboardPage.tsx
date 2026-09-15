@@ -5,11 +5,11 @@ import { getGoal } from '../api/goals';
 import { getTodayReport } from '../api/reports';
 import { ApiError, type FoodEntry, type MealType } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
-import { QuickTools } from '../components/layout/QuickTools';
 import { SkeletonBlock } from '../components/layout/AppShell';
+import { FoodThumb } from '../components/meals/FoodThumb';
 import { useLogFood } from '../components/meals/LogFoodProvider';
 import { calendarDateInTimeZone } from '../lib/dates';
-import { foodPhoto } from '../lib/food-photos';
+import { isPlausibleDailyCalorieTarget } from '../lib/goal-sanity';
 import { formatAmount, MEAL_SECTIONS } from '../lib/nutrition';
 
 function formatTodayTitle(now: Date): string {
@@ -30,8 +30,19 @@ function groupMeal(entries: FoodEntry[], type: MealType) {
     calories,
     desc: items.map((entry) => entry.foodName).join(', '),
     time: latest.consumedAt,
-    photo: foodPhoto(items[0]?.foodName ?? type),
+    photoName: items[0]?.foodName ?? type,
   };
+}
+
+function sageTodayCopy(entries: FoodEntry[], totals: { protein: number; calories: number }): string {
+  if (entries.length === 0) {
+    return 'No meals logged yet today, so there is not enough data for a recommendation.';
+  }
+  const names = entries.slice(0, 3).map((entry) => entry.foodName).join(', ');
+  if (totals.protein < 20 && totals.calories > 0) {
+    return `Logged so far: ${names}. Protein is ${formatAmount(totals.protein)}g on ${formatAmount(totals.calories)} kcal — add a protein source if that is the plan.`;
+  }
+  return `Logged so far: ${names}. These numbers come from today's food entries, not a generic diet script.`;
 }
 
 export function DashboardPage() {
@@ -50,17 +61,18 @@ export function DashboardPage() {
   const missingGoal =
     goalQuery.isError && goalQuery.error instanceof ApiError && goalQuery.error.status === 404;
   const goal = goalQuery.data;
+  const goalUsable = Boolean(goal && isPlausibleDailyCalorieTarget(goal.dailyCalorieTarget));
   const totals = todayReportQuery.data ?? { calories: 0, protein: 0, carbs: 0, fat: 0 };
   const entries = mealsQuery.data?.data ?? [];
   const nutritionLoading = goalQuery.isPending || todayReportQuery.isPending;
   const macroSum = totals.protein + totals.carbs + totals.fat;
+  const showMacroRing = macroSum > 0;
   const proteinPct = macroSum > 0 ? Math.round((totals.protein / macroSum) * 100) : 0;
   const circumference = 2 * Math.PI * 55;
   const dashOffset = circumference - (circumference * proteinPct) / 100;
 
   return (
     <div className="page-today">
-      <QuickTools />
       <div className="main-inner">
         <div className="top-row">
           <div>
@@ -83,9 +95,6 @@ export function DashboardPage() {
             <div className="right">
               <img
                 src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000&q=80&auto=format&fit=crop"
-                onError={(event) => {
-                  event.currentTarget.src = 'https://picsum.photos/seed/rationhero/1000/460';
-                }}
                 alt="Fresh bowl of vegetables and greens"
               />
             </div>
@@ -96,7 +105,12 @@ export function DashboardPage() {
                 {formatAmount(totals.calories)}
                 <span>kcal logged today</span>
               </div>
-              {goal ? (
+              {goal && !goalUsable ? (
+                <p>
+                  Your saved target is {formatAmount(goal.dailyCalorieTarget)} kcal/day, which is too low to use as a
+                  daily budget. Update it in Goals.
+                </p>
+              ) : goalUsable && goal ? (
                 <p>
                   {totals.calories <= goal.dailyCalorieTarget
                     ? `${formatAmount(goal.dailyCalorieTarget - totals.calories)} kcal remaining of your ${formatAmount(goal.dailyCalorieTarget)} kcal target.`
@@ -144,13 +158,7 @@ export function DashboardPage() {
                   }
                   return (
                     <div className="meal-card" key={section.type}>
-                      <img
-                        src={grouped.photo}
-                        alt=""
-                        onError={(event) => {
-                          event.currentTarget.src = `https://picsum.photos/seed/${section.type}/200/200`;
-                        }}
-                      />
+                      <FoodThumb name={grouped.photoName} />
                       <div className="meal-info">
                         <div className="title">{section.label}</div>
                         <div className="time">Logged at {formatLoggedAt(grouped.time)}</div>
@@ -167,42 +175,47 @@ export function DashboardPage() {
             <h2>Context &amp; wisdom</h2>
             <div className="side-card">
               <div className="who">🐾 Sage assistant</div>
-              <p>
-                &quot;Your breakfast was nutrient-dense but moderate in protein. Adding eggs or a whey isolate to lunch
-                will support muscle retention.&quot;
-              </p>
+              <p>&quot;{sageTodayCopy(entries, totals)}&quot;</p>
               <Link className="ask-sage" to="/chat">
-                Ask Sage: &quot;What should I eat for dinner?&quot;
+                Ask Sage about today
               </Link>
             </div>
-            <div className="ring-card">
-              <div className="cap">Macro balance</div>
-              <div className="ring-wrap">
-                <svg width="132" height="132" viewBox="0 0 132 132">
-                  <circle className="ring-bg" cx="66" cy="66" r="55" />
-                  <circle
-                    className="ring-fg"
-                    cx="66"
-                    cy="66"
-                    r="55"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={dashOffset}
-                  />
-                </svg>
-                <div className="ring-center">
-                  <div className="n">{proteinPct}%</div>
-                  <div className="l">protein</div>
+            {showMacroRing ? (
+              <div className="ring-card">
+                <div className="cap">Macro balance</div>
+                <div className="ring-wrap">
+                  <svg width="132" height="132" viewBox="0 0 132 132">
+                    <circle className="ring-bg" cx="66" cy="66" r="55" />
+                    <circle
+                      className="ring-fg"
+                      cx="66"
+                      cy="66"
+                      r="55"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={dashOffset}
+                    />
+                  </svg>
+                  <div className="ring-center">
+                    <div className="n">{proteinPct}%</div>
+                    <div className="l">protein</div>
+                  </div>
+                </div>
+                <div className="ring-note">
+                  From today&apos;s logged meals: {formatAmount(totals.protein)}g protein · {formatAmount(totals.carbs)}g
+                  carbs · {formatAmount(totals.fat)}g fat
+                </div>
+                <div className="ring-note">
+                  {goalUsable && goal
+                    ? `Goal ${formatAmount(goal.dailyCalorieTarget)} kcal`
+                    : "No usable daily goal — showing today's raw split"}
                 </div>
               </div>
-              <div className="ring-note">
-                {formatAmount(totals.protein)}g protein · {formatAmount(totals.carbs)}g carbs · {formatAmount(totals.fat)}g fat
+            ) : (
+              <div className="ring-card">
+                <div className="cap">Macro balance</div>
+                <div className="ring-note">No macro grams logged yet today, so this ring stays hidden.</div>
               </div>
-              <div className="ring-note">
-                {goal
-                  ? `Goal ${formatAmount(goal.dailyCalorieTarget)} kcal`
-                  : "No daily goal set — showing today's raw split"}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

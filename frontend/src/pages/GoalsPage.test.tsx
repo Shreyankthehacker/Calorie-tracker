@@ -5,10 +5,12 @@ import { GoalsPage } from './GoalsPage';
 import { renderWithProviders } from '../test/render';
 import { ApiError } from '../api/types';
 import * as goalsApi from '../api/goals';
+import * as reportsApi from '../api/reports';
 import * as authApi from '../api/auth';
 import { tokenStorage } from '../api/tokenStorage';
 
 vi.mock('../api/goals');
+vi.mock('../api/reports');
 vi.mock('../api/auth', async () => {
   const actual = await vi.importActual<typeof import('../api/auth')>('../api/auth');
   return {
@@ -34,6 +36,21 @@ describe('GoalsPage', () => {
     tokenStorage.setTokens('access', 'refresh');
     vi.clearAllMocks();
     vi.mocked(authApi.getCurrentUser).mockResolvedValue(user);
+    vi.mocked(reportsApi.getInsightsReport).mockResolvedValue({
+      timezone: 'UTC',
+      startDate: '2026-08-15',
+      endDate: '2026-09-13',
+      dayCount: 30,
+      averageCalories: 0,
+      averageProtein: 0,
+      averageCarbs: 0,
+      averageFat: 0,
+      daysTracked: 3,
+      daysOnTarget: 0,
+      daysOver: 0,
+      currentStreak: 3,
+      dailyGoal: null,
+    });
   });
 
   it('shows empty state when no goal exists', async () => {
@@ -80,6 +97,8 @@ describe('GoalsPage', () => {
 
     expect(await screen.findByText('2200')).toBeInTheDocument();
     expect(screen.getByText('140')).toBeInTheDocument();
+    expect(screen.getByText(/3-day streak/i)).toBeInTheDocument();
+    expect(screen.queryByText(/12-day streak/i)).not.toBeInTheDocument();
   });
 
   it('submits goal creation from empty state', async () => {

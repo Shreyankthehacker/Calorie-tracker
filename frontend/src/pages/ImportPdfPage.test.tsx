@@ -104,7 +104,7 @@ describe('ImportPdfPage', () => {
 
   it('shows the idle upload state', async () => {
     renderImport();
-    expect(await screen.findByRole('heading', { name: 'Import PDF' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Bulk logging' })).toBeInTheDocument();
     expect(screen.getByText(/no file selected/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /parse pdf/i })).toBeDisabled();
   });

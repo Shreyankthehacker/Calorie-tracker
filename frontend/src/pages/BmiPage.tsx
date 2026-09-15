@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
 import { bmiCategories, defaultBmiInputs } from '../mock/bmi';
 
 function categoryFor(bmi: number): string {
@@ -9,21 +10,48 @@ function categoryFor(bmi: number): string {
   return 'Obese';
 }
 
+function cmToFeetInches(cm: number): { feet: number; inches: number } {
+  const totalInches = cm / 2.54;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches - feet * 12);
+  return { feet, inches };
+}
+
+function feetInchesToCm(feet: number, inches: number): number {
+  return (feet * 12 + inches) * 2.54;
+}
+
 export function BmiPage() {
+  const { user } = useAuth();
+  const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
   const [heightCm, setHeightCm] = useState(String(defaultBmiInputs.heightCm));
   const [weightKg, setWeightKg] = useState(String(defaultBmiInputs.weightKg));
   const [age, setAge] = useState(String(defaultBmiInputs.age));
+  const imperialHeight = cmToFeetInches(Number(heightCm) || 0);
+  const [heightFt, setHeightFt] = useState(String(imperialHeight.feet || 5));
+  const [heightIn, setHeightIn] = useState(String(imperialHeight.inches || 7));
+  const [weightLb, setWeightLb] = useState(String(Math.round((Number(weightKg) || 0) * 2.20462)));
 
-  const bmi = useMemo(() => {
-    const height = Number(heightCm);
-    const weight = Number(weightKg);
-    if (!height || !weight) return 0;
-    const meters = height / 100;
-    return weight / (meters * meters);
-  }, [heightCm, weightKg]);
+  const heightMeters = useMemo(() => {
+    if (units === 'imperial') {
+      return feetInchesToCm(Number(heightFt) || 0, Number(heightIn) || 0) / 100;
+    }
+    return (Number(heightCm) || 0) / 100;
+  }, [units, heightCm, heightFt, heightIn]);
 
+  const weight = useMemo(() => {
+    if (units === 'imperial') {
+      return (Number(weightLb) || 0) * 0.453592;
+    }
+    return Number(weightKg) || 0;
+  }, [units, weightKg, weightLb]);
+
+  const bmi = heightMeters > 0 && weight > 0 ? weight / (heightMeters * heightMeters) : 0;
   const display = bmi ? bmi.toFixed(1) : '—';
   const markerPct = bmi ? Math.min(100, Math.max(0, ((bmi - 15) / (40 - 15)) * 100)) : 0;
+  const accountDays = user?.createdAt
+    ? Math.max(0, Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86_400_000))
+    : 0;
 
   return (
     <div className="page-bmi">
@@ -34,26 +62,72 @@ export function BmiPage() {
         </div>
 
         <div className="panel">
+          <div className="unit-toggle" role="group" aria-label="Measurement units">
+            <button type="button" className={units === 'metric' ? 'is-active' : ''} onClick={() => setUnits('metric')}>
+              Metric
+            </button>
+            <button
+              type="button"
+              className={units === 'imperial' ? 'is-active' : ''}
+              onClick={() => setUnits('imperial')}
+            >
+              Imperial
+            </button>
+          </div>
           <h2>Calculate your BMI</h2>
           <div className="field-row">
-            <label className="field" htmlFor="bmi-height">
-              <span className="field-label">Height (cm)</span>
-              <input
-                id="bmi-height"
-                type="number"
-                value={heightCm}
-                onChange={(event) => setHeightCm(event.target.value)}
-              />
-            </label>
-            <label className="field" htmlFor="bmi-weight">
-              <span className="field-label">Weight (kg)</span>
-              <input
-                id="bmi-weight"
-                type="number"
-                value={weightKg}
-                onChange={(event) => setWeightKg(event.target.value)}
-              />
-            </label>
+            {units === 'metric' ? (
+              <>
+                <label className="field" htmlFor="bmi-height">
+                  <span className="field-label">Height (cm)</span>
+                  <input
+                    id="bmi-height"
+                    type="number"
+                    value={heightCm}
+                    onChange={(event) => setHeightCm(event.target.value)}
+                  />
+                </label>
+                <label className="field" htmlFor="bmi-weight">
+                  <span className="field-label">Weight (kg)</span>
+                  <input
+                    id="bmi-weight"
+                    type="number"
+                    value={weightKg}
+                    onChange={(event) => setWeightKg(event.target.value)}
+                  />
+                </label>
+              </>
+            ) : (
+              <>
+                <label className="field" htmlFor="bmi-height-ft">
+                  <span className="field-label">Height (ft / in)</span>
+                  <div className="qty-unit">
+                    <input
+                      id="bmi-height-ft"
+                      type="number"
+                      value={heightFt}
+                      onChange={(event) => setHeightFt(event.target.value)}
+                    />
+                    <input
+                      id="bmi-height-in"
+                      type="number"
+                      aria-label="Height inches"
+                      value={heightIn}
+                      onChange={(event) => setHeightIn(event.target.value)}
+                    />
+                  </div>
+                </label>
+                <label className="field" htmlFor="bmi-weight-lb">
+                  <span className="field-label">Weight (lb)</span>
+                  <input
+                    id="bmi-weight-lb"
+                    type="number"
+                    value={weightLb}
+                    onChange={(event) => setWeightLb(event.target.value)}
+                  />
+                </label>
+              </>
+            )}
             <label className="field" htmlFor="bmi-age">
               <span className="field-label">Age</span>
               <input id="bmi-age" type="number" value={age} onChange={(event) => setAge(event.target.value)} />
@@ -108,8 +182,9 @@ export function BmiPage() {
           <div className="side-card">
             <div className="who">🐾 Sage on BMI</div>
             <p>
-              "Your BMI has stayed in the normal range for 3 months. Given your logged protein intake, this looks like a
-              stable, healthy trend rather than a number to chase further."
+              {accountDays < 14
+                ? `"This calculator is a snapshot from the height and weight you just entered. The account is ${accountDays} day${accountDays === 1 ? '' : 's'} old, so there is not enough BMI history for a trend."`
+                : `"This is today's calculated BMI from the values on this page. There is still no stored BMI history to chart yet."`}
             </p>
           </div>
           <div className="side-card">

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sanitizeFoodName } from '../lib/food-name.js';
 
 export const mealTypeSchema = z.enum(['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS']);
 
@@ -89,7 +90,12 @@ export const dateOnlySchema = z
 export const foodEntryCreateBodySchema = z
   .object({
     mealType: mealTypeSchema,
-    foodName: z.string().trim().min(1).max(200),
+    foodName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .transform((value) => sanitizeFoodName(value)),
     quantity: positiveQuantity,
     quantityUnit: z.string().trim().min(1).max(32),
     calories: nonNegativeNumber,
@@ -108,7 +114,13 @@ export const foodEntryCreateBodySchema = z
 export const foodEntryUpdateBodySchema = z
   .object({
     mealType: mealTypeSchema.optional(),
-    foodName: z.string().trim().min(1).max(200).optional(),
+    foodName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .transform((value) => sanitizeFoodName(value))
+      .optional(),
     quantity: positiveQuantity.optional(),
     quantityUnit: z.string().trim().min(1).max(32).optional(),
     calories: nonNegativeNumber.optional(),

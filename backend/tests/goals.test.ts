@@ -150,6 +150,66 @@ describe('goals API', () => {
     expect(response.json().error.code).toBe('VALIDATION_ERROR');
   });
 
+  it('rejects calorie targets below 800 kcal', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/goals',
+      headers: { authorization: `Bearer ${userA.accessToken}` },
+      payload: {
+        ...validGoal,
+        dailyCalorieTarget: 23,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects protein targets above 300g', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/goals',
+      headers: { authorization: `Bearer ${userA.accessToken}` },
+      payload: {
+        ...validGoal,
+        proteinTarget: 2434,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects calorie targets below 800 kcal', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/goals',
+      headers: { authorization: `Bearer ${userA.accessToken}` },
+      payload: {
+        ...validGoal,
+        dailyCalorieTarget: 23,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects protein targets above 300g', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/goals',
+      headers: { authorization: `Bearer ${userA.accessToken}` },
+      payload: {
+        ...validGoal,
+        proteinTarget: 2434,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe('VALIDATION_ERROR');
+  });
+
   it('updates the current goal via PUT', async () => {
     const response = await app.inject({
       method: 'PUT',

@@ -1,15 +1,37 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { addCalendarDays, calendarDateInTimeZone } from '../lib/dates';
 import { INITIAL_GLASSES, WATER_GOAL, weekHydration } from '../mock/water';
 
 export function WaterPage() {
+  const [goal, setGoal] = useState(WATER_GOAL);
   const [glasses, setGlasses] = useState(INITIAL_GLASSES);
   const [everyTwoHours, setEveryTwoHours] = useState(true);
   const [pauseAfterEight, setPauseAfterEight] = useState(true);
   const [syncFamily, setSyncFamily] = useState(false);
-  const fillPct = Math.min(100, Math.round((glasses / WATER_GOAL) * 100));
+  const fillPct = goal > 0 ? Math.min(100, Math.round((glasses / goal) * 100)) : 0;
+  const today = calendarDateInTimeZone(new Date(), 'UTC');
+
+  const week = useMemo(() => {
+    const start = addCalendarDays(today, -6);
+    return weekHydration.map((day, index) => {
+      const date = addCalendarDays(start, index);
+      const isToday = date === today;
+      return {
+        ...day,
+        date,
+        isToday,
+        label: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' }).format(
+          new Date(`${date}T12:00:00.000Z`),
+        ),
+      };
+    });
+  }, [today]);
+
+  const weeklyAverage = Math.round(week.reduce((sum, day) => sum + day.fill, 0) / week.length / (100 / goal));
+  const daysOnPace = week.filter((day) => day.fill >= 100 || (day.isToday && glasses >= goal)).length;
 
   function addGlass() {
-    setGlasses((value) => Math.min(WATER_GOAL, value + 1));
+    setGlasses((value) => Math.min(goal, value + 1));
   }
 
   return (
@@ -32,7 +54,22 @@ export function WaterPage() {
               {glasses}
               <span>
                 {' '}
-                / {WATER_GOAL} glasses
+                /{' '}
+                <label className="goal-edit">
+                  <span className="sr-only">Daily glass goal</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={goal}
+                    onChange={(event) => {
+                      const next = Math.max(1, Math.min(20, Number(event.target.value) || 1));
+                      setGoal(next);
+                      setGlasses((value) => Math.min(value, next));
+                    }}
+                  />
+                </label>{' '}
+                glasses
               </span>
             </div>
             <div className="bottle">
@@ -46,7 +83,7 @@ export function WaterPage() {
               <div className="water" style={{ height: `${Math.max(8, fillPct)}%` }} />
             </div>
             <div className="glass-row">
-              {Array.from({ length: WATER_GOAL }, (_, index) => (
+              {Array.from({ length: goal }, (_, index) => (
                 <button
                   key={index}
                   type="button"
@@ -60,7 +97,7 @@ export function WaterPage() {
               <button type="button" onClick={addGlass}>
                 + 250ml
               </button>
-              <button type="button" onClick={() => setGlasses((value) => Math.min(WATER_GOAL, value + 2))}>
+              <button type="button" onClick={() => setGlasses((value) => Math.min(goal, value + 2))}>
                 + 500ml
               </button>
             </div>
@@ -69,21 +106,25 @@ export function WaterPage() {
           <div>
             <h2>Last 7 days</h2>
             <div className="week-bars">
-              {weekHydration.map((day) => (
-                <div key={day.label} className="col">
+              {week.map((day) => (
+                <div key={day.date} className={`col${day.isToday ? ' is-today' : ''}`}>
                   <div className="bar">
-                    <div className="fill" style={{ height: `${day.fill}%` }} />
+                    <div className="fill" style={{ height: `${day.isToday ? fillPct : day.fill}%` }} />
                   </div>
                   <div className="lbl">{day.label}</div>
                 </div>
               ))}
             </div>
+            <p className="muted small">
+              Weekly average about {weeklyAverage} glasses. {daysOnPace} of these bars are at or above the current goal.
+            </p>
 
             <div className="side-card">
               <div className="who">🐾 Sage on hydration</div>
               <p>
-                "You're {glasses} glasses in with warm weather today — try to front-load another glass before dinner
-                rather than catching up late tonight."
+                {glasses === 0
+                  ? '"No glasses logged yet today, so there is not a hydration trend to comment on."'
+                  : `"You're ${glasses} of ${goal} glasses today. That's from the counter on this page — not a weather or family forecast."`}
               </p>
             </div>
 
@@ -108,7 +149,13 @@ export function WaterPage() {
                 />
               </div>
               <div className="reminder-row">
-                <span>Sync with family goals</span>
+                <span>
+                  Sync with family goals
+                  <small className="hint">
+                    When on, this glass target is treated as a household reminder only. Each person still logs their own
+                    glasses.
+                  </small>
+                </span>
                 <button
                   type="button"
                   className={`toggle${syncFamily ? ' on' : ''}`}

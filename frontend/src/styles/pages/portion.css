@@ -4,7 +4,8 @@
   .panel { border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   h2 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
-  .plate-wrap { display: flex; justify-content: center; margin: 22px 0 8px; }
+  .plate-wrap { display: flex; justify-content: center; margin: 8px 0 8px; }
+  .side-card.breakdown .btn-primary { width: 100%; margin-top: 14px; }
   .plate { position: relative; width: 200px; height: 200px; border-radius: 50%; background: var(--paper); border: 2px solid var(--line); }
   .plate-legend { display: flex; justify-content: center; gap: 18px; font-size: 12px; margin-top: 14px; }
   .plate-legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; animation: none; }

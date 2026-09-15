@@ -1,8 +1,11 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { confirmChatMeal, sendChat } from '../api/chat';
+import { getGoal } from '../api/goals';
+import { getTodayReport } from '../api/reports';
 import { ApiError, type PendingMeal } from '../api/types';
 import { Alert } from '../components/layout/AppShell';
+import { isPlausibleDailyCalorieTarget } from '../lib/goal-sanity';
 
 type ChatMessage = {
   id: string;
@@ -16,14 +19,7 @@ const suggestions = [
   'What did I eat this week?',
   'What are my nutrition goals?',
   'How did I do this week?',
-  'Log my breakfast',
-];
-
-const htmlChips = [
-  'What should I eat for dinner?',
-  'Am I low on protein this week?',
-  'Suggest a snack under 150 kcal',
-  'How\'s my hydration today?',
+  'Log mutton biryani for lunch',
 ];
 
 function newId(): string {
@@ -94,6 +90,27 @@ export function ChatPage() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const todayQuery = useQuery({ queryKey: ['reports', 'today'], queryFn: getTodayReport });
+  const goalQuery = useQuery({ queryKey: ['goals', 'current'], queryFn: getGoal, retry: false });
+
+  const extraChips = useMemo(() => {
+    const chips: string[] = [];
+    const totals = todayQuery.data;
+    const goal = goalQuery.data;
+    if (!todayQuery.isSuccess) {
+      return chips;
+    }
+    if (!totals || totals.calories === 0) {
+      chips.push('What should I eat first today?');
+    }
+    if (goal && isPlausibleDailyCalorieTarget(goal.dailyCalorieTarget) && totals && totals.protein < goal.proteinTarget * 0.5) {
+      chips.push('Am I low on protein today?');
+    }
+    if (goal && isPlausibleDailyCalorieTarget(goal.dailyCalorieTarget) && totals && totals.calories > goal.dailyCalorieTarget) {
+      chips.push('Did I go over my calorie target today?');
+    }
+    return chips.slice(0, 3);
+  }, [goalQuery.data, todayQuery.data, todayQuery.isSuccess]);
 
   const history = useMemo(
     () => messages.map((item) => ({ role: item.role, content: item.content })),
@@ -228,7 +245,7 @@ export function ChatPage() {
           <div>
             <div className="side-card">
               <div className="who">💬 Try asking</div>
-              {htmlChips.map((chip) => (
+              {extraChips.map((chip) => (
                 <button
                   key={chip}
                   type="button"
@@ -256,8 +273,8 @@ export function ChatPage() {
             <div className="side-card">
               <div className="who">🐾 About Sage</div>
               <p>
-                Sage reads your logged meals, goals, water intake, and family entries to give grounded, specific answers
-                — not generic diet advice.
+                Sage reads logged meals, goals, and entries you actually saved. If there is not enough history for a
+                trend, it should say so rather than invent one.
               </p>
             </div>
           </div>
