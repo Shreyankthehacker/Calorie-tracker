@@ -143,11 +143,6 @@ function AppShellInner() {
           <div className="crumb">
             {crumb}
           </div>
-          <div className="header-actions">
-            <div className="header-powered">
-              Powered by <b>Typeface</b>
-            </div>
-          </div>
         </div>
         <Outlet />
         <SiteFooter />

@@ -33,6 +33,17 @@ export const landingMedia = {
     width: 1400,
     height: 1750,
   } satisfies LandingPhoto & { srcSet: string },
+  today: {
+    src: unsplash('photo-1498837164418-9b900c5ddcbd', 1200),
+    srcSet: [
+      `${unsplash('photo-1498837164418-9b900c5ddcbd', 800)} 800w`,
+      `${unsplash('photo-1498837164418-9b900c5ddcbd', 1200)} 1200w`,
+    ].join(', '),
+    fallback: LOCAL.eggs,
+    alt: 'Prepared meals and produce laid out for the day',
+    width: 1200,
+    height: 900,
+  } satisfies LandingPhoto & { srcSet: string },
   liveMeal: {
     src: unsplash('photo-1604908176997-125f25cc6f3d', 1200),
     fallback: LOCAL.chicken,

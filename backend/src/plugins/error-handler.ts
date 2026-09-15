@@ -77,6 +77,10 @@ function isFastifyLikeError(error: unknown): error is FastifyLikeError {
   return typeof error === 'object' && error !== null;
 }
 
+/**
+ * Maps thrown errors to a consistent `{ error: { code, message } }` body.
+ * Unexpected failures become a generic 500 — no stacks, Prisma, or provider payloads.
+ */
 export function registerErrorHandler(app: FastifyInstance): void {
   app.setNotFoundHandler((_request, reply) => {
     return reply.status(404).send({

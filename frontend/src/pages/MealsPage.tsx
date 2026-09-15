@@ -233,15 +233,18 @@ export function MealsPage() {
 
       {!mealsQuery.isPending && !mealsQuery.isError && entries.length === 0 ? (
         <div className="results">
-          <div className="icon">🔎</div>
-          <div className="t">
+          <p className="t">
             {isFiltered
               ? startDate && endDate && startDate === endDate && !mealType
                 ? 'No meals recorded for this day.'
                 : 'No meals match these filters.'
               : 'No meals recorded yet.'}
-          </div>
-          <div className="s">There are no logged entries matching this view.</div>
+          </p>
+          <p className="s">
+            {isFiltered
+              ? 'Change the dates or meal type above, or log a meal for this range.'
+              : 'Log a meal to start this list. Catalog, barcode, photo, and custom entries all appear here.'}
+          </p>
           {!isFiltered ? (
             <button
               type="button"

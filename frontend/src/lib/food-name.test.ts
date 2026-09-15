@@ -11,4 +11,8 @@ describe('sanitizeFoodName', () => {
   it('keeps ordinary food names', () => {
     expect(sanitizeFoodName('Oatmeal')).toBe('Oatmeal');
   });
+
+  it('strips currency symbols and trailing separators', () => {
+    expect(sanitizeFoodName('Oatmeal $5.99 —')).toBe('Oatmeal');
+  });
 });

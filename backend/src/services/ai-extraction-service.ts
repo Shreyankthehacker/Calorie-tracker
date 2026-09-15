@@ -39,6 +39,10 @@ export type PublicNutritionExtraction = {
   mealType: MealType | null;
 };
 
+/**
+ * Image → provider → Zod validation. Never writes a FoodEntry.
+ * The client shows a review form; saving uses POST /food-entries.
+ */
 export class AIExtractionService {
   constructor(private readonly provider: NutritionExtractionProvider) {}
 

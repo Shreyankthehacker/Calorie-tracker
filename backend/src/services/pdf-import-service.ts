@@ -69,6 +69,10 @@ function duplicateKey(input: {
   ].join('|');
 }
 
+/**
+ * PDF food-diary import. Preview extracts text and proposes rows; confirm is all-or-nothing.
+ * Scanned/image-only PDFs are rejected (no OCR). AI is not used for parsing.
+ */
 export class PdfImportService {
   constructor(
     private readonly foodEntries: FoodEntryService = new FoodEntryService(),

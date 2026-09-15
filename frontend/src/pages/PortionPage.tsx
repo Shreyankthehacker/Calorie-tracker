@@ -92,14 +92,11 @@ export function PortionPage() {
 
             <p className="muted small">Calories remaining today, before this meal. The meal slot does not subtract anything by itself.</p>
             <div className="plate-wrap">
-              <div className="plate">
-                <svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true">
-                  <circle cx="100" cy="100" r="98" fill="none" />
-                  <path d="M100 100 L100 2 A98 98 0 0 1 184 149 Z" fill="var(--crimson)" />
-                  <path d="M100 100 L184 149 A98 98 0 0 1 41 190 Z" fill="#2B2A28" />
-                  <path d="M100 100 L41 190 A98 98 0 0 1 100 2 Z" fill="#D8D5D0" />
-                </svg>
-              </div>
+              <div
+                className="plate"
+                role="img"
+                aria-label="Suggested split: 40% protein, 35% carbohydrates, 25% fat"
+              />
             </div>
             <div className="plate-legend">
               <span>

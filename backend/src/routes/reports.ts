@@ -9,6 +9,8 @@ export const reportRoutes: FastifyPluginAsync = async (app) => {
 
   app.addHook('preHandler', app.authenticate);
 
+  // Reports are aggregates, not paginated lists. Ranges are inclusive calendar dates.
+
   app.get('/reports/today', async (request, reply) => {
     reportTodayQuerySchema.parse(request.query);
     return handler.today(request, reply);

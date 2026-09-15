@@ -281,7 +281,7 @@ describe('goals API', () => {
       url: '/api/v1/goals',
       headers: { authorization: `Bearer ${userB.accessToken}` },
       payload: {
-        dailyCalorieTarget: 9999,
+        dailyCalorieTarget: 5800,
         proteinTarget: 1,
         carbTarget: 1,
         fatTarget: 1,
@@ -306,7 +306,7 @@ describe('goals API', () => {
       headers: { authorization: `Bearer ${userB.accessToken}` },
     });
     expect(bOwn.statusCode).toBe(200);
-    expect((bOwn.json() as GoalResponse).goal.dailyCalorieTarget).toBe(9999);
+    expect((bOwn.json() as GoalResponse).goal.dailyCalorieTarget).toBe(5800);
   });
 
   it('enforces the database 1:1 unique userId constraint', async () => {

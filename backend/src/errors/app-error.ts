@@ -11,6 +11,7 @@ export type AppErrorCode =
   | 'BARCODE_PROVIDER_ERROR'
   | 'INTERNAL_SERVER_ERROR';
 
+/** Domain error mapped to a stable HTTP body by the central error handler. */
 export class AppError extends Error {
   readonly statusCode: number;
   readonly code: AppErrorCode;

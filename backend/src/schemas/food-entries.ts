@@ -164,6 +164,7 @@ export const foodEntryRecentsQuerySchema = z
   })
   .strict();
 
+// Offset pagination for list APIs: default 20, hard cap 50. userId is accepted then ignored.
 export const foodEntryListQuerySchema = z
   .object({
     startDate: dateOnlySchema.optional(),

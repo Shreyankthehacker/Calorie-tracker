@@ -61,9 +61,12 @@ html:has(.page-landing) {
   color: var(--lp-accent);
 }
 
-.lp-wrap {
+.lp-wrap,
+.lp-nav-inner {
   width: min(1120px, calc(100% - 48px));
-  margin: 0 auto;
+  max-width: 1120px;
+  margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .lp-nav {
@@ -80,8 +83,6 @@ html:has(.page-landing) {
   box-shadow: 0 8px 24px rgba(92, 18, 32, 0.06);
 }
 .lp-nav-inner {
-  width: min(1120px, calc(100% - 48px));
-  margin: 0 auto;
   min-height: 72px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -105,19 +106,17 @@ html:has(.page-landing) {
 }
 .lp-brand .word small,
 .lp-footer .word small {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--lp-muted);
+  display: none;
 }
 .lp-nav-links {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 22px;
   font-size: 14px;
+  white-space: nowrap;
 }
 .lp-nav-links a {
   text-decoration: none;
@@ -198,10 +197,17 @@ html:has(.page-landing) {
 .lp-hero { padding: 12px 0 80px; }
 .lp-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 48px;
-  align-items: start;
+  align-items: stretch;
   padding-top: 12px;
+}
+.lp-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  max-width: 100%;
 }
 .lp-hero-copy h1 {
   font-family: 'Fraunces', serif;
@@ -210,18 +216,17 @@ html:has(.page-landing) {
   line-height: 1.12;
   letter-spacing: -0.02em;
   margin: 0 0 20px;
+  min-width: 0;
+  max-width: 100%;
 }
-.lp-hero-copy h1 span { display: block; }
+.lp-hero-copy h1 span { display: block; min-width: 0; }
 .lp-hero-copy h1 span:first-child {
   color: var(--lp-maroon);
-}
-@media (min-width: 981px) {
-  .lp-hero-copy h1 span { white-space: nowrap; }
 }
 .lp-lede {
   font-size: 17px;
   line-height: 1.6;
-  color: var(--lp-muted);
+  color: var(--lp-ink);
   max-width: 42ch;
   margin: 0 0 28px;
 }
@@ -229,12 +234,14 @@ html:has(.page-landing) {
 .lp-hero-photo {
   --mx: 0;
   --my: 0;
+  position: relative;
   overflow: hidden;
   background: var(--lp-maroon-wash);
-  aspect-ratio: 1;
-  max-height: 420px;
   width: 100%;
   min-width: 0;
+  min-height: 0;
+  height: auto;
+  align-self: stretch;
 }
 .lp-hero-photo img,
 .lp-preview-meals img,
@@ -243,6 +250,8 @@ html:has(.page-landing) {
   max-width: 100%;
 }
 .lp-hero-photo img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -307,18 +316,13 @@ html:has(.page-landing) {
 .lp-live-solo {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 56px;
-  align-items: center;
-}
-.lp-live-solo {
+  gap: 48px;
   align-items: start;
-  max-width: 920px;
 }
 .lp-nutrition-card {
   background: var(--lp-white);
   border: 1px solid var(--lp-line);
   padding: 28px;
-  margin-top: 8px;
 }
 .lp-nutrition-meal { margin: 0; font-size: 12px; color: var(--lp-muted); font-weight: 600; }
 .lp-nutrition-card h3 {
@@ -358,6 +362,35 @@ html:has(.page-landing) {
 }
 .lp-live-flags.is-on li:nth-child(2) { transition-delay: 180ms; }
 .lp-live-flags.is-on li:nth-child(3) { transition-delay: 320ms; }
+
+.lp-preview-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: stretch;
+}
+.lp-preview-copy {
+  min-width: 0;
+}
+.lp-preview-copy .lp-lede { margin-bottom: 0; }
+.lp-preview-photo {
+  position: relative;
+  overflow: hidden;
+  background: var(--lp-maroon-wash);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+}
+.lp-preview-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  display: block;
+}
 
 .lp-device {
   margin-top: 36px;
@@ -811,6 +844,7 @@ html:has(.page-landing) {
   .lp-how,
   .lp-tutorial-pane,
   .lp-feature,
+  .lp-preview-intro,
   .lp-preview-hero,
   .lp-footer-grid,
   .lp-about-grid {
@@ -828,7 +862,8 @@ html:has(.page-landing) {
   .lp-chart,
   .lp-feature-week { overflow: hidden; }
   .lp-hero-photo { aspect-ratio: 5 / 4; max-height: 280px; }
-  .lp-wrap { width: min(1120px, calc(100% - 32px)); }
+  .lp-preview-photo { aspect-ratio: 5 / 4; max-height: 280px; }
+  .lp-wrap,
   .lp-nav-inner { width: min(1120px, calc(100% - 32px)); }
   .lp-section { padding: 48px 0; }
   .lp-maroon,
@@ -853,7 +888,6 @@ html:has(.page-landing) {
   .lp-nutrition-card dl { grid-template-columns: 1fr; }
   .lp-nutrition-card dd { font-size: 24px; }
   .lp-hero { padding-top: 4px; }
-  .lp-brand .word small { display: none; }
   .lp-brand .word { font-size: 15px; }
   .lp-brand .mark { width: 28px; height: 28px; }
   .lp-cta { padding: 8px 12px; font-size: 13px; }
@@ -907,13 +941,6 @@ html:has(.page-landing) {
 }
 .tour-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .tour-brand .word { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; line-height: 1.15; }
-.tour-brand .word small {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--muted);
-}
 .tour-nav-link { font-size: 14px; font-weight: 600; color: var(--crimson); text-decoration: none; }
 .tour-progress { height: 3px; background: var(--line); margin: 18px 36px 0; }
 .tour-progress span { display: block; height: 100%; background: var(--crimson); transition: width 280ms ease-out; }
@@ -989,7 +1016,6 @@ html:has(.page-landing) {
 }
 @media (max-width: 480px) {
   .tour-nav { padding: 16px 16px 0; gap: 12px; }
-  .tour-nav .word small { display: none; }
   .tour-progress { margin: 14px 16px 0; }
   .tour-copy h1 { font-size: clamp(24px, 8vw, 32px); }
   .tour-actions .button { min-height: 44px; }

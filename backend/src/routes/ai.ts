@@ -21,5 +21,7 @@ export const aiExtractionRoutes: FastifyPluginAsync<{
 
   app.addHook('preHandler', app.authenticate);
 
+  // Extract only — this route must not create a FoodEntry.
+
   app.post('/ai/nutrition-extract', async (request, reply) => handler.extract(request, reply));
 };

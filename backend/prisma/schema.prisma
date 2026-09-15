@@ -1,5 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Personal Calorie Tracker — Prisma schema
+//
+// Design notes:
+// - User.timezone drives daily report buckets (consumedAt is the nutrition clock).
+// - Goal is 1:1 with User (current goal only).
+// - FoodEntry is a snapshot owned by userId; Family membership does not share meals.
+// - Micronutrients live in a child table so the column set can grow without migrations per vitamin.
 
 generator client {
   provider = "prisma-client-js"

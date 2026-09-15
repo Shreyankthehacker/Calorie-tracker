@@ -15,6 +15,19 @@ function formatKcal(value: number): string {
   return `${Math.round(value).toLocaleString()} kcal`;
 }
 
+function inviteMessage(familyId: string): string {
+  return `Join my household on CalorieTracker. Family ID: ${familyId}`;
+}
+
+async function writeClipboard(value: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function FamilyPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -22,6 +35,8 @@ export function FamilyPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [revealFamilyId, setRevealFamilyId] = useState(false);
+  const [shareId, setShareId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const familyQuery = useQuery({
     queryKey: ['family'],
@@ -47,9 +62,9 @@ export function FamilyPage() {
   const createMutation = useMutation({
     mutationFn: () => createFamily(),
     onSuccess: async (created) => {
-      await navigator.clipboard?.writeText(created.id).catch(() => undefined);
-      onFamilySuccess(`Family created. ID ${created.id} copied.`);
       setSelectedId(user?.id ?? null);
+      onFamilySuccess('Family created.');
+      await openShare(created.id);
     },
   });
 
@@ -76,13 +91,54 @@ export function FamilyPage() {
     familyQuery.error,
   );
 
-  async function copyFamilyId() {
-    if (!family) {
+  async function openShare(familyId: string) {
+    setShareId(familyId);
+    setRevealFamilyId(true);
+    const didCopy = await writeClipboard(familyId);
+    setCopied(didCopy);
+    setStatus(didCopy ? 'Family ID copied to clipboard.' : 'Share window open. Copy the ID below.');
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: 'CalorieTracker family',
+          text: inviteMessage(familyId),
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+      }
+    }
+  }
+
+  async function shareWithDevice() {
+    if (!shareId || typeof navigator.share !== 'function') {
       return;
     }
-    await navigator.clipboard?.writeText(family.id).catch(() => undefined);
-    setStatus(`Family ID ${family.id} copied.`);
+    try {
+      await navigator.share({
+        title: 'CalorieTracker family',
+        text: inviteMessage(shareId),
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+    }
   }
+
+  useEffect(() => {
+    if (!shareId) {
+      return;
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShareId(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [shareId]);
 
   const householdTotal = members.reduce((sum, member) => sum + member.todayCalories, 0);
 
@@ -100,8 +156,8 @@ export function FamilyPage() {
                 <button type="button" className="btn-link" onClick={() => setRevealFamilyId((value) => !value)}>
                   {revealFamilyId ? 'Hide' : 'Reveal'}
                 </button>
-                <button type="button" className="btn-link" onClick={() => void copyFamilyId()}>
-                  Copy
+                <button type="button" className="btn-link" onClick={() => void openShare(family.id)}>
+                  Share
                 </button>
               </p>
             ) : (
@@ -111,10 +167,10 @@ export function FamilyPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => (family ? void copyFamilyId() : createMutation.mutate())}
+            onClick={() => (family ? void openShare(family.id) : createMutation.mutate())}
             disabled={createMutation.isPending}
           >
-            {family ? '+ Invite family member' : createMutation.isPending ? 'Creating…' : '+ Create family'}
+            {family ? 'Invite family member' : createMutation.isPending ? 'Creating…' : 'Create family'}
           </button>
         </div>
 
@@ -159,10 +215,12 @@ export function FamilyPage() {
             </button>
           ))}
           {family ? (
-            <button type="button" className="add-card" onClick={() => void copyFamilyId()}>
+            <button type="button" className="add-card" onClick={() => void openShare(family.id)}>
               <div className="plus">+</div>
               <div>Share family ID</div>
-              <p className="invite-caption">Invite a family member to share meal tracking. They join with this ID and keep their own log.</p>
+              <p className="invite-caption">
+                Opens a share window with this household ID copied, ready to send.
+              </p>
             </button>
           ) : (
             <button type="button" className="add-card" onClick={() => createMutation.mutate()}>
@@ -278,6 +336,64 @@ export function FamilyPage() {
           </div>
         </div>
       </div>
+
+      {shareId ? (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShareId(null)}
+        >
+          <div
+            className="modal-panel family-share-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="family-share-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-head">
+              <h2 id="family-share-title">Share family ID</h2>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close"
+                onClick={() => setShareId(null)}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 2l10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <p>
+              Send this ID to someone you want in the household. They paste it on Family to join and keep their own
+              log.
+            </p>
+            <p className="family-share-id">{shareId}</p>
+            <p className="family-share-status" role="status">
+              {copied ? 'Copied to clipboard.' : 'Copy the ID above if clipboard access was blocked.'}
+            </p>
+            <div className="family-share-actions">
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  void writeClipboard(shareId).then((didCopy) => {
+                    setCopied(didCopy);
+                    if (didCopy) {
+                      setStatus('Family ID copied to clipboard.');
+                    }
+                  });
+                }}
+              >
+                Copy ID
+              </button>
+              {typeof navigator.share === 'function' ? (
+                <button type="button" className="btn-secondary" onClick={() => void shareWithDevice()}>
+                  Share
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

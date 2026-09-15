@@ -64,9 +64,6 @@ function AuthSplit({
           <p className="sub">{subtitle}</p>
           {children}
           {footer}
-          <div className="powered-note">
-            <b>CalorieTracker</b> powered by Typeface
-          </div>
         </div>
       </div>
     </div>

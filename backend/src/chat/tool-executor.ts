@@ -76,6 +76,10 @@ function toPendingMeal(input: LogMealInput): PendingMeal {
   };
 }
 
+/**
+ * Allowlisted chat tools. Each method calls an existing application service
+ * so the model cannot invent SQL or skip ownership checks.
+ */
 export class ChatToolExecutor {
   constructor(
     private readonly goals: GoalService = new GoalService(),

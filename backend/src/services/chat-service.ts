@@ -30,6 +30,10 @@ export type ConfirmMealResult = {
   foodEntry: Awaited<ReturnType<ChatToolExecutor['logMeal']>>;
 };
 
+/**
+ * Conversational turn. The LLM may call allowlisted tools; it never queries Prisma.
+ * `logMeal` only returns a pending meal — persist via confirm-meal after the user saves.
+ */
 export class ChatService {
   constructor(
     private readonly env: Env,

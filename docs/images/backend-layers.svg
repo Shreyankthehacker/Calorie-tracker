@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+  <rect width="1600" height="900" fill="#F6F4F1"/>
+  <text x="80" y="72" font-family="Inter, system-ui, sans-serif" font-size="13" letter-spacing="2.4" fill="#A8112A">REQUEST PATH</text>
+  <text x="80" y="112" font-family="Fraunces, Georgia, serif" font-size="36" fill="#0A0A0A">Backend layers</text>
+  <text x="80" y="148" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#5C574F">Routes and handlers stay thin. Prisma lives only in repositories.</text>
+
+  <!-- stack -->
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="80" y="188" width="980" height="86" rx="10" fill="#0A0A0A"/>
+    <text x="112" y="226" font-size="13" letter-spacing="1.4" fill="#E8D9D4">1  HTTP</text>
+    <text x="112" y="254" font-size="20" fill="#F6F4F1">Request   |   JSON, multipart image, or PDF</text>
+
+    <rect x="80" y="290" width="980" height="86" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <text x="112" y="328" font-size="13" letter-spacing="1.4" fill="#A8112A">2  ROUTE</text>
+    <text x="112" y="356" font-size="20" fill="#0A0A0A">Auth hook, rate limit, Zod parse, then one handler</text>
+
+    <rect x="80" y="392" width="980" height="86" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <text x="112" y="430" font-size="13" letter-spacing="1.4" fill="#A8112A">3  HANDLER</text>
+    <text x="112" y="458" font-size="20" fill="#0A0A0A">Thin adapter   |   maps HTTP to a single service method</text>
+
+    <rect x="80" y="494" width="980" height="86" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <text x="112" y="532" font-size="13" letter-spacing="1.4" fill="#A8112A">4  SERVICE</text>
+    <text x="112" y="560" font-size="20" fill="#0A0A0A">Business rules, ownership, AI orchestration, snapshots</text>
+
+    <rect x="80" y="596" width="980" height="86" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <text x="112" y="634" font-size="13" letter-spacing="1.4" fill="#A8112A">5  REPOSITORY</text>
+    <text x="112" y="662" font-size="20" fill="#0A0A0A">Prisma only   |   every user query scoped to authenticated userId</text>
+
+    <rect x="80" y="698" width="980" height="86" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <text x="112" y="736" font-size="13" letter-spacing="1.4" fill="#A8112A">6  DATABASE</text>
+    <text x="112" y="764" font-size="20" fill="#0A0A0A">PostgreSQL   |   Neon pooled URL in production</text>
+  </g>
+
+  <rect x="1100" y="188" width="420" height="596" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="1132" y="232" font-family="Inter, system-ui, sans-serif" font-size="13" letter-spacing="1.6" fill="#A8112A">FRONTEND PATH</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="16" fill="#0A0A0A">
+    <rect x="1132" y="260" width="356" height="64" rx="8" fill="#F6F4F1"/>
+    <text x="1152" y="298">Pages</text>
+    <rect x="1132" y="340" width="356" height="64" rx="8" fill="#F6F4F1"/>
+    <text x="1152" y="378">Feature components</text>
+    <rect x="1132" y="420" width="356" height="64" rx="8" fill="#F6F4F1"/>
+    <text x="1152" y="458">API modules</text>
+    <rect x="1132" y="500" width="356" height="64" rx="8" fill="#F6F4F1"/>
+    <text x="1152" y="538">REST /api/v1</text>
+  </g>
+  <text x="1132" y="600" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">No database logic in the</text>
+  <text x="1132" y="622" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">browser. Charts consume</text>
+  <text x="1132" y="644" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">report aggregates, not a</text>
+  <text x="1132" y="666" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">sum of a paginated list.</text>
+  <text x="1132" y="722" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5C1220">Reports have no table.</text>
+  <text x="1132" y="744" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5C1220">Totals are computed on read.</text>
+
+  <text x="80" y="828" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">AppError maps through a central Fastify handler to a stable { error: { code, message } } body. Unexpected 500s never leak Prisma, stacks, or secrets.</text>
+  <text x="80" y="854" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Tests inject Fastify and mock AI providers. Vitest refuses DATABASE_URL pointing at neon.tech.</text>
+</svg>

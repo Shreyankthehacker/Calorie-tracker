@@ -47,6 +47,11 @@ function parseDurationToMs(value: string): number {
   return amount * multipliers[unit]!;
 }
 
+/**
+ * Register / login / refresh / logout.
+ * Passwords are Argon2id hashes. Access JWTs are short-lived. Refresh tokens are
+ * CSPRNG values stored hashed (SHA-256 + pepper) and rotated on each use.
+ */
 export class AuthService {
   constructor(
     private readonly app: FastifyInstance,

@@ -82,6 +82,7 @@ function fillDailySeries(
   endDate: string,
   rows: DailyMacroRow[],
 ): DailyMacroRow[] {
+  // Charts need a point for every calendar day, including days with no meals.
   const byDate = new Map(rows.map((row) => [row.date, row]));
   return eachCalendarDateInclusive(startDate, endDate).map((date) => {
     const row = byDate.get(date);
@@ -114,6 +115,7 @@ function scaleGoal(
   daily: { dailyCalorieTarget: number; proteinTarget: number; carbTarget: number; fatTarget: number },
   dayCount: number,
 ): MacroTotals {
+  // Goal vs actual for a range is the daily target multiplied by inclusive day count.
   return {
     calories: daily.dailyCalorieTarget * dayCount,
     protein: daily.proteinTarget * dayCount,
@@ -122,6 +124,10 @@ function scaleGoal(
   };
 }
 
+/**
+ * On-read aggregates from persisted food entries. No cached or materialized daily totals.
+ * Days are bucketed with `consumedAt` in the user's IANA timezone.
+ */
 export class ReportService {
   constructor(
     private readonly reports: ReportRepository = reportRepository,

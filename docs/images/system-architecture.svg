@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">CalorieTracker system architecture</title>
+  <desc id="desc">React frontend talks to a Fastify API. The API owns PostgreSQL, Gemini, and Open Food Facts. The browser never receives the Gemini key.</desc>
+  <rect width="1600" height="900" fill="#F6F4F1"/>
+  <text x="80" y="72" font-family="Inter, system-ui, sans-serif" font-size="13" letter-spacing="2.4" fill="#A8112A">CALORIETRACKER</text>
+  <text x="80" y="112" font-family="Fraunces, Georgia, serif" font-size="36" fill="#0A0A0A">System architecture</text>
+  <text x="80" y="148" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#5C574F">Separated SPA and REST API. AI and barcode providers stay behind the backend.</text>
+
+  <!-- Frontend -->
+  <rect x="80" y="200" width="1440" height="150" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="108" y="236" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">BROWSER</text>
+  <text x="108" y="268" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#0A0A0A">React + TypeScript (Vite)</text>
+  <text x="108" y="298" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">TanStack Query  |  React Router  |  Recharts  |  no GEMINI_API_KEY</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">
+    <rect x="820" y="228" width="200" height="86" rx="8" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="840" y="262">Pages / AppShell</text>
+    <text x="840" y="284" fill="#5C574F" font-size="12">Today, meals, reports</text>
+    <rect x="1040" y="228" width="200" height="86" rx="8" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="1060" y="262">API client</text>
+    <text x="1060" y="284" fill="#5C574F" font-size="12">frontend/src/api</text>
+    <rect x="1260" y="228" width="220" height="86" rx="8" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="1280" y="262">Session</text>
+    <text x="1280" y="284" fill="#5C574F" font-size="12">JWT in localStorage</text>
+  </g>
+
+  <line x1="800" y1="350" x2="800" y2="400" stroke="#A8112A" stroke-width="2"/>
+  <polygon points="800,408 794,392 806,392" fill="#A8112A"/>
+  <text x="820" y="386" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#A8112A">HTTPS / REST   |   /api/v1</text>
+
+  <!-- Backend -->
+  <rect x="80" y="416" width="900" height="196" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="108" y="452" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">APPLICATION SERVER</text>
+  <text x="108" y="484" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#0A0A0A">Fastify + TypeScript</text>
+  <text x="108" y="514" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Zod at the boundary. Ownership from the access token. Client userId is ignored.</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="13" fill="#0A0A0A">
+    <rect x="108" y="536" width="148" height="48" rx="6" fill="#0A0A0A"/>
+    <text x="128" y="566" fill="#F6F4F1">Routes</text>
+    <rect x="272" y="536" width="148" height="48" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="292" y="566">Handlers</text>
+    <rect x="436" y="536" width="148" height="48" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="456" y="566">Services</text>
+    <rect x="600" y="536" width="148" height="48" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="612" y="566">Repositories</text>
+    <rect x="764" y="536" width="180" height="48" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+    <text x="784" y="566">Prisma</text>
+  </g>
+
+  <!-- Data / AI / barcode -->
+  <rect x="1012" y="416" width="508" height="196" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="1040" y="452" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">PROVIDERS</text>
+  <rect x="1040" y="472" width="452" height="52" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+  <text x="1060" y="494" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600" fill="#0A0A0A">Gemini 2.5 Flash</text>
+  <text x="1060" y="514" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#5C574F">Nutrition extract + Sage chat   |   backend only</text>
+  <rect x="1040" y="536" width="452" height="52" rx="6" fill="#F6F4F1" stroke="#C9C4BB"/>
+  <text x="1060" y="558" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600" fill="#0A0A0A">Open Food Facts</text>
+  <text x="1060" y="578" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#5C574F">Barcode lookup   |   no API key</text>
+
+  <line x1="530" y1="612" x2="530" y2="662" stroke="#C9C4BB" stroke-width="2"/>
+  <polygon points="530,670 524,654 536,654" fill="#C9C4BB"/>
+
+  <rect x="80" y="678" width="1440" height="146" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="108" y="714" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">DATA</text>
+  <text x="108" y="746" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#0A0A0A">PostgreSQL on Neon   |   Prisma</text>
+  <text x="108" y="776" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Pooled DATABASE_URL at runtime. Direct DIRECT_URL for migrations. Tests use local Postgres on port 5434, never Neon.</text>
+  <text x="108" y="806" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#0A0A0A">users    goals    food_entries    food_items    families    refresh_tokens</text>
+  <rect x="1080" y="708" width="400" height="86" rx="8" fill="#5C1220"/>
+  <text x="1104" y="744" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#F6F4F1">Hard boundary</text>
+  <text x="1104" y="768" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#E8D9D4">The LLM never queries the database.</text>
+</svg>

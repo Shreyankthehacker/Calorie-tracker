@@ -122,6 +122,7 @@ function rethrowWriteFailure(error: unknown): never {
   throw error;
 }
 
+/** Prisma access for food entries. Every query is scoped with `userId`. */
 export class FoodEntryRepository {
   async create(
     userId: string,

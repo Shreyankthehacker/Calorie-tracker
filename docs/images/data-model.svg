@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img">
+  <rect width="1600" height="980" fill="#F6F4F1"/>
+  <text x="64" y="64" font-family="Inter, system-ui, sans-serif" font-size="13" letter-spacing="2.4" fill="#A8112A">POSTGRESQL</text>
+  <text x="64" y="104" font-family="Fraunces, Georgia, serif" font-size="36" fill="#0A0A0A">Data model</text>
+  <text x="64" y="140" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#5C574F">FoodEntry is a snapshot. Catalog edits never rewrite history. Family membership does not share meals.</text>
+
+  <!-- Family -->
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="64" y="176" width="280" height="168" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="64" y="176" width="280" height="40" rx="10" fill="#0A0A0A"/>
+    <rect x="64" y="196" width="280" height="20" fill="#0A0A0A"/>
+    <text x="84" y="202" font-size="14" fill="#F6F4F1">families</text>
+    <text x="84" y="236" font-size="13" fill="#5C574F">id  PK</text>
+    <text x="84" y="258" font-size="13" fill="#0A0A0A">name</text>
+    <text x="84" y="280" font-size="13" fill="#0A0A0A">created_at / updated_at</text>
+    <text x="84" y="312" font-size="12" fill="#A8112A">optional household</text>
+
+    <!-- User -->
+    <rect x="420" y="176" width="320" height="280" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="420" y="176" width="320" height="40" rx="10" fill="#0A0A0A"/>
+    <rect x="420" y="196" width="320" height="20" fill="#0A0A0A"/>
+    <text x="440" y="202" font-size="14" fill="#F6F4F1">users</text>
+    <text x="440" y="236" font-size="13" fill="#5C574F">id  PK</text>
+    <text x="440" y="258" font-size="13" fill="#0A0A0A">email  UNIQUE</text>
+    <text x="440" y="280" font-size="13" fill="#0A0A0A">password_hash  Argon2id</text>
+    <text x="440" y="302" font-size="13" fill="#0A0A0A">timezone  IANA, default UTC</text>
+    <text x="440" y="324" font-size="13" fill="#0A0A0A">family_id  FK nullable</text>
+    <text x="440" y="346" font-size="13" fill="#0A0A0A">created_at / updated_at</text>
+    <text x="440" y="380" font-size="12" fill="#A8112A">report buckets use timezone</text>
+    <text x="440" y="400" font-size="12" fill="#A8112A">family delete sets family_id null</text>
+
+    <!-- Goal -->
+    <rect x="820" y="176" width="340" height="248" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="820" y="176" width="340" height="40" rx="10" fill="#A8112A"/>
+    <rect x="820" y="196" width="340" height="20" fill="#A8112A"/>
+    <text x="840" y="202" font-size="14" fill="#F6F4F1">goals   |   1:1 current only</text>
+    <text x="840" y="236" font-size="13" fill="#5C574F">id  PK</text>
+    <text x="840" y="258" font-size="13" fill="#0A0A0A">user_id  UNIQUE FK</text>
+    <text x="840" y="280" font-size="13" fill="#0A0A0A">daily_calorie_target  800-6000</text>
+    <text x="840" y="302" font-size="13" fill="#0A0A0A">protein / carb / fat targets</text>
+    <text x="840" y="324" font-size="13" fill="#0A0A0A">weight_goal  nullable</text>
+    <text x="840" y="356" font-size="12" fill="#A8112A">no goal history in v1</text>
+
+    <!-- Refresh -->
+    <rect x="1232" y="176" width="304" height="216" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="1232" y="176" width="304" height="40" rx="10" fill="#0A0A0A"/>
+    <rect x="1232" y="196" width="304" height="20" fill="#0A0A0A"/>
+    <text x="1252" y="202" font-size="14" fill="#F6F4F1">refresh_tokens</text>
+    <text x="1252" y="236" font-size="13" fill="#5C574F">id  PK</text>
+    <text x="1252" y="258" font-size="13" fill="#0A0A0A">user_id  FK cascade</text>
+    <text x="1252" y="280" font-size="13" fill="#0A0A0A">token_hash  UNIQUE</text>
+    <text x="1252" y="302" font-size="13" fill="#0A0A0A">expires_at / revoked_at</text>
+    <text x="1252" y="334" font-size="12" fill="#A8112A">hashed + peppered, rotated</text>
+
+    <!-- FoodEntry -->
+    <rect x="64" y="500" width="520" height="300" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="64" y="500" width="520" height="40" rx="10" fill="#0A0A0A"/>
+    <rect x="64" y="520" width="520" height="20" fill="#0A0A0A"/>
+    <text x="84" y="526" font-size="14" fill="#F6F4F1">food_entries   |   user-owned snapshot</text>
+    <text x="84" y="560" font-size="13" fill="#5C574F">id  PK     user_id  FK cascade     index(user_id, consumed_at)</text>
+    <text x="84" y="586" font-size="13" fill="#0A0A0A">meal_type  BREAKFAST | LUNCH | DINNER | SNACKS</text>
+    <text x="84" y="610" font-size="13" fill="#0A0A0A">food_name, quantity, quantity_unit</text>
+    <text x="84" y="634" font-size="13" fill="#0A0A0A">calories, protein, carbs, fat</text>
+    <text x="84" y="658" font-size="13" fill="#0A0A0A">consumed_at  nutrition clock  (not created_at)</text>
+    <text x="84" y="682" font-size="13" fill="#0A0A0A">created_at / updated_at  audit only</text>
+    <text x="84" y="716" font-size="12" fill="#A8112A">No FK to food_items. Logging copies scaled nutrition in.</text>
+    <text x="84" y="736" font-size="12" fill="#A8112A">Family id never replaces user_id ownership.</text>
+
+    <rect x="616" y="500" width="360" height="220" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="616" y="500" width="360" height="40" rx="10" fill="#5C1220"/>
+    <rect x="616" y="520" width="360" height="20" fill="#5C1220"/>
+    <text x="636" y="526" font-size="14" fill="#F6F4F1">food_entry_nutrients</text>
+    <text x="636" y="560" font-size="13" fill="#5C574F">id  PK</text>
+    <text x="636" y="582" font-size="13" fill="#0A0A0A">food_entry_id  FK cascade</text>
+    <text x="636" y="604" font-size="13" fill="#0A0A0A">nutrient_key  e.g. vitamin_c</text>
+    <text x="636" y="626" font-size="13" fill="#0A0A0A">amount + unit</text>
+    <text x="636" y="658" font-size="12" fill="#A8112A">UNIQUE(food_entry_id, nutrient_key)</text>
+    <text x="636" y="678" font-size="12" fill="#A8112A">grow vitamins without new columns</text>
+
+    <rect x="1012" y="500" width="524" height="300" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+    <rect x="1012" y="500" width="524" height="40" rx="10" fill="#0A0A0A"/>
+    <rect x="1012" y="520" width="524" height="20" fill="#0A0A0A"/>
+    <text x="1032" y="526" font-size="14" fill="#F6F4F1">food_items   |   shared catalog</text>
+    <text x="1032" y="560" font-size="13" fill="#5C574F">id  PK     UNIQUE(source_type, name)</text>
+    <text x="1032" y="584" font-size="13" fill="#0A0A0A">serving_size / serving_unit + macros</text>
+    <text x="1032" y="608" font-size="13" fill="#0A0A0A">source_type  SYSTEM | USDA | USER | PDF | AI</text>
+    <text x="1032" y="632" font-size="13" fill="#0A0A0A">verified, image_url, source_reference</text>
+    <text x="1032" y="664" font-size="13" fill="#0A0A0A">children: food_item_nutrients</text>
+    <text x="1032" y="686" font-size="13" fill="#0A0A0A">children: food_item_meal_types  (browse tags)</text>
+    <text x="1032" y="720" font-size="12" fill="#A8112A">Seeded SYSTEM foods. Meal tags are browse-only.</text>
+    <text x="1032" y="740" font-size="12" fill="#A8112A">Entry meal_type is when the user ate it.</text>
+  </g>
+
+  <!-- relationship lines -->
+  <g stroke="#A8112A" stroke-width="1.4" fill="none">
+    <path d="M344 260 H420"/>
+    <path d="M740 260 H820"/>
+    <path d="M580 456 V500"/>
+    <path d="M324 650 H616"/>
+    <path d="M1184 260 V176"/>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif" font-size="11" fill="#A8112A">
+    <text x="348" y="252">1 : N members</text>
+    <text x="744" y="252">1 : 1</text>
+    <text x="488" y="488">1 : N entries</text>
+  </g>
+
+  <text x="64" y="840" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Enums: MealType = BREAKFAST, LUNCH, DINNER, SNACKS. FoodItemSource = SYSTEM, USDA, USER, PDF, AI.</text>
+  <text x="64" y="864" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">No reports table, no chat_messages table, and no family invitation or permission tables in v1.</text>
+  <text x="64" y="888" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Schema: backend/prisma/schema.prisma. Migrations live under backend/prisma/migrations.</text>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+  <rect width="1600" height="900" fill="#F6F4F1"/>
+  <text x="80" y="72" font-family="Inter, system-ui, sans-serif" font-size="13" letter-spacing="2.4" fill="#A8112A">SAGE</text>
+  <text x="80" y="112" font-family="Fraunces, Georgia, serif" font-size="36" fill="#0A0A0A">Agentic environment</text>
+  <text x="80" y="148" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#5C574F">The model proposes. Application services execute. The user confirms before any meal is saved.</text>
+
+  <!-- step 1 -->
+  <rect x="80" y="188" width="460" height="280" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="108" y="228" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">1  USER</text>
+  <text x="108" y="264" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">Chat in the React app</text>
+  <text x="108" y="296" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">POST /api/v1/ai/chat</text>
+  <text x="108" y="324" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Optional history is request-scoped.</text>
+  <text x="108" y="352" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">There is no chat_messages table.</text>
+  <text x="108" y="392" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">Same rate limit as photo extract</text>
+  <text x="108" y="416" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">(default 10 / 60s). Authenticated.</text>
+
+  <rect x="570" y="188" width="460" height="280" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="598" y="228" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">2  MODEL</text>
+  <text x="598" y="264" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">Gemini behind LlmProvider</text>
+  <text x="598" y="296" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">ChatService owns the tool loop.</text>
+  <text x="598" y="324" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Tests inject a mock provider.</text>
+  <text x="598" y="364" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">Allowlisted tools only:</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="12" fill="#0A0A0A">
+    <rect x="598" y="380" width="100" height="26" rx="4" fill="#F6F4F1"/><text x="608" y="397">getGoals</text>
+    <rect x="708" y="380" width="150" height="26" rx="4" fill="#F6F4F1"/><text x="718" y="397">getNutritionSummary</text>
+    <rect x="868" y="380" width="130" height="26" rx="4" fill="#F6F4F1"/><text x="878" y="397">getWeeklyReport</text>
+    <rect x="598" y="416" width="100" height="26" rx="4" fill="#F6F4F1"/><text x="608" y="433">listMeals</text>
+    <rect x="708" y="416" width="110" height="26" rx="4" fill="#F6F4F1"/><text x="718" y="433">searchFood</text>
+    <rect x="828" y="416" width="90" height="26" rx="4" fill="#F6F4F1"/><text x="838" y="433">logMeal</text>
+  </g>
+
+  <rect x="1060" y="188" width="460" height="280" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="1088" y="228" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">3  TOOLS</text>
+  <text x="1088" y="264" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">ChatToolExecutor</text>
+  <text x="1088" y="296" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Calls existing application services.</text>
+  <text x="1088" y="332" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">GoalService</text>
+  <text x="1088" y="356" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">ReportService</text>
+  <text x="1088" y="380" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">FoodEntryService</text>
+  <text x="1088" y="404" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A0A0A">PrismaFoodSearchProvider</text>
+  <text x="1088" y="436" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#A8112A">The LLM never talks to Prisma.</text>
+
+  <!-- confirm flow -->
+  <rect x="80" y="500" width="1440" height="220" rx="10" fill="#FFFFFF" stroke="#C9C4BB"/>
+  <text x="108" y="540" font-family="Inter, system-ui, sans-serif" font-size="12" letter-spacing="1.6" fill="#A8112A">4  CONFIRM BEFORE WRITE</text>
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="108" y="568" width="400" height="120" rx="8" fill="#F6F4F1"/>
+    <text x="128" y="604" font-size="16" font-weight="600" fill="#0A0A0A">searchFood + logMeal</text>
+    <text x="128" y="632" font-size="14" fill="#5C574F">logMeal returns pendingMeal only.</text>
+    <text x="128" y="656" font-size="14" fill="#5C574F">Never claim the meal was saved.</text>
+
+    <rect x="540" y="568" width="400" height="120" rx="8" fill="#F6F4F1"/>
+    <text x="560" y="604" font-size="16" font-weight="600" fill="#0A0A0A">UI   |   Save meal</text>
+    <text x="560" y="632" font-size="14" fill="#5C574F">User reviews name, quantity,</text>
+    <text x="560" y="656" font-size="14" fill="#5C574F">calories, and macros.</text>
+
+    <rect x="972" y="568" width="508" height="120" rx="8" fill="#5C1220"/>
+    <text x="992" y="604" font-size="16" font-weight="600" fill="#F6F4F1">POST /ai/chat/confirm-meal</text>
+    <text x="992" y="632" font-size="14" fill="#E8D9D4">FoodEntryService.create   |   snapshot row</text>
+    <text x="992" y="656" font-size="14" fill="#E8D9D4">Same ownership rules as manual log.</text>
+  </g>
+
+  <text x="80" y="764" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600" fill="#0A0A0A">Same rule for every AI surface</text>
+  <text x="80" y="792" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Photo extract (POST /ai/nutrition-extract) and PDF preview never insert food_entries. Barcode lookup returns a product; save is POST /food-entries or catalog log.</text>
+  <text x="80" y="820" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">GEMINI_API_KEY is backend-only. Images are validated (MIME + magic bytes), processed in memory, and discarded. Max 5MB. JPEG / PNG / WebP.</text>
+  <text x="80" y="848" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#5C574F">Coding agents: required product work first. Never trust client userId. Never auto-save AI output.</text>
+</svg>

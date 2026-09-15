@@ -128,10 +128,10 @@ describe('reports API', () => {
       url: '/api/v1/goals',
       headers: auth(userB),
       payload: {
-        dailyCalorieTarget: 9999,
-        proteinTarget: 999,
-        carbTarget: 999,
-        fatTarget: 999,
+        dailyCalorieTarget: 5800,
+        proteinTarget: 280,
+        carbTarget: 400,
+        fatTarget: 180,
       },
     });
     expect(otherGoal.statusCode).toBe(201);
@@ -508,7 +508,7 @@ describe('reports API', () => {
       url: '/api/v1/reports/goals?startDate=2026-09-08&endDate=2026-09-08',
       headers: auth(userB),
     });
-    expect((asB.json() as GoalVsActualReport).dailyGoal?.calories).toBe(9999);
+    expect((asB.json() as GoalVsActualReport).dailyGoal?.calories).toBe(5800);
   });
 
   it('rejects an inverted date range', async () => {

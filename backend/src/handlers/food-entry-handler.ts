@@ -12,6 +12,10 @@ function clientUserIdFromQuery(request: FastifyRequest): string | undefined {
   return typeof query.userId === 'string' ? query.userId : undefined;
 }
 
+/**
+ * HTTP adapter only: map request/response. No Prisma here.
+ * `userId` from query/body is passed through and ignored by `resolveOwnerId`.
+ */
 export class FoodEntryHandler {
   constructor(private readonly foodEntryService: FoodEntryService) {}
 

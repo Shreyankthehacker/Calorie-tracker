@@ -46,10 +46,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="footer-bottom">
-        <span>© 2026 CalorieTracker. All rights reserved.</span>
-        <span className="powered">
-          CalorieTracker powered by <b>Typeface</b>
-        </span>
+        <span>© {new Date().getFullYear()} CalorieTracker. All rights reserved.</span>
       </div>
     </footer>
   );

@@ -7,6 +7,10 @@ import {
 } from '../ai/nutrition-provider.js';
 import type { AIExtractionService } from '../services/ai-extraction-service.js';
 
+/**
+ * Validates MIME (declared + magic bytes) and size, then extracts structured nutrition.
+ * The result is returned to the client for review; this handler does not persist meals.
+ */
 export class AIExtractionHandler {
   constructor(
     private readonly extractionService: AIExtractionService,

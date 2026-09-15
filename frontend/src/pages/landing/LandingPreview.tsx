@@ -1,7 +1,9 @@
 import { CalorieRing } from '../../components/nutrition/CalorieRing';
 import { MacroBars } from '../../components/nutrition/MacroBars';
 import { FoodThumb } from '../../components/meals/FoodThumb';
+import { landingMedia } from '../../lib/landing-media';
 import { landingDemo } from './landing-demo-data';
+import { LandingPhoto } from './LandingPhoto';
 
 export function LandingPreview() {
   const day = landingDemo.day;
@@ -9,12 +11,27 @@ export function LandingPreview() {
   return (
     <section className="lp-section lp-preview" aria-labelledby="preview-heading">
       <div className="lp-wrap">
-        <p className="lp-kicker">Today</p>
-        <h2 id="preview-heading">Your whole day, at a glance.</h2>
-        <p className="lp-lede">
-          This is the actual Today layout: calories against your goal, meals grouped by time of day, macros, and
-          water if you use it. The numbers here are a sample day, not live account data.
-        </p>
+        <div className="lp-preview-intro">
+          <div className="lp-preview-copy">
+            <p className="lp-kicker">Today</p>
+            <h2 id="preview-heading">Your whole day, at a glance.</h2>
+            <p className="lp-lede">
+              This is the actual Today layout: calories against your goal, meals grouped by time of day, macros, and
+              water if you use it. The numbers here are a sample day, not live account data.
+            </p>
+          </div>
+          <div className="lp-preview-photo">
+            <LandingPhoto
+              src={landingMedia.today.src}
+              srcSet={landingMedia.today.srcSet}
+              fallback={landingMedia.today.fallback}
+              alt={landingMedia.today.alt}
+              width={landingMedia.today.width}
+              height={landingMedia.today.height}
+              sizes="(max-width: 980px) 100vw, 42vw"
+            />
+          </div>
+        </div>
 
         <div className="lp-device">
           <div className="lp-device-bar">

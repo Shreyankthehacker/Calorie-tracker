@@ -36,6 +36,10 @@ function nutrientsFromBody(body: { micronutrients?: FoodEntryCreateBody['micronu
   return result.value;
 }
 
+/**
+ * Food-entry business rules: ownership from the access token, nutrient validation,
+ * and timezone-aware date filters. List results are always paginated.
+ */
 export class FoodEntryService {
   constructor(
     private readonly entries: FoodEntryRepository = foodEntryRepository,
@@ -143,6 +147,7 @@ export class FoodEntryService {
     const user = await this.users.findById(ownerId);
     const timeZone = resolveTimeZone(user?.timezone);
 
+    // Date filters are calendar days in the user's timezone, not UTC midnights.
     const filter: FoodEntryListFilter = { userId: ownerId };
     if (query.mealType !== undefined) {
       filter.mealType = query.mealType;

@@ -1,17 +1,35 @@
 .page-portion {
   .top-row { margin: 24px 0 22px; }
-  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
-  .panel { border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; }
+  .panel { border: 1px solid var(--line); border-radius: 16px; padding: 22px; overflow: visible; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   h2 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
-  .plate-wrap { display: flex; justify-content: center; margin: 8px 0 8px; }
+  .plate-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0 4px;
+    overflow: visible;
+  }
   .side-card.breakdown .btn-primary { width: 100%; margin-top: 14px; }
-  .plate { position: relative; width: 200px; height: 200px; border-radius: 50%; background: var(--paper); border: 2px solid var(--line); }
-  .plate-legend { display: flex; justify-content: center; gap: 18px; font-size: 12px; margin-top: 14px; }
+  .plate {
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: conic-gradient(
+      from -90deg,
+      var(--crimson) 0 40%,
+      #2B2A28 40% 75%,
+      #8A8178 75% 100%
+    );
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .plate-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; font-size: 12px; margin-top: 16px; color: var(--black); }
   .plate-legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; animation: none; }
   .plate-legend .dot-protein { background: var(--crimson); }
   .plate-legend .dot-carbs { background: #2B2A28; }
-  .plate-legend .dot-veg { background: #D8D5D0; }
+  .plate-legend .dot-veg { background: #8A8178; }
   .result-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
   .result-row:first-of-type { border-top: none; }
   .result-row b { font-weight: 700; }

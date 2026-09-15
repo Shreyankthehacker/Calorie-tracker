@@ -10,6 +10,9 @@ import {
 import type { GoalBody } from '../schemas/goals.js';
 import { toGoalWriteInput } from '../schemas/goals.js';
 
+/**
+ * Current nutrition goal (1:1 with user). Client `userId` cannot change the owner.
+ */
 export class GoalService {
   constructor(private readonly goals: GoalRepository = goalRepository) {}
 

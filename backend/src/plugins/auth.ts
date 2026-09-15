@@ -22,6 +22,11 @@ declare module 'fastify' {
   }
 }
 
+/**
+ * JWT access-token verification.
+ * Protected routes call `app.authenticate`; identity always comes from the token `sub`,
+ * never from a client-supplied `userId`.
+ */
 export const authPlugin = fp(async (app, opts: { env: Env }) => {
   await app.register(fjwt, {
     secret: opts.env.JWT_ACCESS_SECRET,

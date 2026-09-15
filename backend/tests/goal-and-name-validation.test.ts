@@ -9,6 +9,15 @@ describe('food name sanitization', () => {
       'Potato Chips (Plain Salted flavour)',
     );
   });
+
+  it('strips currency symbols and trailing separators', () => {
+    expect(sanitizeFoodName('Oatmeal $5.99 —')).toBe('Oatmeal');
+    expect(sanitizeFoodName('Greek yogurt INR 40')).toBe('Greek yogurt');
+  });
+
+  it('keeps the original name when sanitizing would empty it', () => {
+    expect(sanitizeFoodName('$12.00')).toBe('$12.00');
+  });
 });
 
 describe('goal body schema', () => {
@@ -40,6 +49,16 @@ describe('goal body schema', () => {
       fatTarget: 70,
     });
     expect(parsed.success).toBe(true);
+  });
+
+  it('rejects a 9999 kcal target', () => {
+    const parsed = goalBodySchema.safeParse({
+      dailyCalorieTarget: 9999,
+      proteinTarget: 150,
+      carbTarget: 200,
+      fatTarget: 60,
+    });
+    expect(parsed.success).toBe(false);
   });
 });
 

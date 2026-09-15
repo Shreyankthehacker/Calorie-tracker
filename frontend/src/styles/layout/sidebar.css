@@ -82,14 +82,6 @@
   letter-spacing: 0.2px;
   line-height: 1.15;
 }
-.brand .word small {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: #8B8880;
-  letter-spacing: 0.3px;
-}
 
 .nav-label {
   font-size: 11px;
@@ -193,7 +185,6 @@
   }
   .sidebar .brand { margin: 0; }
   .sidebar .brand .word,
-  .sidebar .brand .word small,
   .sidebar .nav-label,
   .sidebar .nav-text,
   .sidebar .sage-pill,

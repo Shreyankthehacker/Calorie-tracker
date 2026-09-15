@@ -15,6 +15,8 @@ export const foodEntryRoutes: FastifyPluginAsync = async (app) => {
 
   app.addHook('preHandler', app.authenticate);
 
+  // Offset pagination, date range, and meal-type filter. Max pageSize is 50 (schema).
+
   app.get('/food-entries', async (request, reply) => {
     const query = foodEntryListQuerySchema.parse(request.query);
     return handler.list(query, request, reply);

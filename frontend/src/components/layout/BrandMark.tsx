@@ -25,9 +25,5 @@ export function BrandMark({ size = 34 }: { size?: number }) {
 }
 
 export function BrandWord() {
-  return (
-    <div className="word">
-      CalorieTracker<small>powered by Typeface</small>
-    </div>
-  );
+  return <div className="word">CalorieTracker</div>;
 }

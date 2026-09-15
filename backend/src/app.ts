@@ -1,3 +1,10 @@
+/**
+ * Application composition root.
+ *
+ * Routes stay thin: they authenticate, parse/validate input with Zod, then
+ * delegate to handlers. Handlers call services. Services own business rules.
+ * Repositories are the only layer that talks to Prisma.
+ */
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
