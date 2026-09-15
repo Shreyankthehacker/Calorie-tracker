@@ -15,12 +15,9 @@ main { display: flex; flex-direction: column; min-height: 100vh; }
   .site-header {
     padding: 12px 16px;
     gap: 10px;
-    flex-wrap: wrap;
   }
-  .header-search {
-    flex: 1 1 100%;
-    max-width: none;
-    order: 3;
+  .header-brand {
+    display: none;
   }
   .main-inner { padding: 0 16px 24px; }
 }

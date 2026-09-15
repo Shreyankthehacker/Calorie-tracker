@@ -1,3 +1,7 @@
+/**
+ * Visual nutrition reports required by the assignment: weekly calories, macros,
+ * micronutrients, and goal vs actual. Charts read aggregates computed at request time.
+ */
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +24,7 @@ import {
   getMicronutrientReport,
 } from '../api/reports';
 import { useAuth } from '../auth/AuthProvider';
-import { SkeletonBlock } from '../components/layout/AppShell';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { DateField } from '../components/ui/DateField';
 import { SelectField } from '../components/ui/SelectField';
 import {

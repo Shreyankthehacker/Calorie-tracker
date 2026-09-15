@@ -16,11 +16,13 @@ import { WaterPage } from '../pages/WaterPage';
 import { GuestRoute, HomeRoute, ProtectedRoute } from './guards';
 import { GetStartedPage } from '../pages/GetStartedPage';
 import { TutorialPage } from '../pages/TutorialPage';
+import { AboutPage } from '../pages/AboutPage';
 
 export function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<HomeRoute />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/tutorial" element={<TutorialPage />} />
       <Route path="/get-started" element={<GetStartedPage />} />
 

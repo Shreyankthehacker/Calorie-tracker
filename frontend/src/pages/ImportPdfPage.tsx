@@ -2,8 +2,9 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirmFoodDiary, isPdfOversized, isSupportedPdf, previewFoodDiary } from '../api/pdf-import';
-import { ApiError, type FoodEntryWritePayload, type MealType, type PdfPreviewRecord } from '../api/types';
-import { Alert } from '../components/layout/AppShell';
+import { toUserMessage } from '../api/errors';
+import type { FoodEntryWritePayload, MealType, PdfPreviewRecord } from '../api/types';
+import { Alert } from '../components/ui/Alert';
 import { SelectField } from '../components/ui/SelectField';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../lib/dates';
 
@@ -97,7 +98,7 @@ export function ImportPdfPage() {
       setRows(null);
       setWarnings([]);
       setImportedCount(null);
-      setLocalError(err instanceof ApiError ? err.message : 'Could not parse this PDF.');
+      setLocalError(toUserMessage(err, 'Could not parse this PDF.'));
     },
   });
 
@@ -111,7 +112,7 @@ export function ImportPdfPage() {
       ]);
     },
     onError: (err: unknown) => {
-      setLocalError(err instanceof ApiError ? err.message : 'Could not import meals.');
+      setLocalError(toUserMessage(err, 'Could not import meals.'));
     },
   });
 

@@ -4,7 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { extractNutrition, isAiImageOversized, isSupportedAiImage } from '../api/ai';
 import { lookupBarcode } from '../api/barcode';
 import { createFoodEntry } from '../api/food-entries';
-import { ApiError, type FoodEntryWritePayload, type NutritionExtraction } from '../api/types';
+import { toUserMessage } from '../api/errors';
+import type { FoodEntryWritePayload, NutritionExtraction } from '../api/types';
 import { BarcodeLookup } from '../components/meals/BarcodeLookup';
 import { MealForm } from '../components/meals/MealForm';
 import { sanitizeFoodName } from '../lib/food-name';
@@ -57,7 +58,7 @@ export function ScanFoodPage() {
     },
     onError: (err: unknown) => {
       setExtraction(null);
-      setLocalError(err instanceof ApiError ? err.message : 'Could not analyze this image.');
+      setLocalError(toUserMessage(err, 'Could not analyze this image.'));
     },
   });
 
@@ -83,7 +84,7 @@ export function ScanFoodPage() {
     onError: (err: unknown) => {
       setProductDraft(null);
       setProductMeta(null);
-      setLocalError(err instanceof ApiError ? err.message : 'Could not look up that barcode.');
+      setLocalError(toUserMessage(err, 'Could not look up that barcode.'));
     },
   });
 
@@ -153,12 +154,9 @@ export function ScanFoodPage() {
     fileInputRef.current?.click();
   }
 
-  const saveError =
-    saveMutation.error instanceof ApiError
-      ? saveMutation.error.message
-      : saveMutation.isError
-        ? 'Could not save meal.'
-        : null;
+  const saveError = saveMutation.isError
+    ? toUserMessage(saveMutation.error, 'Could not save meal.')
+    : null;
 
   const reviewDraft = productDraft ?? (extraction ? nutritionToDraftEntry(extraction) : null);
   const reviewing = reviewDraft !== null;
@@ -265,7 +263,7 @@ export function ScanFoodPage() {
               </div>
               <div>
                 <div className="side-card">
-                  <div className="who">🐾 Sage on scanning</div>
+                  <div className="who">Sage on scanning</div>
                   <p>
                     "Barcode lookup and label photos are different tools. If a barcode isn't recognized, snap the
                     nutrition label instead and Sage will read it."
@@ -330,7 +328,7 @@ export function ScanFoodPage() {
                 />
               </div>
               <div className="side-card">
-                <div className="who">🐾 Sage on scanning</div>
+                <div className="who">Sage on scanning</div>
                 <p>
                   Review the extracted values before they hit your ledger. You can still swap the meal slot or fix
                   macros here.

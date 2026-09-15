@@ -1,3 +1,4 @@
+/** In-app mark. Keep `frontend/public/favicon.svg` visually in sync with this SVG. */
 export function BrandMark({ size = 34 }: { size?: number }) {
   return (
     <svg className="mark" width={size} height={size} viewBox="0 0 36 36" fill="none" aria-hidden="true">

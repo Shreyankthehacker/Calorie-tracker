@@ -1,11 +1,12 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
+import { displayNameFromEmail, initialsFromEmail } from '../../lib/user-display';
+import { SageDock } from '../chat/SageDock';
 import { LogFoodProvider } from '../meals/LogFoodProvider';
 import { BrandMark, BrandWord } from './BrandMark';
 import { bonusNav, crumbs, toolsNav, trackNav, type NavItem } from './nav-config';
 import { SiteFooter } from './SiteFooter';
-import { SageDock } from '../chat/SageDock';
 
 export function AppShell() {
   return (
@@ -22,7 +23,8 @@ function AppShellInner() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const crumb = crumbs[location.pathname] ?? 'Today';
-  const displayName = user?.email?.split('@')[0] ?? 'You';
+  const displayName = user?.email ? displayNameFromEmail(user.email) : 'You';
+  const initials = user?.email ? initialsFromEmail(user.email) : 'Y';
 
   useEffect(() => {
     setNavOpen(false);
@@ -80,10 +82,10 @@ function AppShellInner() {
       ) : null}
       <aside className={`sidebar${navOpen ? ' is-open' : ''}`} aria-label="App">
         <div className="sidebar-head">
-          <div className="brand">
+          <Link to="/dashboard" className="brand" aria-label="CalorieTracker home">
             <BrandMark />
             <BrandWord />
-          </div>
+          </Link>
           <button
             type="button"
             className="sidebar-toggle"
@@ -97,17 +99,19 @@ function AppShellInner() {
         <div className="sidebar-navs">
           <SidebarNav label="Track" items={trackNav} onNavigate={() => setNavOpen(false)} />
           <SidebarNav label="Tools" items={bonusNav} onNavigate={() => setNavOpen(false)} />
-          <SidebarNav label="Additionals" items={toolsNav} onNavigate={() => setNavOpen(false)} />
+          <SidebarNav label="More" items={toolsNav} onNavigate={() => setNavOpen(false)} />
         </div>
         <div className="sidebar-foot">
           <div className="sage-pill">
             <span className="dot" /> Sage assistant active
           </div>
           <div className="user-row">
-            <img src={`https://picsum.photos/seed/${encodeURIComponent(displayName)}/64/64`} alt="" />
+            <div className="user-avatar" aria-hidden="true">
+              {initials}
+            </div>
             <div>
               <div className="name">{displayName}</div>
-              <div className="tier">Free tier</div>
+              <div className="tier">Signed in</div>
             </div>
             <button
               type="button"
@@ -132,15 +136,12 @@ function AppShellInner() {
       </aside>
       <main>
         <div className="site-header">
+          <Link to="/dashboard" className="header-brand" aria-label="CalorieTracker home">
+            <BrandMark size={28} />
+            <span className="header-brand-name">CalorieTracker</span>
+          </Link>
           <div className="crumb">
-            Ration ledger &nbsp;/&nbsp; <b>{crumb}</b>
-          </div>
-          <div className="header-search">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <circle cx="6" cy="6" r="4.5" stroke="#7A756E" strokeWidth="1.3" />
-              <path d="M9.5 9.5 13 13" stroke="#7A756E" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
-            <input type="text" placeholder="Search foods, entries, or ask Sage…" />
+            {crumb}
           </div>
           <div className="header-actions">
             <div className="header-powered">
@@ -186,81 +187,4 @@ function SidebarNav({
       </nav>
     </>
   );
-}
-
-export function FormField({
-  label,
-  htmlFor,
-  hint,
-  error,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  hint?: string;
-  error?: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="field" htmlFor={htmlFor}>
-      <span className="field-label">{label}</span>
-      {children}
-      {hint && !error ? <span className="field-hint">{hint}</span> : null}
-      {error ? (
-        <span className="field-error" role="alert">
-          {error}
-        </span>
-      ) : null}
-    </label>
-  );
-}
-
-export function Alert({
-  tone = 'info',
-  children,
-}: {
-  tone?: 'info' | 'error' | 'success';
-  children: ReactNode;
-}) {
-  return (
-    <div className={`alert alert-${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
-      {children}
-    </div>
-  );
-}
-
-export function SkeletonBlock({ label }: { label: string }) {
-  return (
-    <div className="skeleton-stack" aria-busy="true">
-      <p className="sr-only">{label}</p>
-      <div className="skeleton skeleton-lg" />
-      <div className="skeleton" />
-      <div className="skeleton" />
-    </div>
-  );
-}
-
-export function useFormSubmit(
-  onSubmit: () => Promise<void>,
-): {
-  submitting: boolean;
-  error: string | null;
-  handleSubmit: (event: FormEvent) => void;
-  setError: (value: string | null) => void;
-} {
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    void onSubmit()
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Something went wrong');
-      })
-      .finally(() => setSubmitting(false));
-  }
-
-  return { submitting, error, handleSubmit, setError };
 }

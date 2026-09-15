@@ -1,9 +1,14 @@
+/**
+ * Review-and-save meal logger. Catalog items scale from a per-serving base;
+ * edited macros are saved as a custom FoodEntry snapshot.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Minus, Plus, Search, X } from 'lucide-react';
 import { createFoodEntry, listRecentFoods } from '../../api/food-entries';
 import { listFoodItems, logFoodItem } from '../../api/food-items';
-import { ApiError, type FoodItem, type MealType, type RecentFood } from '../../api/types';
+import { toUserMessage } from '../../api/errors';
+import type { FoodItem, MealType, RecentFood } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import {
   formatAmount,
@@ -190,7 +195,7 @@ export function FoodLogger({
       await onLogged();
     },
     onError: (err: unknown) => {
-      setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Could not add food.');
+      setError(toUserMessage(err, 'Could not add food.'));
     },
   });
 

@@ -2,8 +2,8 @@ import { useRef, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { landingMedia } from '../lib/landing-media';
-import { BrandWord } from '../components/layout/BrandMark';
 import { FoodThumb } from '../components/meals/FoodThumb';
+import { LandingFooter } from './landing/LandingFooter';
 import { LandingLive } from './landing/LandingLive';
 import { LandingNav } from './landing/LandingNav';
 import { LandingPhoto } from './landing/LandingPhoto';
@@ -134,7 +134,21 @@ export function LandingPage() {
         <LandingLive />
         <LandingPreview />
 
-        <section className="lp-section" id="how-it-works" aria-labelledby="how-heading">
+        <section className="lp-maroon" aria-labelledby="about-strip-heading">
+          <div className="lp-wrap">
+            <p className="lp-kicker">About</p>
+            <h2 id="about-strip-heading">Built around the meals you log.</h2>
+            <p>
+              Goals, entries, reports, photo extraction, Sage, barcodes, and PDF import sit behind the same APIs. The
+              assistant can propose. You still review before anything is saved.
+            </p>
+            <Link className="lp-maroon-link" to="/about">
+              Read about the product
+            </Link>
+          </div>
+        </section>
+
+        <section className="lp-section is-maroon" id="how-it-works" aria-labelledby="how-heading">
           <div className="lp-wrap">
             <p className="lp-kicker">How it works</p>
             <h2 id="how-heading">From meal to insight in seconds.</h2>
@@ -212,22 +226,7 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="lp-footer">
-        <div className="lp-wrap lp-footer-grid">
-          <div>
-            <BrandWord />
-            <p>A personal calorie tracker for meals you actually logged.</p>
-          </div>
-          <nav aria-label="Footer">
-            <a href="#how-it-works">How it works</a>
-            <a href="#features">Features</a>
-            <Link to="/tutorial">Tutorial</Link>
-            <Link to="/login">Sign in</Link>
-            <Link to="/register">Start tracking</Link>
-          </nav>
-          <p className="lp-copy">© {new Date().getFullYear()} CalorieTracker</p>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

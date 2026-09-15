@@ -5,7 +5,7 @@ import { getGoal } from '../api/goals';
 import { getTodayReport } from '../api/reports';
 import { ApiError, type FoodEntry, type MealType } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
-import { SkeletonBlock } from '../components/layout/AppShell';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { FoodThumb } from '../components/meals/FoodThumb';
 import { useLogFood } from '../components/meals/LogFoodProvider';
 import { calendarDateInTimeZone } from '../lib/dates';
@@ -183,7 +183,7 @@ export function DashboardPage() {
           <div>
             <h2>Context &amp; wisdom</h2>
             <div className="side-card">
-              <div className="who">🐾 Sage assistant</div>
+              <div className="who">Sage assistant</div>
               <p>&quot;{sageTodayCopy(entries, totals)}&quot;</p>
               <Link className="ask-sage" to="/chat">
                 Ask Sage about today

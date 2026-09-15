@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { FoodEntry, FoodEntryWritePayload, MealType, Micronutrient } from '../../api/types';
-import { FormField } from '../layout/AppShell';
+import { FormField } from '../ui/FormField';
 import { SelectField } from '../ui/SelectField';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
 import { formatAmount, scaleMacrosFromBase, scaleNutrition, type NutritionBase } from '../../lib/nutrition';
@@ -285,70 +285,39 @@ export function MealForm({
         options={mealTypes}
       />
 
-      {/* <FormField label="Food" htmlFor="meal-food">
-        <input
-          id="meal-food"
-          value={form.foodName}
-          onChange={(event) => update('foodName', event.target.value)}
-          required
-        />
-      </FormField>
-
-      <div className="qty-unit">
-        <FormField label="Quantity" htmlFor="meal-quantity">
+      <div className="field-row food-qty">
+        <FormField label="Food" htmlFor="meal-food">
           <input
-            id="meal-quantity"
-            type="number"
-            min={0.01}
-            step="any"
-            value={form.quantity}
-            onChange={(event) => handleQuantityChange(event.target.value)}
+            id="meal-food"
+            value={form.foodName}
+            onChange={(event) => update('foodName', event.target.value)}
             required
           />
         </FormField>
-        <FormField label="Unit" htmlFor="meal-unit">
-          <input
-            id="meal-unit"
-            value={form.quantityUnit}
-            onChange={(event) => update('quantityUnit', event.target.value)}
-            required
-          />
-        </FormField>
-      </div> */}
 
-<div className="field-row food-qty">
-  <FormField label="Food" htmlFor="meal-food">
-    <input
-      id="meal-food"
-      value={form.foodName}
-      onChange={(event) => update('foodName', event.target.value)}
-      required
-    />
-  </FormField>
+        <div className="qty-unit">
+          <FormField label="Quantity" htmlFor="meal-quantity">
+            <input
+              id="meal-quantity"
+              type="number"
+              min={0.01}
+              step="any"
+              value={form.quantity}
+              onChange={(event) => handleQuantityChange(event.target.value)}
+              required
+            />
+          </FormField>
 
-  <div className="qty-unit">
-    <FormField label="Quantity" htmlFor="meal-quantity">
-      <input
-        id="meal-quantity"
-        type="number"
-        min={0.01}
-        step="any"
-        value={form.quantity}
-        onChange={(event) => handleQuantityChange(event.target.value)}
-        required
-      />
-    </FormField>
-
-    <FormField label="Unit" htmlFor="meal-unit">
-      <input
-        id="meal-unit"
-        value={form.quantityUnit}
-        onChange={(event) => update('quantityUnit', event.target.value)}
-        required
-      />
-    </FormField>
-  </div>
-</div>
+          <FormField label="Unit" htmlFor="meal-unit">
+            <input
+              id="meal-unit"
+              value={form.quantityUnit}
+              onChange={(event) => update('quantityUnit', event.target.value)}
+              required
+            />
+          </FormField>
+        </div>
+      </div>
 
       <div className="field-row four">
         <FormField label="Calories (kcal)" htmlFor="meal-calories">

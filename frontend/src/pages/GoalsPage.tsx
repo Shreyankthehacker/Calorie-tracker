@@ -1,9 +1,16 @@
+/**
+ * Current health goal: calories, macros, and optional weight target.
+ * One goal per user — saving updates the current row rather than appending history.
+ */
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createGoal, deleteGoal, getGoal, upsertGoal } from '../api/goals';
 import { getInsightsReport } from '../api/reports';
+import { toUserMessage } from '../api/errors';
 import { ApiError, type GoalWritePayload } from '../api/types';
-import { Alert, FormField, SkeletonBlock } from '../components/layout/AppShell';
+import { Alert } from '../components/ui/Alert';
+import { FormField } from '../components/ui/FormField';
+import { SkeletonBlock } from '../components/ui/SkeletonBlock';
 import { useAuth } from '../auth/AuthProvider';
 import { addCalendarDays, calendarDateInTimeZone } from '../lib/dates';
 import { assessGoal, macroCaloriePool, validateGoalForSave } from '../lib/goal-sanity';
@@ -13,6 +20,7 @@ type GoalFormState = {
   proteinTarget: string;
   carbTarget: string;
   fatTarget: string;
+  weightGoal: string;
 };
 
 const emptyForm: GoalFormState = {
@@ -20,15 +28,18 @@ const emptyForm: GoalFormState = {
   proteinTarget: '',
   carbTarget: '',
   fatTarget: '',
+  weightGoal: '',
 };
 
 function toPayload(form: GoalFormState): GoalWritePayload {
+  const weightRaw = form.weightGoal.trim();
   return {
     dailyCalorieTarget: Number(form.dailyCalorieTarget),
     proteinTarget: Number(form.proteinTarget),
     carbTarget: Number(form.carbTarget),
     fatTarget: Number(form.fatTarget),
-    weightGoal: null,
+    // Empty field means "no weight target", not zero kilograms.
+    weightGoal: weightRaw === '' ? null : Number(weightRaw),
   };
 }
 
@@ -84,6 +95,7 @@ export function GoalsPage() {
         proteinTarget: String(goalQuery.data.proteinTarget),
         carbTarget: String(goalQuery.data.carbTarget),
         fatTarget: String(goalQuery.data.fatTarget),
+        weightGoal: goalQuery.data.weightGoal == null ? '' : String(goalQuery.data.weightGoal),
       });
     }
   }, [goalQuery.data]);
@@ -103,11 +115,7 @@ export function GoalsPage() {
     },
     onError: (err: unknown) => {
       setSuccess(null);
-      if (err instanceof ApiError) {
-        setFormError(err.message);
-      } else {
-        setFormError('Could not save goal.');
-      }
+      setFormError(toUserMessage(err, 'Could not save goal.'));
     },
   });
 
@@ -121,7 +129,7 @@ export function GoalsPage() {
     },
     onError: (err: unknown) => {
       setSuccess(null);
-      setFormError(err instanceof ApiError ? err.message : 'Could not delete goal.');
+      setFormError(toUserMessage(err, 'Could not delete goal.'));
     },
   });
 
@@ -282,6 +290,11 @@ export function GoalsPage() {
                   <div className="bar-fill" style={{ width: percentBase ? `${Math.min(100, (fatKcal / percentBase) * 100)}%` : '0%' }} />
                 </div>
               </div>
+              <p className="muted">
+                {goalQuery.data.weightGoal == null
+                  ? 'No weight goal set.'
+                  : `Weight goal ${goalQuery.data.weightGoal} kg`}
+              </p>
               <div className="actions">
                 <button type="button" className="btn-secondary" onClick={() => setEditing(true)}>
                   Edit goals
@@ -396,6 +409,21 @@ export function GoalsPage() {
               value={form.fatTarget}
               onChange={(e) => updateField('fatTarget', e.target.value)}
               required
+            />
+          </FormField>
+          <FormField
+            label="Weight goal (kg)"
+            htmlFor="goal-weight"
+            hint="Optional. Leave blank if you do not want a weight target."
+          >
+            <input
+              id="goal-weight"
+              type="number"
+              min={0}
+              max={400}
+              step="any"
+              value={form.weightGoal}
+              onChange={(e) => updateField('weightGoal', e.target.value)}
             />
           </FormField>
           <div className="actions">

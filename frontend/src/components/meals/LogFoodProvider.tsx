@@ -13,6 +13,10 @@ type LogFoodContextValue = {
 
 const LogFoodContext = createContext<LogFoodContextValue | null>(null);
 
+/**
+ * Global log-food modal. `openLogFood` ignores click events — only a real MealType
+ * is stored, otherwise the logger defaults to breakfast.
+ */
 export function LogFoodProvider({ children }: { children: ReactNode }) {
   const [isOpen, setOpen] = useState(false);
   const [mealType, setMealType] = useState<MealType | undefined>();

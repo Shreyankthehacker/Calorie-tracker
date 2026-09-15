@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandMark, BrandWord } from '../components/layout/BrandMark';
-import { ApiError } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
-import { Alert, useFormSubmit } from '../components/layout/AppShell';
+import { Alert } from '../components/ui/Alert';
+import { useFormSubmit } from '../hooks/useFormSubmit';
 
 function AuthSplit({
   kicker,
@@ -81,18 +81,12 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { submitting, error, handleSubmit, setError } = useFormSubmit(async () => {
+  const { submitting, error, handleSubmit } = useFormSubmit(async () => {
     if (!email.trim() || !password) {
-      setError('Email and password are required.');
       throw new Error('Email and password are required.');
     }
-    try {
-      await login(email.trim(), password);
-      navigate(from, { replace: true });
-    } catch (err) {
-      if (err instanceof ApiError) throw new Error(err.message);
-      throw err;
-    }
+    await login(email.trim(), password);
+    navigate(from, { replace: true });
   });
 
   return (
@@ -151,18 +145,12 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { submitting, error, handleSubmit, setError } = useFormSubmit(async () => {
+  const { submitting, error, handleSubmit } = useFormSubmit(async () => {
     if (!email.trim() || password.length < 8) {
-      setError('Use a valid email and a password of at least 8 characters.');
       throw new Error('Use a valid email and a password of at least 8 characters.');
     }
-    try {
-      await register(email.trim(), password);
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      if (err instanceof ApiError) throw new Error(err.message);
-      throw err;
-    }
+    await register(email.trim(), password);
+    navigate('/dashboard', { replace: true });
   });
 
   return (

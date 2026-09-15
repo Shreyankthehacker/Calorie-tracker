@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { listFoodItems, logFoodItem } from '../../api/food-items';
-import { ApiError, type FoodItem, type MealType } from '../../api/types';
+import { toUserMessage } from '../../api/errors';
+import type { FoodItem, MealType } from '../../api/types';
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '../../lib/dates';
-import { Alert, FormField } from '../layout/AppShell';
+import { Alert } from '../ui/Alert';
+import { FormField } from '../ui/FormField';
 import { SelectField } from '../ui/SelectField';
 import { FoodThumb } from './FoodThumb';
 import { unusualQuantityWarning } from '../../lib/quantity-warning';
@@ -73,7 +75,7 @@ export function FoodCatalog({ onLogged }: { onLogged: () => Promise<void> | void
       await onLogged();
     },
     onError: (err: unknown) => {
-      setError(err instanceof ApiError ? err.message : 'Could not add food.');
+      setError(toUserMessage(err, 'Could not add food.'));
     },
   });
 

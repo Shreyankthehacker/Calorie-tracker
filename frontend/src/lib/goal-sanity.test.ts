@@ -31,5 +31,14 @@ describe('goal sanity', () => {
         fatTarget: 60,
       }),
     ).toMatch(/300/);
+    expect(
+      validateGoalForSave({
+        dailyCalorieTarget: 2200,
+        proteinTarget: 120,
+        carbTarget: 200,
+        fatTarget: 60,
+        weightGoal: -1,
+      }),
+    ).toMatch(/weight/i);
   });
 });

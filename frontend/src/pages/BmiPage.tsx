@@ -180,7 +180,7 @@ export function BmiPage() {
 
         <div className="grid">
           <div className="side-card">
-            <div className="who">🐾 Sage on BMI</div>
+            <div className="who">Sage on BMI</div>
             <p>
               {accountDays < 14
                 ? `"This calculator is a snapshot from the height and weight you just entered. The account is ${accountDays} day${accountDays === 1 ? '' : 's'} old, so there is not enough BMI history for a trend."`

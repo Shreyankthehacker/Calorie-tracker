@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { extractNutrition, isAiImageOversized, isSupportedAiImage } from '../api/ai';
 import { lookupBarcode } from '../api/barcode';
 import { createFoodEntry } from '../api/food-entries';
-import { ApiError, type FoodEntry } from '../api/types';
+import { toUserMessage } from '../api/errors';
+import type { FoodEntry } from '../api/types';
 import { BarcodeLookup } from '../components/meals/BarcodeLookup';
 import { FoodCatalog } from '../components/meals/FoodCatalog';
 import { MealForm } from '../components/meals/MealForm';
@@ -45,7 +46,7 @@ export function LogMealPage() {
       navigate('/meals');
     },
     onError: (err: unknown) => {
-      setFormError(err instanceof ApiError ? err.message : 'Could not add meal.');
+      setFormError(toUserMessage(err, 'Could not add meal.'));
     },
   });
 
@@ -68,7 +69,7 @@ export function LogMealPage() {
       setImageError(null);
     },
     onError: (err: unknown) => {
-      setImageError(err instanceof ApiError ? err.message : 'Could not analyze this image.');
+      setImageError(toUserMessage(err, 'Could not analyze this image.'));
     },
   });
 
@@ -90,7 +91,7 @@ export function LogMealPage() {
       setBarcodeError(null);
     },
     onError: (err: unknown) => {
-      setBarcodeError(err instanceof ApiError ? err.message : 'Could not look up that barcode.');
+      setBarcodeError(toUserMessage(err, 'Could not look up that barcode.'));
     },
   });
 

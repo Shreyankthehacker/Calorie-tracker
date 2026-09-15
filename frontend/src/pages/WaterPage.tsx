@@ -120,7 +120,7 @@ export function WaterPage() {
             </p>
 
             <div className="side-card">
-              <div className="who">🐾 Sage on hydration</div>
+              <div className="who">Sage on hydration</div>
               <p>
                 {glasses === 0
                   ? '"No glasses logged yet today, so there is not a hydration trend to comment on."'

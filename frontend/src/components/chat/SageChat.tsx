@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { confirmChatMeal, sendChat } from '../../api/chat';
 import { getGoal } from '../../api/goals';
 import { getTodayReport } from '../../api/reports';
-import { ApiError, type PendingMeal } from '../../api/types';
+import { toUserMessage } from '../../api/errors';
+import type { PendingMeal } from '../../api/types';
 import { isPlausibleDailyCalorieTarget } from '../../lib/goal-sanity';
 
 export type ChatMessage = {
@@ -140,7 +141,7 @@ export function useSageChat() {
       setMessages((current) => [...current, assistant]);
     },
     onError: (err: unknown) => {
-      setError(err instanceof ApiError ? err.message : 'Unable to reach the assistant. Please try again.');
+      setError(toUserMessage(err, 'Unable to reach the assistant. Please try again.'));
     },
   });
 
@@ -158,7 +159,7 @@ export function useSageChat() {
       ]);
     },
     onError: (err: unknown) => {
-      setError(err instanceof ApiError ? err.message : 'Could not save meal.');
+      setError(toUserMessage(err, 'Could not save meal.'));
     },
   });
 

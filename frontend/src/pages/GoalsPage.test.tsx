@@ -97,6 +97,7 @@ describe('GoalsPage', () => {
 
     expect(await screen.findByText('2200')).toBeInTheDocument();
     expect(screen.getByText('140')).toBeInTheDocument();
+    expect(screen.getByText(/weight goal 75 kg/i)).toBeInTheDocument();
     expect(screen.getByText(/3-day streak/i)).toBeInTheDocument();
     expect(screen.queryByText(/12-day streak/i)).not.toBeInTheDocument();
   });
@@ -124,6 +125,7 @@ describe('GoalsPage', () => {
     await userEvt.type(screen.getByLabelText(/daily protein/i), '120');
     await userEvt.type(screen.getByLabelText(/daily carbohydrates/i), '200');
     await userEvt.type(screen.getByLabelText(/daily fat/i), '60');
+    await userEvt.type(screen.getByLabelText(/weight goal/i), '70');
     await userEvt.click(screen.getByRole('button', { name: /save goals/i }));
 
     await waitFor(() => {
@@ -132,7 +134,7 @@ describe('GoalsPage', () => {
         proteinTarget: 120,
         carbTarget: 200,
         fatTarget: 60,
-        weightGoal: null,
+        weightGoal: 70,
       });
     });
   });

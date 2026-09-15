@@ -1,3 +1,7 @@
+/**
+ * Session state. Tokens live in localStorage; the access JWT is sent as Bearer.
+ * Identity always comes from GET /auth/me, never from a userId field in the UI.
+ */
 import {
   createContext,
   useCallback,

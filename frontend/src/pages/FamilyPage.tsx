@@ -1,29 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFamily, getFamily, joinFamily, leaveFamily } from '../api/family';
-import { ApiError, type FamilyMemberProfile } from '../api/types';
+import { firstApiErrorMessage } from '../api/errors';
+import type { FamilyMemberProfile } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
+import { displayNameFromEmail, initialsFromEmail } from '../lib/user-display';
 import { displayTimeZone } from '../lib/timezones';
 
-function displayName(email: string): string {
-  const local = email.split('@')[0] ?? email;
-  return local;
-}
-
 function memberRole(member: FamilyMemberProfile): string {
-  if (member.isCurrentUser) {
-    return 'You';
-  }
-  return 'Member';
+  return member.isCurrentUser ? 'You' : 'Member';
 }
 
 function formatKcal(value: number): string {
   return `${Math.round(value).toLocaleString()} kcal`;
-}
-
-function initials(email: string): string {
-  const name = displayName(email);
-  return name.slice(0, 1).toUpperCase();
 }
 
 export function FamilyPage() {
@@ -80,16 +69,12 @@ export function FamilyPage() {
     },
   });
 
-  const actionError =
-    createMutation.error instanceof ApiError
-      ? createMutation.error.message
-      : joinMutation.error instanceof ApiError
-        ? joinMutation.error.message
-        : leaveMutation.error instanceof ApiError
-          ? leaveMutation.error.message
-          : familyQuery.error instanceof ApiError
-            ? familyQuery.error.message
-            : null;
+  const actionError = firstApiErrorMessage(
+    createMutation.error,
+    joinMutation.error,
+    leaveMutation.error,
+    familyQuery.error,
+  );
 
   async function copyFamilyId() {
     if (!family) {
@@ -152,10 +137,10 @@ export function FamilyPage() {
             >
               <div className="fam-head">
                 <div className="fam-avatar" aria-hidden="true">
-                  {initials(member.email)}
+                  {initialsFromEmail(member.email)}
                 </div>
                 <div>
-                  <div className="n">{displayName(member.email)}</div>
+                  <div className="n">{displayNameFromEmail(member.email)}</div>
                   <div className="r">{memberRole(member)}</div>
                 </div>
               </div>
@@ -212,10 +197,10 @@ export function FamilyPage() {
                   onClick={() => setSelectedId(member.id)}
                 >
                   <div className="fam-avatar" aria-hidden="true">
-                    {initials(member.email)}
+                    {initialsFromEmail(member.email)}
                   </div>
                   <div className="info">
-                    <div className="t">{displayName(member.email)}</div>
+                    <div className="t">{displayNameFromEmail(member.email)}</div>
                     <div className="s">
                       {formatKcal(member.todayCalories)} logged today · {displayTimeZone(member.timezone)}
                     </div>
@@ -227,7 +212,7 @@ export function FamilyPage() {
           <div>
             {selected ? (
               <div className="side-card">
-                <div className="who">Profile · {displayName(selected.email)}</div>
+                <div className="who">Profile · {displayNameFromEmail(selected.email)}</div>
                 <p>{selected.email}</p>
                 <p>
                   {selected.isCurrentUser ? 'Currently viewing your profile.' : 'Currently viewing this family member.'}
@@ -251,6 +236,7 @@ export function FamilyPage() {
                 <span className="field-label">Family ID</span>
                 <div className="join-row">
                   <input
+                    type="text"
                     value={joinId}
                     onChange={(event) => setJoinId(event.target.value)}
                     placeholder="Paste a family ID"
@@ -274,15 +260,15 @@ export function FamilyPage() {
               ) : null}
             </div>
             <div className="side-card">
-              <div className="who">🐾 Sage on family</div>
+              <div className="who">Sage on family</div>
               <p>
                 {family
-                  ? `"${members.length} member${members.length === 1 ? '' : 's'} ${members.length === 1 ? 'shares' : 'share'} this household ID. Each person still keeps their own meals and goals."`
-                  : '"Create a family to get a unique ID. Anyone you share it with can join and keep their own log."'}
+                  ? `${members.length} member${members.length === 1 ? '' : 's'} ${members.length === 1 ? 'shares' : 'share'} this household ID. Each person still keeps their own meals and goals.`
+                  : 'Create a family to get a unique ID. Anyone you share it with can join and keep their own log.'}
               </p>
             </div>
             <div className="side-card">
-              <div className="who">👨‍👩‍👧 Household total</div>
+              <div className="who">Household total</div>
               <p>
                 {family
                   ? `${formatKcal(householdTotal)} logged across the family today, from ${members.length} active member${members.length === 1 ? '' : 's'}.`

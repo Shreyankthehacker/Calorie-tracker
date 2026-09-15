@@ -3,6 +3,7 @@ export const GOAL_LIMITS = {
   protein: { min: 0, max: 300 },
   carbs: { min: 0, max: 800 },
   fat: { min: 0, max: 250 },
+  weight: { min: 0, max: 400 },
 } as const;
 
 export type GoalMacros = {
@@ -10,6 +11,8 @@ export type GoalMacros = {
   proteinTarget: number;
   carbTarget: number;
   fatTarget: number;
+  /** Optional body-weight target in kilograms. Blank/null is allowed. */
+  weightGoal?: number | null;
 };
 
 export function macroCaloriePool(proteinG: number, carbsG: number, fatG: number): number {
@@ -93,6 +96,17 @@ export function validateGoalForSave(goal: GoalMacros): string | null {
   }
   if (proteinTarget < 0 || carbTarget < 0 || fatTarget < 0) {
     return 'Macro targets cannot be negative.';
+  }
+  if (goal.weightGoal != null) {
+    if (Number.isNaN(goal.weightGoal)) {
+      return 'Enter a valid weight goal or leave it blank.';
+    }
+    if (goal.weightGoal < GOAL_LIMITS.weight.min) {
+      return 'Weight goal cannot be negative.';
+    }
+    if (goal.weightGoal > GOAL_LIMITS.weight.max) {
+      return `Weight goal must be ${GOAL_LIMITS.weight.max} kg or less.`;
+    }
   }
   return null;
 }

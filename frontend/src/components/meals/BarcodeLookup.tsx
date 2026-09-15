@@ -37,15 +37,27 @@ export function BarcodeLookup({
       <label className="field" htmlFor={id}>
         <span className="field-label">Barcode</span>
         <div className="barcode-lookup">
-          <input
-            ref={inputRef}
-            id={id}
-            value={value}
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="e.g. 3017620422003"
-            onChange={(event) => onChange(event.target.value)}
-          />
+        <input
+  ref={inputRef}
+  id={id}
+  value={value}
+  inputMode="numeric"
+  autoComplete="off"
+  placeholder="e.g. 3017620422003"
+  onChange={(event) => onChange(event.target.value)}
+  style={{
+    width: "430px",
+    height: "42px",
+    padding: "0 14px",
+    border: "1px solid #d1d5db",
+    borderRadius: "8px",
+    fontSize: "15px",
+    backgroundColor: "#fff",
+    color: "#111",
+    boxSizing: "border-box",
+    outline: "none",
+  }}
+/>
           <button type="submit" className="btn-primary" disabled={pending || value.trim().length < 6}>
             {pending ? 'Looking up…' : 'Look up barcode'}
           </button>

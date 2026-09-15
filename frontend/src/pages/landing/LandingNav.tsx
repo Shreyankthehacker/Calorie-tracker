@@ -12,6 +12,11 @@ function NavIcon({ path }: { path: string }) {
 
 const links: { to: string; label: string; icon: ReactNode }[] = [
   {
+    to: '/about',
+    label: 'About',
+    icon: <NavIcon path="M8 14.2A6.2 6.2 0 1 0 8 1.8a6.2 6.2 0 0 0 0 12.4ZM8 7.2V11M8 5.2v.2" />,
+  },
+  {
     to: '/#features',
     label: 'Features',
     icon: <NavIcon path="M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z" />,

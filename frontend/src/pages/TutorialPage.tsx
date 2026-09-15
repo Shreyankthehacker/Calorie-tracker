@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BrandWord } from '../components/layout/BrandMark';
+import { LandingFooter } from './landing/LandingFooter';
 import { LandingNav } from './landing/LandingNav';
 import { LandingTutorial } from './landing/LandingTutorial';
 
@@ -22,21 +22,7 @@ export function TutorialPage() {
           </div>
         </section>
       </main>
-      <footer className="lp-footer">
-        <div className="lp-wrap lp-footer-grid">
-          <div>
-            <BrandWord />
-            <p>A personal calorie tracker for meals you actually logged.</p>
-          </div>
-          <nav aria-label="Footer">
-            <Link to="/">Home</Link>
-            <Link to="/#how-it-works">How it works</Link>
-            <Link to="/login">Sign in</Link>
-            <Link to="/register">Start tracking</Link>
-          </nav>
-          <p className="lp-copy">© {new Date().getFullYear()} CalorieTracker</p>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

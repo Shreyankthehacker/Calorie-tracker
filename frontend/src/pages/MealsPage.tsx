@@ -1,3 +1,7 @@
+/**
+ * Time-range food-entry list. Filters by start date, end date, and meal type,
+ * using the paginated GET /food-entries API.
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -7,8 +11,9 @@ import {
   listFoodEntries,
   updateFoodEntry,
 } from '../api/food-entries';
-import { ApiError, type FoodEntry, type FoodEntryWritePayload, type MealType } from '../api/types';
-import { Alert } from '../components/layout/AppShell';
+import { toUserMessage } from '../api/errors';
+import type { FoodEntry, FoodEntryWritePayload, MealType } from '../api/types';
+import { Alert } from '../components/ui/Alert';
 import { MealForm } from '../components/meals/MealForm';
 import { FoodThumb } from '../components/meals/FoodThumb';
 import { useLogFood } from '../components/meals/LogFoodProvider';
@@ -72,7 +77,7 @@ export function MealsPage() {
       await invalidateMeals();
     },
     onError: (err: unknown) => {
-      setFormError(err instanceof ApiError ? err.message : 'Could not add meal.');
+      setFormError(toUserMessage(err, 'Could not add meal.'));
     },
   });
 
@@ -86,7 +91,7 @@ export function MealsPage() {
       await invalidateMeals();
     },
     onError: (err: unknown) => {
-      setFormError(err instanceof ApiError ? err.message : 'Could not update meal.');
+      setFormError(toUserMessage(err, 'Could not update meal.'));
     },
   });
 
@@ -103,7 +108,7 @@ export function MealsPage() {
     },
     onError: (err: unknown) => {
       setSuccess(null);
-      setFormError(err instanceof ApiError ? err.message : 'Could not delete meal.');
+      setFormError(toUserMessage(err, 'Could not delete meal.'));
     },
   });
 

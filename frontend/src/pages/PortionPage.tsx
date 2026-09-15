@@ -149,7 +149,7 @@ export function PortionPage() {
               </button>
             </div>
             <div className="side-card">
-              <div className="who">🐾 Sage on portions</div>
+              <div className="who">Sage on portions</div>
               <p>
                 "This suggestion is a calculator output for the remaining calories you typed, before logging this meal.
                 Use Log this meal to review it on the Log meal page."

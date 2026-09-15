@@ -1,3 +1,7 @@
+/**
+ * Shared HTTP client. Authenticated calls send the access JWT and refresh once on 401.
+ * The UI never talks to Gemini or the database directly.
+ */
 import { ApiError, type ApiErrorBody } from './types';
 import { tokenStorage } from './tokenStorage';
 import { API_BASE_URL } from './base-url';
@@ -74,8 +78,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return undefined as T;
   }
 
-  const text = await response.text();
-  const payload = text ? (JSON.parse(text) as unknown) : null;
+  const payload = await readJsonBody(response);
 
   if (!response.ok) {
     const errorBody = payload as ApiErrorBody | null;
@@ -88,6 +91,21 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   return payload as T;
+}
+
+async function readJsonBody(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    if (!response.ok) {
+      throw new ApiError(response.status, 'INTERNAL_SERVER_ERROR', 'Request failed');
+    }
+    throw new ApiError(500, 'INTERNAL_SERVER_ERROR', 'The server returned an invalid response.');
+  }
 }
 
 export function getApiBaseUrl(): string {
