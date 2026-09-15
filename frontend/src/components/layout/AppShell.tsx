@@ -5,6 +5,7 @@ import { LogFoodProvider } from '../meals/LogFoodProvider';
 import { BrandMark, BrandWord } from './BrandMark';
 import { bonusNav, crumbs, toolsNav, trackNav, type NavItem } from './nav-config';
 import { SiteFooter } from './SiteFooter';
+import { SageDock } from '../chat/SageDock';
 
 export function AppShell() {
   return (
@@ -150,6 +151,7 @@ function AppShellInner() {
         <Outlet />
         <SiteFooter />
       </main>
+      <SageDock />
     </div>
   );
 }
