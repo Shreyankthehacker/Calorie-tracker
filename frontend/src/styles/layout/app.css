@@ -7,3 +7,20 @@
 main { display: flex; flex-direction: column; min-height: 100vh; }
 .main-inner { padding: 0 44px; flex: 1; }
 .main-inner > .kicker { margin-top: 24px; }
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .site-header {
+    padding: 12px 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .header-search {
+    flex: 1 1 100%;
+    max-width: none;
+    order: 3;
+  }
+  .main-inner { padding: 0 16px 24px; }
+}

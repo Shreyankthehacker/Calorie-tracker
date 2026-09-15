@@ -63,5 +63,7 @@
 
 @media (max-width: 860px) {
   .split { grid-template-columns: 1fr; }
-  .brand-panel { min-height: 280px; }
+  .brand-panel { min-height: 220px; padding: 28px 20px; }
+  .form-panel { padding: 24px 20px 40px; }
+  .stat-row { gap: 16px; flex-wrap: wrap; }
 }

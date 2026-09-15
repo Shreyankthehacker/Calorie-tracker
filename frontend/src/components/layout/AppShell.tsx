@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 import { LogFoodProvider } from '../meals/LogFoodProvider';
@@ -19,8 +19,43 @@ function AppShellInner() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const crumb = crumbs[location.pathname] ?? 'Today';
   const displayName = user?.email?.split('@')[0] ?? 'You';
+
+  useEffect(() => {
+    setNavOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setNavOpen(false);
+      }
+    }
+    function onResize() {
+      if (window.matchMedia('(min-width: 861px)').matches) {
+        setNavOpen(false);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!navOpen) {
+      return;
+    }
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [navOpen]);
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -33,15 +68,36 @@ function AppShellInner() {
   }
 
   return (
-    <div className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <BrandMark />
-          <BrandWord />
+    <div className={`app${navOpen ? ' nav-open' : ''}`}>
+      {navOpen ? (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Close menu"
+          onClick={() => setNavOpen(false)}
+        />
+      ) : null}
+      <aside className={`sidebar${navOpen ? ' is-open' : ''}`} aria-label="App">
+        <div className="sidebar-head">
+          <div className="brand">
+            <BrandMark />
+            <BrandWord />
+          </div>
+          <button
+            type="button"
+            className="sidebar-toggle"
+            aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen((open) => !open)}
+          >
+            <span className="sidebar-toggle-bars" data-open={navOpen} />
+          </button>
         </div>
-        <SidebarNav label="Track" items={trackNav} />
-        <SidebarNav label="Tools" items={bonusNav} />
-        <SidebarNav label="Additionals" items={toolsNav} />
+        <div className="sidebar-navs">
+          <SidebarNav label="Track" items={trackNav} onNavigate={() => setNavOpen(false)} />
+          <SidebarNav label="Tools" items={bonusNav} onNavigate={() => setNavOpen(false)} />
+          <SidebarNav label="Additionals" items={toolsNav} onNavigate={() => setNavOpen(false)} />
+        </div>
         <div className="sidebar-foot">
           <div className="sage-pill">
             <span className="dot" /> Sage assistant active
@@ -52,8 +108,23 @@ function AppShellInner() {
               <div className="name">{displayName}</div>
               <div className="tier">Free tier</div>
             </div>
-            <button type="button" className="signout" onClick={() => void handleLogout()} disabled={loggingOut}>
-              {loggingOut ? 'Signing out…' : 'Sign out'}
+            <button
+              type="button"
+              className="signout"
+              aria-label={loggingOut ? 'Signing out…' : 'Sign out'}
+              onClick={() => void handleLogout()}
+              disabled={loggingOut}
+            >
+              <svg className="signout-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M6.5 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5M10 11.5 13 8l-3-3.5M13 8H6"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="signout-text">{loggingOut ? 'Signing out…' : 'Sign out'}</span>
             </button>
           </div>
         </div>
@@ -83,7 +154,15 @@ function AppShellInner() {
   );
 }
 
-function SidebarNav({ label, items }: { label: string; items: NavItem[] }) {
+function SidebarNav({
+  label,
+  items,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  onNavigate?: () => void;
+}) {
   return (
     <>
       <div className="nav-label">{label}</div>
@@ -92,11 +171,14 @@ function SidebarNav({ label, items }: { label: string; items: NavItem[] }) {
           <NavLink
             key={item.to}
             to={item.to}
+            title={item.label}
+            aria-label={item.label}
+            onClick={onNavigate}
             {...(item.end ? { end: true } : {})}
             className={({ isActive }) => (isActive ? 'active' : undefined)}
           >
             {item.icon}
-            {item.label}
+            <span className="nav-text">{item.label}</span>
           </NavLink>
         ))}
       </nav>
