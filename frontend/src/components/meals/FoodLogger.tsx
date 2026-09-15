@@ -94,7 +94,7 @@ export function FoodLogger({
   onClose,
   onLogged,
 }: {
-  initialMealType?: MealType;
+  initialMealType?: MealType | undefined;
   onClose: () => void;
   onLogged: () => Promise<void> | void;
 }) {

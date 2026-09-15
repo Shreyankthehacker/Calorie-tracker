@@ -101,7 +101,7 @@ describe('FoodLogger', () => {
     function Trigger() {
       const { openLogFood } = useLogFood();
       return (
-        <button type="button" onClick={openLogFood}>
+        <button type="button" onClick={() => openLogFood()}>
           Log new item
         </button>
       );
