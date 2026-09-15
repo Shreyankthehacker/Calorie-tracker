@@ -20,19 +20,8 @@
 .header-search input:focus { outline: none; border-color: var(--crimson); background: var(--white); }
 .header-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .5; }
 .header-actions { display: flex; align-items: center; gap: 10px; }
-.header-icon-btn {
-  width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line);
-  background: var(--white); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; position: relative; color: var(--black);
-}
-.header-icon-btn:hover { border-color: var(--crimson); color: var(--crimson); }
-.header-icon-btn .badge {
-  position: absolute; top: -3px; right: -3px; width: 15px; height: 15px; border-radius: 50%;
-  background: var(--crimson); color: var(--white); font-size: 9px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; border: 2px solid var(--white);
-}
 .header-powered {
-  font-size: 11px; color: var(--muted); border-left: 1px solid var(--line); padding-left: 14px;
+  font-size: 11px; color: var(--muted);
   white-space: nowrap;
 }
 .header-powered b { color: var(--black); font-weight: 600; }

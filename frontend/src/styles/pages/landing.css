@@ -1,12 +1,12 @@
 .page-landing {
-  --lp-canvas: #F3EEE6;
-  --lp-ink: #1B1916;
-  --lp-muted: #6F6A62;
-  --lp-accent: #3F5D4A;
-  --lp-accent-dark: #2C4235;
-  --lp-cream: #E6DDD0;
-  --lp-white: #FCFAF6;
-  --lp-line: #DDD6CB;
+  --lp-canvas: #F6F4F1;
+  --lp-ink: #0A0A0A;
+  --lp-muted: #7A756E;
+  --lp-accent: #A8112A;
+  --lp-accent-dark: #7A0C1F;
+  --lp-cream: #EDE8E1;
+  --lp-white: #FFFFFF;
+  --lp-line: #E7E3DD;
   background: var(--lp-canvas);
   color: var(--lp-ink);
   min-height: 100vh;
@@ -41,13 +41,13 @@ html:has(.page-landing) {
 }
 
 .page-landing .button-primary {
-  background: var(--lp-ink);
-  border-color: var(--lp-ink);
+  background: var(--lp-accent);
+  border-color: var(--lp-accent);
   color: var(--lp-white);
 }
 .page-landing .button-primary:hover {
-  background: var(--lp-accent);
-  border-color: var(--lp-accent);
+  background: var(--lp-accent-dark);
+  border-color: var(--lp-accent-dark);
   color: var(--lp-white);
 }
 .page-landing .button-secondary:hover {
@@ -120,10 +120,11 @@ html:has(.page-landing) {
   border-radius: 0;
   background: transparent;
 }
-.lp-nav-links a:hover {
+.lp-nav-links a:hover,
+.lp-nav-links a.is-active {
   color: var(--lp-accent);
-  background: transparent;
 }
+.lp-nav-links a.is-active { font-weight: 600; }
 .lp-nav-end {
   display: flex;
   align-items: center;
@@ -208,7 +209,8 @@ html:has(.page-landing) {
   --my: 0;
   overflow: hidden;
   background: var(--lp-cream);
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1;
+  max-height: 420px;
 }
 .lp-hero-photo img {
   width: 100%;
@@ -229,7 +231,8 @@ html:has(.page-landing) {
   margin: 0 0 10px;
 }
 .lp-section h2,
-.lp-finale h2 {
+.lp-finale h2,
+.lp-tutorial h1 {
   font-family: 'Fraunces', serif;
   font-size: clamp(28px, 3.6vw, 44px);
   font-weight: 600;
@@ -239,14 +242,17 @@ html:has(.page-landing) {
   letter-spacing: -0.02em;
 }
 
-.lp-split {
+.lp-split,
+.lp-live-solo {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 56px;
   align-items: center;
 }
-.lp-live-photo { overflow: hidden; background: var(--lp-cream); aspect-ratio: 4 / 5; }
-.lp-live-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-live-solo {
+  align-items: start;
+  max-width: 920px;
+}
 .lp-nutrition-card {
   background: var(--lp-white);
   border: 1px solid var(--lp-line);
@@ -390,6 +396,14 @@ html:has(.page-landing) {
 }
 .lp-how h3 { font-size: 20px; margin: 0 0 8px; }
 .lp-how p { margin: 0; color: var(--lp-muted); line-height: 1.55; font-size: 15px; }
+.lp-tutorial-link { margin: 32px 0 0; }
+.lp-tutorial-link a {
+  color: var(--lp-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.lp-tutorial-link a:hover { text-decoration: underline; }
+.page-tutorial .lp-tutorial { padding-top: 28px; }
 
 .lp-tutorial-layout {
   display: grid;
@@ -492,6 +506,31 @@ html:has(.page-landing) {
 .lp-feature-copy p:last-child { margin: 0; color: var(--lp-muted); line-height: 1.6; }
 .lp-feature-visual { overflow: hidden; background: var(--lp-cream); min-height: 280px; }
 .lp-feature-visual img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 280px; }
+.lp-feature-visual.is-log {
+  overflow: visible;
+  background: var(--lp-white);
+  border: 1px solid var(--lp-line);
+  min-height: 0;
+}
+.lp-feature-log {
+  list-style: none;
+  margin: 0;
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+}
+.lp-feature-log li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.lp-feature-log img {
+  width: 48px;
+  height: 48px;
+  min-height: 0;
+  object-fit: cover;
+}
 .lp-feature-today, .lp-feature-sage, .lp-feature-week {
   min-height: 280px;
   display: grid;
@@ -595,6 +634,7 @@ html:has(.page-landing) {
   .lp-cta { display: inline-flex; }
   .lp-hero-grid,
   .lp-split,
+  .lp-live-solo,
   .lp-how,
   .lp-tutorial-pane,
   .lp-feature,
@@ -607,7 +647,7 @@ html:has(.page-landing) {
   .lp-strip .is-tall,
   .lp-strip .is-wide,
   .lp-strip .is-square { height: 200px; }
-  .lp-hero-photo { aspect-ratio: 5 / 4; }
+  .lp-hero-photo { aspect-ratio: 5 / 4; max-height: 280px; }
   .lp-wrap { width: min(1120px, calc(100% - 32px)); }
   .lp-nav-inner { width: min(1120px, calc(100% - 32px)); }
   .lp-section { padding: 56px 0; }

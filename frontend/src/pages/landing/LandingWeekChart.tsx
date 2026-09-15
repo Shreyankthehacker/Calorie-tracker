@@ -24,7 +24,7 @@ export function LandingWeekChart({ height = 220 }: { height?: number }) {
               fontSize: 13,
             }}
           />
-          <Line type="monotone" dataKey="kcal" stroke="#3F5D4A" strokeWidth={2} dot={{ r: 3 }} />
+          <Line type="monotone" dataKey="kcal" stroke="#A8112A" strokeWidth={2} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

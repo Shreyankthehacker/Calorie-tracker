@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { landingMedia } from '../../lib/landing-media';
 import { landingDemo } from './landing-demo-data';
-import { LandingPhoto } from './LandingPhoto';
 
 function useInView<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
   const ref = useRef<T | null>(null);
@@ -70,29 +68,19 @@ export function LandingLive() {
   const carbs = Math.round(useCount(meal.carbs, active, 1050));
   const fat = Math.round(useCount(meal.fat, active, 1100));
   const proteinPct = Math.round(useCount(78, active, 1200));
-  const photo = landingMedia.liveMeal;
 
   return (
     <section className="lp-section lp-live" aria-labelledby="live-heading" ref={ref}>
-      <div className="lp-wrap lp-split">
-        <div className="lp-live-photo">
-          <LandingPhoto
-            src={photo.src}
-            fallback={photo.fallback}
-            alt={photo.alt}
-            width={photo.width}
-            height={photo.height}
-            sizes="(max-width: 860px) 100vw, 48vw"
-          />
-        </div>
+      <div className="lp-wrap lp-live-solo">
         <div>
-          <p className="lp-kicker">Photo to numbers</p>
+          <p className="lp-kicker">From a meal to numbers</p>
           <h2 id="live-heading">A meal becomes nutrition the moment it is logged.</h2>
           <p className="lp-lede">
             This card is a demonstration of the logging flow. It does not write to your account. Catalog foods,
             photos, barcodes, and custom dishes all land in the same place: calories and macros on the day you
             ate them.
           </p>
+        </div>
           <article className="lp-nutrition-card" aria-live="polite">
             <p className="lp-nutrition-meal">{meal.mealType}</p>
             <h3>{meal.name}</h3>
@@ -128,7 +116,6 @@ export function LandingLive() {
               <li>Protein goal: {proteinPct}%</li>
             </ul>
           </article>
-        </div>
       </div>
     </section>
   );

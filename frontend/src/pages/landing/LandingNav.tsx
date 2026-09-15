@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { BrandMark, BrandWord } from '../../components/layout/BrandMark';
 
 const links = [
-  { href: '#how-it-works', label: 'How it works' },
-  { href: '#features', label: 'Features' },
-  { href: '#tutorial', label: 'Tutorial' },
+  // { to: '/#how-it-works', label: 'How it works' },
+  { to: '/#features', label: 'Features' },
+  { to: '/tutorial', label: 'Tutorial' },
 ];
 
 export function LandingNav() {
+  const { pathname } = useLocation();
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -50,9 +51,13 @@ export function LandingNav() {
 
         <nav className="lp-nav-links" aria-label="Landing">
           {links.map((link) => (
-            <a key={link.href} href={link.href}>
+            <Link
+              key={link.to}
+              to={link.to}
+              className={pathname === link.to ? 'is-active' : undefined}
+            >
               {link.label}
-            </a>
+            </Link>
           ))}
           <Link to="/login">Sign in</Link>
         </nav>
@@ -77,9 +82,9 @@ export function LandingNav() {
       {open ? (
         <nav id="lp-mobile-nav" className="lp-mobile" aria-label="Landing mobile">
           {links.map((link) => (
-            <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
+            <Link key={link.to} to={link.to} onClick={() => setOpen(false)}>
               {link.label}
-            </a>
+            </Link>
           ))}
           <Link to="/login" onClick={() => setOpen(false)}>
             Sign in

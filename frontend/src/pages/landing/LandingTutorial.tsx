@@ -120,12 +120,13 @@ function ProgressStage() {
 
 const stages = [GoalStage, LogStage, NutritionStage, TodayStage, ProgressStage];
 
-export function LandingTutorial() {
+export function LandingTutorial({ asPage = false }: { asPage?: boolean }) {
   const [index, setIndex] = useState(0);
   const reduce = useReducedMotion();
   const step = steps[index] ?? steps[0];
   const Stage = stages[index] ?? GoalStage;
   const last = index === steps.length - 1;
+  const Heading = asPage ? 'h1' : 'h2';
 
   function onTabsKey(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
@@ -150,7 +151,7 @@ export function LandingTutorial() {
     <section className="lp-section lp-tutorial" id="tutorial" aria-labelledby="tutorial-heading">
       <div className="lp-wrap">
         <p className="lp-kicker">How to use it</p>
-        <h2 id="tutorial-heading">A first day, in five moves.</h2>
+        <Heading id="tutorial-heading">A first day, in five moves.</Heading>
         <p className="lp-lede">
           Click a step to see the matching screen. These are the same surfaces you will use after you create an
           account.
@@ -228,8 +229,8 @@ export function LandingTutorial() {
               >
                 Next
               </button>
-              <Link className="lp-tutorial-walkthrough" to="/get-started">
-                Open the slower walkthrough
+              <Link className="lp-tutorial-walkthrough" to="/register">
+                Start tracking
               </Link>
             </div>
           </div>

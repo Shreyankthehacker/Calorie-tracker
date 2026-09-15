@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppRouter } from '../routes/AppRouter';
 import { GetStartedPage } from './GetStartedPage';
-import { LandingPage } from './LandingPage';
+import { TutorialPage } from './TutorialPage';
 import { renderWithProviders } from '../test/render';
 
 describe('public landing and first sitting', () => {
@@ -17,16 +17,13 @@ describe('public landing and first sitting', () => {
       'href',
       '/register',
     );
-    expect(screen.getByRole('link', { name: 'See how it works' })).toHaveAttribute(
-      'href',
-      '#how-it-works',
-    );
+    expect(screen.getByRole('link', { name: 'Open tutorial' })).toHaveAttribute('href', '/tutorial');
     expect(screen.queryByRole('button', { name: /continue with google/i })).not.toBeInTheDocument();
   });
 
-  it('walks the in-page tutorial with next', async () => {
+  it('walks the tutorial page with next', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<LandingPage />, { route: '/' });
+    renderWithProviders(<TutorialPage />, { route: '/tutorial' });
     expect(screen.getByRole('heading', { name: /a first day, in five moves/i })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(

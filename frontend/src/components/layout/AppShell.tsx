@@ -71,29 +71,6 @@ function AppShellInner() {
             <input type="text" placeholder="Search foods, entries, or ask Sage…" />
           </div>
           <div className="header-actions">
-            <button type="button" className="header-icon-btn" title="Notifications">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M4 6.5a4 4 0 0 1 8 0c0 3 1.2 3.8 1.2 4.3H2.8C2.8 10.3 4 9.5 4 6.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  strokeLinejoin="round"
-                />
-                <path d="M6.3 13a1.8 1.8 0 0 0 3.4 0" stroke="currentColor" strokeWidth="1.3" />
-              </svg>
-              <span className="badge">2</span>
-            </button>
-            <button type="button" className="header-icon-btn" title="Settings">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1.3" />
-                <path
-                  d="M8 2.5v1.4M8 12.1v1.4M13.5 8h-1.4M3.9 8H2.5M11.7 4.3l-1 1M5.3 10.7l-1 1M11.7 11.7l-1-1M5.3 5.3l-1-1"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
             <div className="header-powered">
               Powered by <b>Typeface</b>
             </div>

@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { landingMedia } from '../lib/landing-media';
 import { BrandWord } from '../components/layout/BrandMark';
+import { FoodThumb } from '../components/meals/FoodThumb';
 import { LandingLive } from './landing/LandingLive';
 import { LandingNav } from './landing/LandingNav';
 import { LandingPhoto } from './landing/LandingPhoto';
 import { LandingPreview } from './landing/LandingPreview';
-import { LandingTutorial } from './landing/LandingTutorial';
 import { LandingWeekChart } from './landing/LandingWeekChart';
 
 const howSteps = [
@@ -106,9 +106,9 @@ export function LandingPage() {
                 <Link className="button button-primary" to="/register">
                   Start tracking
                 </Link>
-                <a className="button button-secondary" href="#how-it-works">
-                  See how it works
-                </a>
+                <Link className="button button-secondary" to="/tutorial">
+                  Open tutorial
+                </Link>
               </div>
             </div>
             <div
@@ -125,7 +125,7 @@ export function LandingPage() {
                 width={landingMedia.hero.width}
                 height={landingMedia.hero.height}
                 priority
-                sizes="(max-width: 860px) 100vw, 50vw"
+                sizes="(max-width: 860px) 100vw, 42vw"
               />
             </div>
           </div>
@@ -147,10 +147,11 @@ export function LandingPage() {
                 </li>
               ))}
             </ol>
+            <p className="lp-tutorial-link">
+              <Link to="/tutorial">Walk through the screens</Link>
+            </p>
           </div>
         </section>
-
-        <LandingTutorial />
 
         <section className="lp-section" id="features" aria-labelledby="features-heading">
           <div className="lp-wrap">
@@ -165,14 +166,14 @@ export function LandingPage() {
                 </div>
                 <div className={`lp-feature-visual is-${feature.visual}`}>
                   {feature.visual === 'log' ? (
-                    <LandingPhoto
-                      src={landingMedia.logMeal.src}
-                      fallback={landingMedia.logMeal.fallback}
-                      alt={landingMedia.logMeal.alt}
-                      width={landingMedia.logMeal.width}
-                      height={landingMedia.logMeal.height}
-                      sizes="(max-width: 860px) 100vw, 44vw"
-                    />
+                    <ul className="lp-feature-log">
+                      {['Oats', 'Chicken breast', 'Salmon', 'Eggs'].map((name) => (
+                        <li key={name}>
+                          <FoodThumb name={name} />
+                          <span>{name}</span>
+                        </li>
+                      ))}
+                    </ul>
                   ) : null}
                   {feature.visual === 'today' ? (
                     <div className="lp-feature-today">
@@ -200,21 +201,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="lp-strip" aria-label="Food photography">
-          {landingMedia.strip.map((photo) => (
-            <figure key={photo.alt} className={`is-${photo.shape}`}>
-              <LandingPhoto
-                src={photo.src}
-                fallback={photo.fallback}
-                alt={photo.alt}
-                width={photo.width}
-                height={photo.height}
-                sizes="(max-width: 860px) 70vw, 22vw"
-              />
-            </figure>
-          ))}
-        </section>
-
         <section className="lp-finale" aria-labelledby="finale-heading">
           <div className="lp-wrap">
             <h2 id="finale-heading">Start understanding your food.</h2>
@@ -235,8 +221,7 @@ export function LandingPage() {
           <nav aria-label="Footer">
             <a href="#how-it-works">How it works</a>
             <a href="#features">Features</a>
-            <a href="#tutorial">Tutorial</a>
-            <Link to="/get-started">Get started</Link>
+            <Link to="/tutorial">Tutorial</Link>
             <Link to="/login">Sign in</Link>
             <Link to="/register">Start tracking</Link>
           </nav>
